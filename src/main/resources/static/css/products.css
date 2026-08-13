@@ -1,0 +1,107 @@
+body {
+  background: linear-gradient(180deg, #f8faff 0%, #eef4ff 100%);
+  font-family: "Segoe UI", sans-serif;
+}
+
+.container {
+  max-width: 1200px;
+}
+
+.card {
+  border: none;
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+.table thead th {
+  background: #eef3ff;
+}
+
+.badge-low {
+  background: #fff3cd;
+  color: #8a6d00;
+}
+
+.badge-good {
+  background: #d1f5df;
+  color: #1a7f4d;
+}
+
+.btn-primary {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.language-form {
+  min-width: 150px;
+}
+
+.language-select {
+  border-radius: 12px;
+  border: 1px solid #d9e4ff;
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.08);
+  min-width: 150px;
+}
+
+.language-select:focus {
+  border-color: #86a9ff;
+  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.15);
+}
+
+.date-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  background: #eaf1ff;
+  border: 1px solid #d7e6ff;
+  border-radius: 12px;
+  padding: 6px 12px;
+  color: #1f3c88;
+  min-width: 120px;
+}
+
+.date-badge-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08rem;
+  opacity: 0.8;
+}
+
+.add-product-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+}
+
+.add-product-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.form-hidden {
+  display: none;
+}
+
+.search-toolbar {
+  padding: 1rem 1.25rem;
+  border: none;
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+.search-toolbar .form-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.search-toolbar .btn,
+.search-toolbar .form-control,
+.search-toolbar .form-select {
+  border-radius: 12px;
+}

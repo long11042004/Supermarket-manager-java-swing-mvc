@@ -1,0 +1,57 @@
+body {
+  background: linear-gradient(180deg, #f4f8ff 0%, #eef3ff 100%);
+  font-family: "Segoe UI", sans-serif;
+}
+
+.card {
+  border: none;
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+.btn-primary {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: #eaf1ff;
+  color: #1f3c88;
+  font-size: 0.8rem;
+  margin: 0.15rem;
+}
+
+.toolbar-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.panel-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  width: 280px;
+  max-width: 100%;
+}
+
+.role-select {
+  min-width: 160px;
+}

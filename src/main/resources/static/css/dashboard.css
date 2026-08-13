@@ -1,0 +1,54 @@
+body {
+  background: linear-gradient(180deg, #f8fbff 0%, #eef6ff 100%);
+  font-family: "Segoe UI", sans-serif;
+}
+
+.container {
+  max-width: 1200px;
+}
+
+.topbar {
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  padding: 1.25rem;
+  height: 100%;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0.5rem 0;
+  color: #1d4ed8;
+}
+
+.section-card {
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  padding: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.badge-role {
+  display: inline-block;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-weight: 600;
+  margin-right: 0.4rem;
+  margin-bottom: 0.2rem;
+}
+
+.nav-btn {
+  border-radius: 12px;
+}
