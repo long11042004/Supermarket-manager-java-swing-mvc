@@ -56,6 +56,10 @@ public class DashboardController {
 		model.addAttribute("products", products);
 		model.addAttribute("users", users);
 		model.addAttribute("lowStockProducts", lowStockProducts);
+
+		if (roles.contains(RoleName.CUSTOMER)) {
+			return "customer-dashboard";
+		}
 		return "dashboard";
 	}
 }

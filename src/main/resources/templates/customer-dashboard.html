@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Khách hàng | Siêu thị</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background: linear-gradient(180deg, #f8fafc 0%, #ecfeff 100%);
+      font-family: "Segoe UI", sans-serif;
+    }
+    .container {
+      max-width: 1200px;
+    }
+    .topbar {
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .card-box {
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+      padding: 1.25rem;
+      margin-top: 1.5rem;
+    }
+    .stat {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #0f766e;
+      margin: 0.4rem 0;
+    }
+    .btn-primary {
+      background: #0f766e;
+      border-color: #0f766e;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <div class="topbar d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <div class="text-success fw-bold text-uppercase small">Siêu thị thông minh</div>
+        <h1 class="mb-0">Khách hàng</h1>
+      </div>
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <span class="badge bg-secondary" th:text="${currentUser.fullName}">Khách hàng</span>
+        <a th:href="@{/products}" class="btn btn-primary">Xem sản phẩm</a>
+        <form th:action="@{/logout}" method="post" class="d-inline">
+          <button type="submit" class="btn btn-outline-secondary">Đăng xuất</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card-box">
+          <div class="text-muted">Tổng sản phẩm</div>
+          <div class="stat" th:text="${totalProducts}">0</div>
+          <div class="text-muted">Sản phẩm hiện có</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card-box">
+          <div class="text-muted">Sắp hết hàng</div>
+          <div class="stat" th:text="${lowStockCount}">0</div>
+          <div class="text-muted">Mặt hàng cần chú ý</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card-box">
+          <div class="text-muted">Danh mục</div>
+          <div class="stat" th:text="${#lists.size(products)}">0</div>
+          <div class="text-muted">Sản phẩm đang hiển thị</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-box">
+      <h4 class="mb-3">Ưu đãi nổi bật</h4>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="badge bg-success-subtle text-success-emphasis p-2">Giảm giá 10% cho thực phẩm tươi</span>
+        <span class="badge bg-warning-subtle text-warning-emphasis p-2">Mua 2 tặng 1 vào cuối tuần</span>
+        <span class="badge bg-info-subtle text-info-emphasis p-2">Miễn phí giao hàng từ 300k</span>
+      </div>
+    </div>
+
+    <div class="card-box">
+      <h4 class="mb-3">Danh mục sản phẩm gợi ý</h4>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Tên sản phẩm</th>
+              <th>Danh mục</th>
+              <th>Giá</th>
+              <th>Tồn kho</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="item : ${products}">
+              <td th:text="${item.name}">Tên</td>
+              <td th:text="${item.category}">Danh mục</td>
+              <td th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
+              <td><span class="badge bg-light text-dark" th:text="${item.quantity}">0</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
