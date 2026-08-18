@@ -173,6 +173,9 @@ public class ProductController {
 		model.addAttribute("category", "");
 		model.addAttribute("categories", productService.getAllCategories());
 		model.addAttribute("canManageProducts", true);
+		model.addAttribute("isCustomer", hasPermission(session, RoleName.CUSTOMER));
+		model.addAttribute("isGuest", false);
+		model.addAttribute("cart", getOrCreateCart(session));
 		return "products";
 	}
 

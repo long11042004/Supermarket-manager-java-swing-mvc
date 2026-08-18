@@ -1,0 +1,27 @@
+body {
+      background: linear-gradient(180deg, #f8fafc 0%, #fefce8 100%);
+      font-family: "Segoe UI", sans-serif;
+    }
+    .shell {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 2rem 1rem 3rem;
+    }
+    .topbar,
+    .order-card {
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 24px;
+      padding: 1.3rem 1.5rem;
+      box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+    }
+    .order-card {
+      margin-top: 1.25rem;
+    }
+    .status-pill {
+      display: inline-flex;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-weight: 600;
+    }

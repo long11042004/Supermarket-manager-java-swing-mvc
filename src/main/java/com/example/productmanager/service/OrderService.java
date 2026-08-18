@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.productmanager.model.CartItem;
 import com.example.productmanager.model.CustomerOrder;
 import com.example.productmanager.model.CustomerOrderItem;
 import com.example.productmanager.model.OrderStatus;
@@ -15,7 +16,6 @@ import com.example.productmanager.model.User;
 import com.example.productmanager.repository.CustomerOrderRepository;
 import com.example.productmanager.repository.ProductRepository;
 import com.example.productmanager.repository.UserRepository;
-import com.example.productmanager.service.CartService.CartItem;
 import com.example.productmanager.service.CartService.CartView;
 
 @Service

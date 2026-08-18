@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.example.productmanager.model.CartItem;
 import com.example.productmanager.model.Product;
 
 @Service
@@ -106,51 +107,6 @@ public class CartService {
 			return items.stream()
 					.map(item -> item.getLineTotal())
 					.reduce(BigDecimal.ZERO, (left, right) -> left.add(right));
-		}
-	}
-
-	public static class CartItem {
-
-		private final Long productId;
-		private final String productName;
-		private final BigDecimal unitPrice;
-		private final String unitLabel;
-		private int quantity;
-
-		public CartItem(Long productId, String productName, BigDecimal unitPrice, String unitLabel, int quantity) {
-			this.productId = productId;
-			this.productName = productName;
-			this.unitPrice = unitPrice;
-			this.unitLabel = unitLabel;
-			this.quantity = quantity;
-		}
-
-		public Long getProductId() {
-			return productId;
-		}
-
-		public String getProductName() {
-			return productName;
-		}
-
-		public BigDecimal getUnitPrice() {
-			return unitPrice;
-		}
-
-		public String getUnitLabel() {
-			return unitLabel;
-		}
-
-		public int getQuantity() {
-			return quantity;
-		}
-
-		public void setQuantity(int quantity) {
-			this.quantity = quantity;
-		}
-
-		public BigDecimal getLineTotal() {
-			return unitPrice.multiply(BigDecimal.valueOf(quantity));
 		}
 	}
 }

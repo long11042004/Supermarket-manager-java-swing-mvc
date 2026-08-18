@@ -8,36 +8,63 @@
   <link rel="stylesheet" th:href="@{/css/login.css}" />
 </head>
 <body>
-  <div class="login-card">
-    <div class="text-center mb-4">
-      <div class="brand">Hệ thống siêu thị</div>
-      <h2 class="mt-2 mb-0">Đăng nhập</h2>
-    </div>
-
-    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">
-      Sai tài khoản hoặc mật khẩu
-    </div>
-
-    <form th:action="@{/login}" method="post" th:object="${loginUser}">
-      <div class="mb-3">
-        <label class="form-label">Tên đăng nhập</label>
-        <input type="text" class="form-control" th:field="*{username}" placeholder="admin" required />
+  <div class="auth-shell">
+    <div class="login-card">
+      <div class="text-center mb-4">
+        <div class="brand">Hệ thống siêu thị</div>
+        <h2 class="mt-2 mb-0">Đăng nhập</h2>
       </div>
-      <div class="mb-3">
-        <label class="form-label">Mật khẩu</label>
-        <input type="password" class="form-control" th:field="*{password}" placeholder="******" required />
-      </div>
-      <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
-    </form>
 
-    <div class="mt-3">
-      <a th:href="@{/products}" class="btn btn-outline-secondary w-100">Đặt hàng không cần tài khoản</a>
+      <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}">
+        Đăng ký thành công
+      </div>
+      <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">
+        Sai tài khoản hoặc mật khẩu
+      </div>
+
+      <form th:action="@{/login}" method="post" th:object="${loginUser}">
+        <div class="mb-3">
+          <label class="form-label">Tên đăng nhập</label>
+          <input type="text" class="form-control" th:field="*{username}" placeholder="admin" required />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Mật khẩu</label>
+          <input type="password" class="form-control" th:field="*{password}" placeholder="******" required />
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
+      </form>
+
+      <div class="mt-3">
+        <a th:href="@{/products}" class="btn btn-outline-secondary w-100">Đặt hàng không cần tài khoản</a>
+      </div>
     </div>
 
-    <div class="mt-3 text-center small text-muted">
-      Tài khoản mẫu: admin / admin123<br/>
-      manager / manager123<br/>
-      staff / staff123
+    <div class="register-card">
+      <div class="text-center mb-4">
+        <div class="brand">Đăng ký</div>
+        <h2 class="mt-2 mb-0">Tạo tài khoản</h2>
+      </div>
+
+      <form th:action="@{/register}" method="post" th:object="${registerUser}">
+        <div class="mb-3">
+          <label class="form-label">Họ và tên</label>
+          <input type="text" class="form-control" th:field="*{fullName}" placeholder="Nguyễn Văn A" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Tên đăng nhập</label>
+          <input type="text" class="form-control" th:field="*{username}" placeholder="nguyenvana" required />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" th:field="*{email}" placeholder="name@example.com" required />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Mật khẩu</label>
+          <input type="password" class="form-control" th:field="*{password}" placeholder="Tạo mật khẩu" required />
+        </div>
+        <button type="submit" class="btn btn-dark w-100">Đăng ký tài khoản</button>
+      </form>
+    </div>
     </div>
   </div>
 

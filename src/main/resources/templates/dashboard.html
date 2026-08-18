@@ -18,6 +18,7 @@
         <span class="badge bg-secondary" th:text="${currentUser.fullName}">Người dùng</span>
         <a th:href="@{/profile}" class="btn btn-outline-dark nav-btn">Tài khoản</a>
         <a th:href="@{/products}" class="btn btn-primary nav-btn">Xem sản phẩm</a>
+        <a th:if="${canManageUsers}" th:href="@{/reports}" class="btn btn-outline-success nav-btn">Báo cáo</a>
         <a th:if="${canManageUsers}" th:href="@{/users}" class="btn btn-outline-primary nav-btn">Quản lý người dùng</a>
         <form th:action="@{/logout}" method="post" class="d-inline">
           <button type="submit" class="btn btn-outline-secondary nav-btn">Đăng xuất</button>
@@ -63,6 +64,7 @@
       <div class="d-flex flex-wrap gap-2">
         <a th:href="@{/profile}" class="btn btn-outline-dark">Hồ sơ cá nhân</a>
         <a th:href="@{/products}" class="btn btn-primary">Xem sản phẩm</a>
+        <a th:if="${canManageUsers}" th:href="@{/reports}" class="btn btn-outline-success">Báo cáo thống kê</a>
         <a th:if="${canManageUsers}" th:href="@{/users}" class="btn btn-outline-primary">Quản lý nhân sự</a>
         <a th:if="${canManageProducts}" th:href="@{/products}" class="btn btn-outline-success">Nhập hàng / bổ sung</a>
       </div>

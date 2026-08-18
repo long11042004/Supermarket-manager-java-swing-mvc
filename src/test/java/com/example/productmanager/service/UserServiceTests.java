@@ -36,6 +36,21 @@ class UserServiceTests {
 	private UserService userService;
 
 	@Test
+	void registerCustomerShouldAssignCustomerRole() {
+		Role customerRole = Role.builder().name(RoleName.CUSTOMER).build();
+		userService = new UserService(userRepository, roleRepository, userActivityRepository);
+		when(userRepository.existsByUsername("new-customer")).thenReturn(false);
+		when(userRepository.existsByEmail("customer@example.com")).thenReturn(false);
+		when(roleRepository.findByName(RoleName.CUSTOMER)).thenReturn(Optional.of(customerRole));
+		when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+		User savedUser = userService.registerCustomer("new-customer", "secret123", "customer@example.com", "Khách mới");
+
+		assertEquals(RoleName.CUSTOMER, savedUser.getRoles().stream().findFirst().orElseThrow().getName());
+		verify(userActivityRepository).save(any());
+	}
+
+	@Test
 	void updateProfileShouldPersistFieldsAndLogActivity() {
 		User existingUser = buildExistingUser();
 		userService = new UserService(userRepository, roleRepository, userActivityRepository);

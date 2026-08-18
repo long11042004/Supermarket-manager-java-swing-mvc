@@ -33,6 +33,28 @@ public class UserService {
 
 	@Transactional
 	public User registerUser(String username, String password, String email, String fullName) {
+		return registerUser(username, password, email, fullName, RoleName.STAFF);
+	}
+
+	@Transactional
+	public User registerCustomer(String username, String password, String email, String fullName) {
+		return registerUser(username, password, email, fullName, RoleName.CUSTOMER);
+	}
+
+	@Transactional
+	public User registerInternalUser(String username,
+			String password,
+			String email,
+			String fullName,
+			RoleName defaultRoleName) {
+		return registerUser(username, password, email, fullName, defaultRoleName);
+	}
+
+	private User registerUser(String username,
+			String password,
+			String email,
+			String fullName,
+			RoleName defaultRoleName) {
 		if (userRepository.existsByUsername(username)) {
 			throw new IllegalArgumentException("Tên đăng nhập đã tồn tại");
 		}
@@ -40,8 +62,8 @@ public class UserService {
 			throw new IllegalArgumentException("Email đã tồn tại");
 		}
 
-		Role defaultRole = roleRepository.findByName(RoleName.STAFF)
-				.orElseThrow(() -> new RuntimeException("Không tìm thấy quyền mặc định: STAFF"));
+		Role defaultRole = roleRepository.findByName(defaultRoleName)
+				.orElseThrow(() -> new RuntimeException("Không tìm thấy quyền mặc định: " + defaultRoleName));
 
 		User user = User.builder()
 				.username(username)

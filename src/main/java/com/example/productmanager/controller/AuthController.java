@@ -24,6 +24,7 @@ public class AuthController {
 	@GetMapping("/login")
 	public String loginPage(Model model) {
 		model.addAttribute("loginUser", new User());
+		model.addAttribute("registerUser", new User());
 		return "login";
 	}
 
@@ -39,6 +40,22 @@ public class AuthController {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 			return "redirect:/login";
 		}
+	}
+
+	@PostMapping("/register")
+	public String register(@ModelAttribute("registerUser") User registerUser,
+			RedirectAttributes redirectAttributes) {
+		try {
+			userService.registerCustomer(
+					registerUser.getUsername(),
+					registerUser.getPassword(),
+					registerUser.getEmail(),
+					registerUser.getFullName());
+			redirectAttributes.addFlashAttribute("successMessage", "Đăng ký thành công. Bạn có thể đăng nhập ngay.");
+		} catch (Exception ex) {
+			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+		}
+		return "redirect:/login";
 	}
 
 	@PostMapping("/logout")
