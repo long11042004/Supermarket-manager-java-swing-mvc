@@ -3,6 +3,9 @@ package com.example.productmanager.controller;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +25,7 @@ import jakarta.servlet.http.HttpSession;
 @Controller
 @RequestMapping("/orders")
 public class CustomerOrderController {
+	private static final Logger log = LoggerFactory.getLogger(CustomerOrderController.class);
 
 	private final OrderService orderService;
 	private final CartService cartService;
@@ -68,8 +72,35 @@ public class CustomerOrderController {
 			redirectAttributes.addFlashAttribute("successMessage", "Đơn hàng đã được tạo thành công.");
 		} catch (IllegalArgumentException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+		} catch (DataIntegrityViolationException ex) {
+			log.warn("Checkout failed due to data integrity issue", ex);
+			redirectAttributes.addFlashAttribute("errorMessage", "Thông tin đơn hàng không hợp lệ hoặc quá dài. Vui lòng kiểm tra lại.");
+		} catch (RuntimeException ex) {
+			log.error("Unexpected checkout failure", ex);
+			redirectAttributes.addFlashAttribute("errorMessage", "Không thể tạo đơn hàng lúc này. Vui lòng thử lại.");
 		}
 		return "redirect:/products";
+	}
+
+	@PostMapping("/{orderId}/cancel")
+	public String cancelOrder(@org.springframework.web.bind.annotation.PathVariable Long orderId,
+			HttpSession session,
+			RedirectAttributes redirectAttributes) {
+		User currentUser = getCustomer(session);
+		if (currentUser == null) {
+			return "redirect:/login";
+		}
+
+		try {
+			orderService.cancelOrderForUser(currentUser.getId(), orderId);
+			redirectAttributes.addFlashAttribute("successMessage", "Đơn hàng đã được hủy thành công.");
+		} catch (IllegalArgumentException ex) {
+			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+		} catch (RuntimeException ex) {
+			log.error("Unexpected cancel order failure", ex);
+			redirectAttributes.addFlashAttribute("errorMessage", "Không thể hủy đơn hàng lúc này. Vui lòng thử lại.");
+		}
+		return "redirect:/orders";
 	}
 
 	private User getCustomer(HttpSession session) {

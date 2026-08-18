@@ -2,7 +2,9 @@ package com.example.productmanager.controller;
 
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -88,25 +90,46 @@ public class UserController {
 		return List.of(RoleName.STAFF, RoleName.CUSTOMER);
 	}
 
+	private String restrictedReason(HttpSession session) {
+		if (isAdmin(session)) {
+			return "Tài khoản này nằm ngoài phạm vi thao tác hiện tại.";
+		}
+		return "Manager chỉ có thể chỉnh sửa tài khoản thuộc nhóm STAFF hoặc CUSTOMER.";
+	}
+
 	@GetMapping
 	public String listUsers(Model model,
 			@RequestParam(value = "keyword", required = false) String keyword,
+			@RequestParam(value = "manageableOnly", required = false, defaultValue = "false") boolean manageableOnly,
 			HttpSession session) {
 		if (!hasPermission(session, RoleName.ADMIN, RoleName.MANAGER)) {
 			return "redirect:/login";
 		}
 		List<User> users = userService.searchUsers(keyword);
+		if (manageableOnly) {
+			users = users.stream()
+					.filter(user -> canEditTargetUser(session, user))
+					.toList();
+		}
 		Set<Long> restrictedUserIds = users.stream()
 				.filter(user -> !canEditTargetUser(session, user))
 				.map(user -> user.getId())
 				.collect(Collectors.toSet());
+		Map<Long, String> restrictedReasons = new HashMap<>();
+		for (User user : users) {
+			if (restrictedUserIds.contains(user.getId())) {
+				restrictedReasons.put(user.getId(), restrictedReason(session));
+			}
+		}
 
 		model.addAttribute("users", users);
 		model.addAttribute("keyword", keyword);
+		model.addAttribute("manageableOnly", manageableOnly);
 		model.addAttribute("roles", editableRoles(session));
 		model.addAttribute("registerRoles", editableRoles(session));
 		model.addAttribute("isAdmin", isAdmin(session));
 		model.addAttribute("restrictedUserIds", restrictedUserIds);
+		model.addAttribute("restrictedReasons", restrictedReasons);
 		model.addAttribute("newUser", new User());
 		return "users";
 	}
@@ -155,10 +178,18 @@ public class UserController {
 
 		model.addAttribute("user", user);
 		model.addAttribute("users", users);
+		model.addAttribute("manageableOnly", false);
 		model.addAttribute("roles", editableRoles(session));
 		model.addAttribute("registerRoles", editableRoles(session));
 		model.addAttribute("isAdmin", isAdmin(session));
 		model.addAttribute("restrictedUserIds", restrictedUserIds);
+		Map<Long, String> restrictedReasons = new HashMap<>();
+		for (User item : users) {
+			if (restrictedUserIds.contains(item.getId())) {
+				restrictedReasons.put(item.getId(), restrictedReason(session));
+			}
+		}
+		model.addAttribute("restrictedReasons", restrictedReasons);
 		model.addAttribute("selectedRoles", user.getRoles().stream().map(role -> role.getName()).collect(Collectors.toSet()));
 		model.addAttribute("newUser", new User());
 		return "users";

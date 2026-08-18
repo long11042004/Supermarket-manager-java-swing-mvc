@@ -42,7 +42,7 @@ public class ReportService {
 
 		List<TopProductStat> topProducts = customerOrderRepository
 				.findTopProductsInPeriod(startTime, endTime, statusFilter, PageRequest.of(0, 5)).stream()
-				.map(item -> new TopProductStat(item.getProductName(), item.getTotalQuantity(), item.getTotalRevenue()))
+				.map(item -> new TopProductStat(item.getProductName(), item.getUnit(), item.getTotalQuantity(), item.getTotalRevenue()))
 				.toList();
 
 		return new ReportData(totalOrders, totalRevenue, averageOrderValue, guestOrders, memberOrders, statusStats, topProducts);
@@ -61,6 +61,6 @@ public class ReportService {
 	public record StatusStat(OrderStatus status, Long total) {
 	}
 
-	public record TopProductStat(String productName, Long totalQuantity, BigDecimal totalRevenue) {
+	public record TopProductStat(String productName, String unit, Long totalQuantity, BigDecimal totalRevenue) {
 	}
 }

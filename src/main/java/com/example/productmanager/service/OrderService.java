@@ -74,7 +74,7 @@ public class OrderService {
 		User user = null;
 		if (userId != null) {
 			user = userRepository.findById(userId)
-					.orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với id: " + userId));
+					.orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng đặt hàng."));
 		}
 
 		List<CustomerOrderItem> orderItems = new ArrayList<>();
@@ -92,8 +92,20 @@ public class OrderService {
 				.build();
 
 		for (CartItem cartItem : cart.getItems()) {
+			if (cartItem.getProductId() == null) {
+				throw new IllegalArgumentException("Giỏ hàng chứa sản phẩm không hợp lệ. Vui lòng tải lại trang.");
+			}
+			if (cartItem.getQuantity() <= 0) {
+				throw new IllegalArgumentException("Số lượng sản phẩm trong giỏ không hợp lệ.");
+			}
 			Product product = productRepository.findById(cartItem.getProductId())
-					.orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với id: " + cartItem.getProductId()));
+					.orElseThrow(() -> new IllegalArgumentException("Sản phẩm trong giỏ không còn tồn tại. Vui lòng tải lại danh sách."));
+			if (product.getPrice() == null) {
+				throw new IllegalArgumentException("Sản phẩm " + product.getName() + " chưa có giá bán hợp lệ.");
+			}
+			if (product.getQuantity() == null) {
+				throw new IllegalArgumentException("Sản phẩm " + product.getName() + " có dữ liệu tồn kho không hợp lệ.");
+			}
 			if (product.getQuantity() < cartItem.getQuantity()) {
 				throw new IllegalArgumentException("Sản phẩm " + product.getName() + " không đủ số lượng trong kho");
 			}
@@ -125,5 +137,42 @@ public class OrderService {
 	@Transactional(readOnly = true)
 	public List<CustomerOrder> getOrdersForUser(Long userId) {
 		return customerOrderRepository.findByUserIdOrderByCreatedAtDesc(userId);
+	}
+
+	@Transactional
+	public void cancelOrderForUser(Long userId, Long orderId) {
+		if (userId == null) {
+			throw new IllegalArgumentException("Không tìm thấy thông tin người dùng.");
+		}
+		CustomerOrder order = customerOrderRepository.findDetailByIdAndUserId(orderId, userId)
+				.orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn hàng cần hủy."));
+
+		if (order.getStatus() == OrderStatus.CANCELLED) {
+			throw new IllegalArgumentException("Đơn hàng này đã được hủy trước đó.");
+		}
+		if (order.getStatus() == OrderStatus.COMPLETED || order.getStatus() == OrderStatus.DELIVERING) {
+			throw new IllegalArgumentException("Đơn hàng đang giao hoặc đã hoàn tất nên không thể hủy.");
+		}
+
+		for (CustomerOrderItem item : order.getItems()) {
+			Product product = item.getProduct();
+			if (product == null || product.getId() == null) {
+				continue;
+			}
+			Product managedProduct = productRepository.findById(product.getId()).orElse(null);
+			if (managedProduct == null) {
+				continue;
+			}
+			Integer currentQtyValue = managedProduct.getQuantity();
+			Integer rollbackQtyValue = item.getQuantity();
+			int currentQty = currentQtyValue == null ? 0 : currentQtyValue;
+			int rollbackQty = rollbackQtyValue == null ? 0 : rollbackQtyValue;
+			managedProduct.setQuantity(currentQty + rollbackQty);
+			productRepository.save(managedProduct);
+		}
+
+		order.setStatus(OrderStatus.CANCELLED);
+		customerOrderRepository.save(order);
+		userService.recordActivity(userId, "Hủy đơn", "Đơn hàng #" + order.getId() + " đã được hủy");
 	}
 }

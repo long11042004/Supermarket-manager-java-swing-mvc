@@ -1,6 +1,7 @@
 package com.example.productmanager.service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,7 +14,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.productmanager.model.CustomerOrder;
+import com.example.productmanager.model.CustomerOrderItem;
+import com.example.productmanager.model.OrderStatus;
 import com.example.productmanager.model.Product;
+import com.example.productmanager.model.User;
 import com.example.productmanager.repository.CustomerOrderRepository;
 import com.example.productmanager.repository.ProductRepository;
 import com.example.productmanager.repository.UserRepository;
@@ -81,6 +85,87 @@ class OrderServiceTests {
 				() -> orderService.checkoutAsGuest("Khách", "", cart, "456 Đường XYZ", "0988000000", null));
 
 		assertEquals("Vui lòng nhập email để xác nhận đơn hàng", ex.getMessage());
+		verify(customerOrderRepository, never()).save(any(CustomerOrder.class));
+	}
+
+	@Test
+	void checkoutAsGuestShouldFailWhenProductNoLongerExists() {
+		CartView cart = new CartView();
+		Product product = Product.builder()
+				.id(23L)
+				.name("Bánh gạo")
+				.price(new BigDecimal("35000"))
+				.quantity(5)
+				.build();
+		cartService.addItem(cart, product, 1);
+		when(productRepository.findById(23L)).thenReturn(Optional.empty());
+
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+				() -> orderService.checkoutAsGuest("Khách", "guest@demo.com", cart, "789 Đường DEF", "0909000000", null));
+
+		assertEquals("Sản phẩm trong giỏ không còn tồn tại. Vui lòng tải lại danh sách.", ex.getMessage());
+		verify(customerOrderRepository, never()).save(any(CustomerOrder.class));
+	}
+
+	@Test
+	void checkoutAsGuestShouldFailWhenProductPriceIsMissing() {
+		CartView cart = new CartView();
+		Product product = Product.builder()
+				.id(24L)
+				.name("Sua hop")
+				.quantity(5)
+				.build();
+		cartService.addItem(cart, product, 1);
+		when(productRepository.findById(24L)).thenReturn(Optional.of(product));
+
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+				() -> orderService.checkoutAsGuest("Khach", "guest@demo.com", cart, "12 Duong Moi", "0909000000", null));
+
+		assertEquals("Sản phẩm Sua hop chưa có giá bán hợp lệ.", ex.getMessage());
+		verify(customerOrderRepository, never()).save(any(CustomerOrder.class));
+	}
+
+	@Test
+	void cancelOrderForUserShouldSetCancelledAndRollbackStock() {
+		Product product = Product.builder()
+				.id(50L)
+				.name("Nuoc suoi")
+				.quantity(7)
+				.build();
+
+		CustomerOrder order = CustomerOrder.builder()
+				.id(101L)
+				.user(User.builder().id(9L).build())
+				.status(OrderStatus.PENDING)
+				.items(List.of(CustomerOrderItem.builder().product(product).quantity(3).build()))
+				.build();
+
+		when(customerOrderRepository.findDetailByIdAndUserId(101L, 9L)).thenReturn(Optional.of(order));
+		when(productRepository.findById(50L)).thenReturn(Optional.of(product));
+
+		orderService.cancelOrderForUser(9L, 101L);
+
+		assertEquals(OrderStatus.CANCELLED, order.getStatus());
+		assertEquals(10, product.getQuantity());
+		verify(customerOrderRepository).save(order);
+		verify(userService).recordActivity(9L, "Hủy đơn", "Đơn hàng #101 đã được hủy");
+	}
+
+	@Test
+	void cancelOrderForUserShouldRejectCompletedOrder() {
+		CustomerOrder order = CustomerOrder.builder()
+				.id(102L)
+				.user(User.builder().id(9L).build())
+				.status(OrderStatus.COMPLETED)
+				.items(List.of())
+				.build();
+
+		when(customerOrderRepository.findDetailByIdAndUserId(102L, 9L)).thenReturn(Optional.of(order));
+
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+				() -> orderService.cancelOrderForUser(9L, 102L));
+
+		assertEquals("Đơn hàng đang giao hoặc đã hoàn tất nên không thể hủy.", ex.getMessage());
 		verify(customerOrderRepository, never()).save(any(CustomerOrder.class));
 	}
 }

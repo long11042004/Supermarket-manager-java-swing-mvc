@@ -110,7 +110,7 @@
               <tbody>
                 <tr th:each="item : ${report.topProducts}">
                   <td th:text="${item.productName}">Tên sản phẩm</td>
-                  <td th:text="${item.totalQuantity}">0</td>
+                  <td th:text="${item.totalQuantity + (#strings.isEmpty(item.unit) ? '' : ' ' + item.unit)}">0</td>
                   <td th:text="${#numbers.formatDecimal(item.totalRevenue, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
                 </tr>
               </tbody>

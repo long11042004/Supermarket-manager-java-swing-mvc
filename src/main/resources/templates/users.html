@@ -68,8 +68,12 @@
         <div class="card p-3">
           <div class="section-header">
             <h3 class="panel-title">Danh sách người dùng</h3>
-            <form method="get" th:action="@{/users}" class="d-flex gap-2 search-box">
+            <form method="get" th:action="@{/users}" class="d-flex gap-2 search-box flex-wrap">
               <input type="text" name="keyword" th:value="${keyword}" class="form-control" placeholder="Tìm theo tên..." />
+              <select name="manageableOnly" class="form-select">
+                <option value="false" th:selected="${!manageableOnly}">Tất cả tài khoản</option>
+                <option value="true" th:selected="${manageableOnly}">Chỉ tài khoản có thể quản lý</option>
+              </select>
               <button type="submit" class="btn btn-outline-primary">Tìm</button>
             </form>
           </div>
@@ -83,6 +87,7 @@
                   <th>Tên đăng nhập</th>
                   <th>Email</th>
                   <th>Phân quyền</th>
+                  <th>Phạm vi quản lý</th>
                   <th>Thao tác</th>
                 </tr>
               </thead>
@@ -94,6 +99,12 @@
                   <td th:text="${user.email}">email</td>
                   <td>
                     <span class="role-badge" th:each="role : ${user.roles}" th:text="${role.name}">ADMIN</span>
+                  </td>
+                  <td>
+                    <span th:if="${!restrictedUserIds.contains(user.id)}" class="badge text-bg-success">Có thể chỉnh sửa</span>
+                    <span th:if="${restrictedUserIds.contains(user.id)}"
+                          class="badge text-bg-secondary"
+                          th:title="${restrictedReasons[user.id]}">Chỉ xem</span>
                   </td>
                   <td>
                     <form th:if="${!restrictedUserIds.contains(user.id)}" th:action="@{/users/{id}/roles(id=${user.id})}" method="post">
@@ -108,7 +119,9 @@
                         <button type="submit" class="btn btn-sm btn-primary">Lưu</button>
                       </div>
                     </form>
-                    <span th:if="${restrictedUserIds.contains(user.id)}" class="badge text-bg-secondary">Không đủ quyền</span>
+                    <span th:if="${restrictedUserIds.contains(user.id)}"
+                          class="badge text-bg-secondary"
+                          th:title="${restrictedReasons[user.id]}">Không đủ quyền</span>
                   </td>
                 </tr>
               </tbody>
