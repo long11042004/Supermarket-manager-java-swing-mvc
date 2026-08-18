@@ -1,5 +1,7 @@
 package com.example.productmanager.controller;
 
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,9 +20,15 @@ import jakarta.servlet.http.HttpSession;
 public class ProfileController {
 
 	private final UserService userService;
+	private final MessageSource messageSource;
 
-	public ProfileController(UserService userService) {
+	public ProfileController(UserService userService, MessageSource messageSource) {
 		this.userService = userService;
+		this.messageSource = messageSource;
+	}
+
+	private String msg(String key, Object... args) {
+		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
 	}
 
 	@GetMapping
@@ -52,7 +60,7 @@ public class ProfileController {
 		try {
 			User updatedUser = userService.updateProfile(currentUser.getId(), fullName, email, phoneNumber, address);
 			session.setAttribute("loggedInUser", updatedUser);
-			redirectAttributes.addFlashAttribute("successMessage", "Thông tin cá nhân đã được cập nhật.");
+			redirectAttributes.addFlashAttribute("successMessage", msg("msg.profile.updated"));
 		} catch (IllegalArgumentException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 		}
@@ -73,7 +81,7 @@ public class ProfileController {
 		try {
 			User updatedUser = userService.changePassword(currentUser.getId(), currentPassword, newPassword, confirmPassword);
 			session.setAttribute("loggedInUser", updatedUser);
-			redirectAttributes.addFlashAttribute("successMessage", "Mật khẩu đã được thay đổi.");
+			redirectAttributes.addFlashAttribute("successMessage", msg("msg.profile.passwordChanged"));
 		} catch (IllegalArgumentException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 		}
@@ -91,7 +99,7 @@ public class ProfileController {
 
 		User updatedUser = userService.updateAvatar(currentUser.getId(), avatarUrl);
 		session.setAttribute("loggedInUser", updatedUser);
-		redirectAttributes.addFlashAttribute("successMessage", "Avatar đã được cập nhật.");
+		redirectAttributes.addFlashAttribute("successMessage", msg("msg.profile.avatarUpdated"));
 		return "redirect:/profile";
 	}
 

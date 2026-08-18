@@ -1,17 +1,29 @@
 package com.example.productmanager.service;
 
 import java.math.BigDecimal;
+import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.context.support.ResourceBundleMessageSource;
 
 import com.example.productmanager.model.Product;
 import com.example.productmanager.service.CartService.CartView;
 
 class CartServiceTests {
 
-	private final CartService cartService = new CartService();
+	private final ResourceBundleMessageSource messageSource = createMessageSource();
+	private final CartService cartService = new CartService(messageSource);
+
+	private ResourceBundleMessageSource createMessageSource() {
+		LocaleContextHolder.setLocale(Locale.forLanguageTag("vi-VN"));
+		ResourceBundleMessageSource source = new ResourceBundleMessageSource();
+		source.setBasename("messages");
+		source.setDefaultEncoding("UTF-8");
+		return source;
+	}
 
 	@Test
 	void addItemShouldAccumulateQuantityAndTotal() {

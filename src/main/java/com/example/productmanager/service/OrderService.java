@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,15 +27,22 @@ public class OrderService {
 	private final ProductRepository productRepository;
 	private final UserRepository userRepository;
 	private final UserService userService;
+	private final MessageSource messageSource;
 
 	public OrderService(CustomerOrderRepository customerOrderRepository,
 			ProductRepository productRepository,
 			UserRepository userRepository,
-			UserService userService) {
+			UserService userService,
+			MessageSource messageSource) {
 		this.customerOrderRepository = customerOrderRepository;
 		this.productRepository = productRepository;
 		this.userRepository = userRepository;
 		this.userService = userService;
+		this.messageSource = messageSource;
+	}
+
+	private String msg(String key, Object... args) {
+		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
 	}
 
 	@Transactional
@@ -59,22 +68,22 @@ public class OrderService {
 			String contactPhone,
 			String note) {
 		if (cart == null || cart.getItems().isEmpty()) {
-			throw new IllegalArgumentException("Giỏ hàng đang trống");
+			throw new IllegalArgumentException(msg("err.order.cartEmpty"));
 		}
 		if (deliveryAddress == null || deliveryAddress.trim().isEmpty()) {
-			throw new IllegalArgumentException("Địa chỉ giao hàng không được để trống");
+			throw new IllegalArgumentException(msg("err.order.deliveryAddressRequired"));
 		}
 		if (userId == null && (guestName == null || guestName.trim().isEmpty())) {
-			throw new IllegalArgumentException("Vui lòng nhập tên người nhận");
+			throw new IllegalArgumentException(msg("err.order.guestNameRequired"));
 		}
 		if (userId == null && (guestEmail == null || guestEmail.trim().isEmpty())) {
-			throw new IllegalArgumentException("Vui lòng nhập email để xác nhận đơn hàng");
+			throw new IllegalArgumentException(msg("err.order.guestEmailRequired"));
 		}
 
 		User user = null;
 		if (userId != null) {
 			user = userRepository.findById(userId)
-					.orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng đặt hàng."));
+					.orElseThrow(() -> new IllegalArgumentException(msg("err.order.userNotFoundForOrder")));
 		}
 
 		List<CustomerOrderItem> orderItems = new ArrayList<>();
@@ -93,21 +102,21 @@ public class OrderService {
 
 		for (CartItem cartItem : cart.getItems()) {
 			if (cartItem.getProductId() == null) {
-				throw new IllegalArgumentException("Giỏ hàng chứa sản phẩm không hợp lệ. Vui lòng tải lại trang.");
+				throw new IllegalArgumentException(msg("err.order.invalidCartProduct"));
 			}
 			if (cartItem.getQuantity() <= 0) {
-				throw new IllegalArgumentException("Số lượng sản phẩm trong giỏ không hợp lệ.");
+				throw new IllegalArgumentException(msg("err.order.invalidCartQuantity"));
 			}
 			Product product = productRepository.findById(cartItem.getProductId())
-					.orElseThrow(() -> new IllegalArgumentException("Sản phẩm trong giỏ không còn tồn tại. Vui lòng tải lại danh sách."));
+					.orElseThrow(() -> new IllegalArgumentException(msg("err.order.productNotFoundInCart")));
 			if (product.getPrice() == null) {
-				throw new IllegalArgumentException("Sản phẩm " + product.getName() + " chưa có giá bán hợp lệ.");
+				throw new IllegalArgumentException(msg("err.order.productPriceInvalid", product.getName()));
 			}
 			if (product.getQuantity() == null) {
-				throw new IllegalArgumentException("Sản phẩm " + product.getName() + " có dữ liệu tồn kho không hợp lệ.");
+				throw new IllegalArgumentException(msg("err.order.productStockInvalid", product.getName()));
 			}
 			if (product.getQuantity() < cartItem.getQuantity()) {
-				throw new IllegalArgumentException("Sản phẩm " + product.getName() + " không đủ số lượng trong kho");
+				throw new IllegalArgumentException(msg("err.order.productNotEnoughStock", product.getName()));
 			}
 
 			BigDecimal lineTotal = product.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()));
@@ -142,16 +151,16 @@ public class OrderService {
 	@Transactional
 	public void cancelOrderForUser(Long userId, Long orderId) {
 		if (userId == null) {
-			throw new IllegalArgumentException("Không tìm thấy thông tin người dùng.");
+			throw new IllegalArgumentException(msg("err.order.userInfoNotFound"));
 		}
 		CustomerOrder order = customerOrderRepository.findDetailByIdAndUserId(orderId, userId)
-				.orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn hàng cần hủy."));
+				.orElseThrow(() -> new IllegalArgumentException(msg("err.order.orderNotFoundToCancel")));
 
 		if (order.getStatus() == OrderStatus.CANCELLED) {
-			throw new IllegalArgumentException("Đơn hàng này đã được hủy trước đó.");
+			throw new IllegalArgumentException(msg("err.order.alreadyCancelled"));
 		}
 		if (order.getStatus() == OrderStatus.COMPLETED || order.getStatus() == OrderStatus.DELIVERING) {
-			throw new IllegalArgumentException("Đơn hàng đang giao hoặc đã hoàn tất nên không thể hủy.");
+			throw new IllegalArgumentException(msg("err.order.cannotCancelDeliveredCompleted"));
 		}
 
 		for (CustomerOrderItem item : order.getItems()) {

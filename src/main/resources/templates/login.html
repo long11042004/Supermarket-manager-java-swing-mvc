@@ -8,17 +8,18 @@
   <link rel="stylesheet" th:href="@{/css/login.css}" />
 </head>
 <body>
-  <div class="container py-3 d-flex justify-content-end">
-    <form method="get" th:action="@{/login}" class="d-inline-flex align-items-center gap-2">
-      <label class="visually-hidden" for="login-language-select" th:text="#{app.language}">Language</label>
-      <select id="login-language-select" class="form-select form-select-sm" name="lang" onchange="this.form.submit()">
-        <option value="vi" th:selected="${#locale.language == 'vi'}" th:text="#{common.language.vi}">Tiếng Việt</option>
-        <option value="en" th:selected="${#locale.language == 'en'}" th:text="#{common.language.en}">English</option>
-      </select>
-    </form>
-  </div>
-  <div class="auth-shell">
-    <div class="login-card">
+  <div class="auth-page">
+    <div class="auth-topbar">
+      <form method="get" th:action="@{/login}" class="language-switcher d-inline-flex align-items-center gap-2">
+        <label class="visually-hidden" for="login-language-select" th:text="#{app.language}">Language</label>
+        <select id="login-language-select" class="form-select form-select-sm" name="lang" onchange="this.form.submit()">
+          <option value="vi" th:selected="${#locale.language == 'vi'}" th:text="#{common.language.vi}">Tiếng Việt</option>
+          <option value="en" th:selected="${#locale.language == 'en'}" th:text="#{common.language.en}">English</option>
+        </select>
+      </form>
+    </div>
+    <div class="auth-shell">
+      <div class="login-card">
       <div class="text-center mb-4">
         <div class="brand" th:text="#{app.system}">Hệ thống siêu thị</div>
         <h2 class="mt-2 mb-0" th:text="#{login.heading}">Đăng nhập</h2>
@@ -48,7 +49,7 @@
       </div>
     </div>
 
-    <div class="register-card">
+      <div class="register-card">
       <div class="text-center mb-4">
         <div class="brand" th:text="#{login.registerBrand}">Đăng ký</div>
         <h2 class="mt-2 mb-0" th:text="#{login.registerHeading}">Tạo tài khoản</h2>
@@ -73,7 +74,7 @@
         </div>
         <button type="submit" class="btn btn-dark w-100" th:text="#{login.registerButton}">Đăng ký tài khoản</button>
       </form>
-    </div>
+      </div>
     </div>
   </div>
 

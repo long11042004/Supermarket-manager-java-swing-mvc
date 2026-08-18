@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,10 +31,16 @@ public class CustomerOrderController {
 
 	private final OrderService orderService;
 	private final CartService cartService;
+	private final MessageSource messageSource;
 
-	public CustomerOrderController(OrderService orderService, CartService cartService) {
+	public CustomerOrderController(OrderService orderService, CartService cartService, MessageSource messageSource) {
 		this.orderService = orderService;
 		this.cartService = cartService;
+		this.messageSource = messageSource;
+	}
+
+	private String msg(String key, Object... args) {
+		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
 	}
 
 	@GetMapping
@@ -69,15 +77,15 @@ public class CustomerOrderController {
 				orderService.checkoutAsGuest(guestName, guestEmail, getOrCreateCart(session), deliveryAddress, contactPhone, note);
 			}
 			session.setAttribute("shoppingCart", cartService.clear(getOrCreateCart(session)));
-			redirectAttributes.addFlashAttribute("successMessage", "Đơn hàng đã được tạo thành công.");
+			redirectAttributes.addFlashAttribute("successMessage", msg("msg.order.created"));
 		} catch (IllegalArgumentException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 		} catch (DataIntegrityViolationException ex) {
 			log.warn("Checkout failed due to data integrity issue", ex);
-			redirectAttributes.addFlashAttribute("errorMessage", "Thông tin đơn hàng không hợp lệ hoặc quá dài. Vui lòng kiểm tra lại.");
+			redirectAttributes.addFlashAttribute("errorMessage", msg("msg.order.checkoutInvalidData"));
 		} catch (RuntimeException ex) {
 			log.error("Unexpected checkout failure", ex);
-			redirectAttributes.addFlashAttribute("errorMessage", "Không thể tạo đơn hàng lúc này. Vui lòng thử lại.");
+			redirectAttributes.addFlashAttribute("errorMessage", msg("msg.order.checkoutUnexpected"));
 		}
 		return "redirect:/products";
 	}
@@ -93,12 +101,12 @@ public class CustomerOrderController {
 
 		try {
 			orderService.cancelOrderForUser(currentUser.getId(), orderId);
-			redirectAttributes.addFlashAttribute("successMessage", "Đơn hàng đã được hủy thành công.");
+			redirectAttributes.addFlashAttribute("successMessage", msg("msg.order.cancelled"));
 		} catch (IllegalArgumentException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 		} catch (RuntimeException ex) {
 			log.error("Unexpected cancel order failure", ex);
-			redirectAttributes.addFlashAttribute("errorMessage", "Không thể hủy đơn hàng lúc này. Vui lòng thử lại.");
+			redirectAttributes.addFlashAttribute("errorMessage", msg("msg.order.cancelUnexpected"));
 		}
 		return "redirect:/orders";
 	}

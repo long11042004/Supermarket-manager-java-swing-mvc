@@ -3,6 +3,8 @@ package com.example.productmanager.controller;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
@@ -32,11 +34,20 @@ public class ProductController {
 	private final ProductService productService;
 	private final CartService cartService;
 	private final UserService userService;
+	private final MessageSource messageSource;
 
-	public ProductController(ProductService productService, CartService cartService, UserService userService) {
+	public ProductController(ProductService productService,
+			CartService cartService,
+			UserService userService,
+			MessageSource messageSource) {
 		this.productService = productService;
 		this.cartService = cartService;
 		this.userService = userService;
+		this.messageSource = messageSource;
+	}
+
+	private String msg(String key, Object... args) {
+		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
 	}
 
 	private boolean isAuthenticated(HttpSession session) {
@@ -108,7 +119,7 @@ public class ProductController {
 			if (currentUser != null) {
 				userService.recordActivity(currentUser.getId(), "Thêm vào giỏ", "Đã thêm " + product.getName() + " vào giỏ hàng");
 			}
-			redirectAttributes.addFlashAttribute("successMessage", "Đã thêm sản phẩm vào giỏ hàng.");
+			redirectAttributes.addFlashAttribute("successMessage", msg("msg.cart.added"));
 		} catch (IllegalArgumentException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 		}
@@ -127,7 +138,7 @@ public class ProductController {
 			Product product = productService.getProductById(productId);
 			CartView updatedCart = cartService.updateItemQuantity(getOrCreateCart(session), productId, quantity, product.getQuantity());
 			session.setAttribute("shoppingCart", updatedCart);
-			redirectAttributes.addFlashAttribute("successMessage", "Giỏ hàng đã được cập nhật.");
+			redirectAttributes.addFlashAttribute("successMessage", msg("msg.cart.updated"));
 		} catch (IllegalArgumentException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 		}

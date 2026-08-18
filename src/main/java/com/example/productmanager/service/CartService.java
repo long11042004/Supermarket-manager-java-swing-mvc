@@ -7,6 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.example.productmanager.model.CartItem;
@@ -14,10 +16,19 @@ import com.example.productmanager.model.Product;
 
 @Service
 public class CartService {
+	private final MessageSource messageSource;
+
+	public CartService(MessageSource messageSource) {
+		this.messageSource = messageSource;
+	}
+
+	private String msg(String key, Object... args) {
+		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
+	}
 
 	public CartView addItem(CartView cart, Product product, int quantity) {
 		if (quantity <= 0) {
-			throw new IllegalArgumentException("Số lượng phải lớn hơn 0");
+			throw new IllegalArgumentException(msg("err.cart.quantityPositive"));
 		}
 		CartView workingCart = cart == null ? new CartView() : cart;
 		Map<Long, CartItem> indexedItems = new LinkedHashMap<>();
@@ -31,7 +42,7 @@ public class CartService {
 			newQuantity += existingItem.getQuantity();
 		}
 		if (newQuantity > product.getQuantity()) {
-			throw new IllegalArgumentException("Số lượng trong giỏ vượt quá tồn kho hiện có");
+			throw new IllegalArgumentException(msg("err.cart.quantityExceedsStock"));
 		}
 
 		indexedItems.put(product.getId(), new CartItem(
@@ -51,7 +62,7 @@ public class CartService {
 			return removeItem(workingCart, productId);
 		}
 		if (quantity > availableQuantity) {
-			throw new IllegalArgumentException("Số lượng cập nhật vượt quá tồn kho hiện có");
+			throw new IllegalArgumentException(msg("err.cart.updateExceedsStock"));
 		}
 
 		for (CartItem item : workingCart.getItems()) {

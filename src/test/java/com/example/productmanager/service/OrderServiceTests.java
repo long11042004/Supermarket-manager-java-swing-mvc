@@ -2,6 +2,7 @@ package com.example.productmanager.service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -12,6 +13,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.context.support.ResourceBundleMessageSource;
 
 import com.example.productmanager.model.CustomerOrder;
 import com.example.productmanager.model.CustomerOrderItem;
@@ -29,8 +32,17 @@ class OrderServiceTests {
 	private final ProductRepository productRepository = org.mockito.Mockito.mock(ProductRepository.class);
 	private final UserRepository userRepository = org.mockito.Mockito.mock(UserRepository.class);
 	private final UserService userService = org.mockito.Mockito.mock(UserService.class);
-	private final OrderService orderService = new OrderService(customerOrderRepository, productRepository, userRepository, userService);
-	private final CartService cartService = new CartService();
+	private final ResourceBundleMessageSource messageSource = createMessageSource();
+	private final OrderService orderService = new OrderService(customerOrderRepository, productRepository, userRepository, userService, messageSource);
+	private final CartService cartService = new CartService(messageSource);
+
+	private ResourceBundleMessageSource createMessageSource() {
+		LocaleContextHolder.setLocale(Locale.forLanguageTag("vi-VN"));
+		ResourceBundleMessageSource source = new ResourceBundleMessageSource();
+		source.setBasename("messages");
+		source.setDefaultEncoding("UTF-8");
+		return source;
+	}
 
 	@Test
 	void checkoutAsGuestShouldCreateOrderWithoutUser() {

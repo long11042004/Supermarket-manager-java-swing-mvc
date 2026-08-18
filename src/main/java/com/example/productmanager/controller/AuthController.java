@@ -1,5 +1,7 @@
 package com.example.productmanager.controller;
 
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,9 +18,15 @@ import jakarta.servlet.http.HttpSession;
 public class AuthController {
 
 	private final UserService userService;
+	private final MessageSource messageSource;
 
-	public AuthController(UserService userService) {
+	public AuthController(UserService userService, MessageSource messageSource) {
 		this.userService = userService;
+		this.messageSource = messageSource;
+	}
+
+	private String msg(String key, Object... args) {
+		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
 	}
 
 	@GetMapping("/login")
@@ -51,7 +59,7 @@ public class AuthController {
 					registerUser.getPassword(),
 					registerUser.getEmail(),
 					registerUser.getFullName());
-			redirectAttributes.addFlashAttribute("successMessage", "Đăng ký thành công. Bạn có thể đăng nhập ngay.");
+			redirectAttributes.addFlashAttribute("successMessage", msg("msg.auth.registerSuccess"));
 		} catch (Exception ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 		}

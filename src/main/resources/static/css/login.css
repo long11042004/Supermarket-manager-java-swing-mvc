@@ -1,15 +1,37 @@
 body {
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
   font-family: "Segoe UI", sans-serif;
   padding: 1.5rem;
 }
 
-.auth-shell {
+.auth-page {
   width: min(100%, 980px);
+  margin: 0 auto;
+}
+
+.auth-topbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.language-switcher {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(191, 219, 254, 0.9);
+  border-radius: 999px;
+  padding: 0.35rem 0.5rem;
+  box-shadow: 0 10px 24px rgba(30, 64, 175, 0.08);
+}
+
+.language-switcher .form-select {
+  min-width: 132px;
+  border: none;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.auth-shell {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.5rem;

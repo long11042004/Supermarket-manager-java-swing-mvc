@@ -1,5 +1,6 @@
 package com.example.productmanager.controller;
 
+import java.util.Locale;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -9,6 +10,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
@@ -20,7 +23,16 @@ import com.example.productmanager.service.UserService;
 class UserControllerTests {
 
 	private final UserService userService = org.mockito.Mockito.mock(UserService.class);
-	private final UserController userController = new UserController(userService);
+	private final ResourceBundleMessageSource messageSource = createMessageSource();
+	private final UserController userController = new UserController(userService, messageSource);
+
+	private ResourceBundleMessageSource createMessageSource() {
+		LocaleContextHolder.setLocale(Locale.forLanguageTag("vi-VN"));
+		ResourceBundleMessageSource source = new ResourceBundleMessageSource();
+		source.setBasename("messages");
+		source.setDefaultEncoding("UTF-8");
+		return source;
+	}
 
 	@Test
 	void managerCannotUpdateAdminRoles() {

@@ -3,6 +3,8 @@ package com.example.productmanager.exception;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,6 +15,15 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+	private final MessageSource messageSource;
+
+	public GlobalExceptionHandler(MessageSource messageSource) {
+		this.messageSource = messageSource;
+	}
+
+	private String msg(String key, Object... args) {
+		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
+	}
 
 	@ExceptionHandler(IllegalArgumentException.class)
 	public ResponseEntity<ApiError> handleIllegalArgumentException(IllegalArgumentException ex,
@@ -45,7 +56,7 @@ public class GlobalExceptionHandler {
 
 		Map<String, Object> response = new HashMap<>();
 		response.put("error", "VALIDATION_ERROR");
-		response.put("message", "Dữ liệu không hợp lệ");
+		response.put("message", msg("err.validation.invalidData"));
 		response.put("status", HttpStatus.BAD_REQUEST.value());
 		response.put("path", request.getRequestURI());
 		response.put("timestamp", java.time.LocalDateTime.now());
@@ -60,7 +71,7 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new ApiError(
 						"INTERNAL_SERVER_ERROR",
-						"Có lỗi xảy ra trong hệ thống",
+						msg("err.system.internal"),
 						HttpStatus.INTERNAL_SERVER_ERROR.value(),
 						request.getRequestURI()));
 	}

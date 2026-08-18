@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,13 +24,20 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final RoleRepository roleRepository;
 	private final UserActivityRepository userActivityRepository;
+	private final MessageSource messageSource;
 
 	public UserService(UserRepository userRepository,
 			RoleRepository roleRepository,
-			UserActivityRepository userActivityRepository) {
+			UserActivityRepository userActivityRepository,
+			MessageSource messageSource) {
 		this.userRepository = userRepository;
 		this.roleRepository = roleRepository;
 		this.userActivityRepository = userActivityRepository;
+		this.messageSource = messageSource;
+	}
+
+	private String msg(String key, Object... args) {
+		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
 	}
 
 	@Transactional
@@ -56,14 +65,14 @@ public class UserService {
 			String fullName,
 			RoleName defaultRoleName) {
 		if (userRepository.existsByUsername(username)) {
-			throw new IllegalArgumentException("Tên đăng nhập đã tồn tại");
+			throw new IllegalArgumentException(msg("err.user.usernameExists"));
 		}
 		if (userRepository.existsByEmail(email)) {
-			throw new IllegalArgumentException("Email đã tồn tại");
+			throw new IllegalArgumentException(msg("err.user.emailExists"));
 		}
 
 		Role defaultRole = roleRepository.findByName(defaultRoleName)
-				.orElseThrow(() -> new RuntimeException("Không tìm thấy quyền mặc định: " + defaultRoleName));
+				.orElseThrow(() -> new RuntimeException(msg("err.role.defaultNotFound", defaultRoleName)));
 
 		User user = User.builder()
 				.username(username)
@@ -82,14 +91,14 @@ public class UserService {
 	@Transactional
 	public User login(String username, String password) {
 		User user = userRepository.findByUsername(username)
-				.orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng: " + username));
+				.orElseThrow(() -> new RuntimeException(msg("err.auth.userNotFound", username)));
 
 		if (!user.getPassword().equals(password)) {
-			throw new IllegalArgumentException("Mật khẩu không đúng");
+			throw new IllegalArgumentException(msg("err.auth.invalidPassword"));
 		}
 
 		if (!user.isEnabled()) {
-			throw new IllegalStateException("Tài khoản đang bị khóa");
+			throw new IllegalStateException(msg("err.auth.accountLocked"));
 		}
 
 		logActivity(user, "Đăng nhập", "Người dùng đăng nhập vào hệ thống");
@@ -105,7 +114,7 @@ public class UserService {
 	@Transactional(readOnly = true)
 	public User getUserById(Long id) {
 		return userRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với id: " + id));
+				.orElseThrow(() -> new RuntimeException(msg("err.user.notFoundById", id)));
 	}
 
 	@Transactional
@@ -114,7 +123,7 @@ public class UserService {
 		Set<Role> roles = new HashSet<>();
 		for (RoleName roleName : roleNames) {
 			Role role = roleRepository.findByName(roleName)
-					.orElseThrow(() -> new RuntimeException("Không tìm thấy quyền: " + roleName));
+					.orElseThrow(() -> new RuntimeException(msg("err.role.notFound", roleName)));
 			roles.add(role);
 		}
 		user.setRoles(roles);
@@ -140,10 +149,10 @@ public class UserService {
 		User user = getUserById(userId);
 		String normalizedEmail = email == null ? "" : email.trim();
 		if (normalizedEmail.isEmpty()) {
-			throw new IllegalArgumentException("Email không được để trống");
+			throw new IllegalArgumentException(msg("err.user.emailRequired"));
 		}
 		if (userRepository.existsByEmailAndIdNot(normalizedEmail, userId)) {
-			throw new IllegalArgumentException("Email đã tồn tại");
+			throw new IllegalArgumentException(msg("err.user.emailExists"));
 		}
 
 		user.setFullName(fullName == null ? null : fullName.trim());
@@ -160,16 +169,16 @@ public class UserService {
 	public User changePassword(Long userId, String currentPassword, String newPassword, String confirmPassword) {
 		User user = getUserById(userId);
 		if (!user.getPassword().equals(currentPassword)) {
-			throw new IllegalArgumentException("Mật khẩu hiện tại không đúng");
+			throw new IllegalArgumentException(msg("err.user.currentPasswordInvalid"));
 		}
 		if (newPassword == null || newPassword.length() < 6) {
-			throw new IllegalArgumentException("Mật khẩu mới phải có ít nhất 6 ký tự");
+			throw new IllegalArgumentException(msg("err.user.newPasswordMin"));
 		}
 		if (!newPassword.equals(confirmPassword)) {
-			throw new IllegalArgumentException("Xác nhận mật khẩu không khớp");
+			throw new IllegalArgumentException(msg("err.user.passwordConfirmMismatch"));
 		}
 		if (newPassword.equals(currentPassword)) {
-			throw new IllegalArgumentException("Mật khẩu mới phải khác mật khẩu hiện tại");
+			throw new IllegalArgumentException(msg("err.user.passwordMustDiffer"));
 		}
 
 		user.setPassword(newPassword);

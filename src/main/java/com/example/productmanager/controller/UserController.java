@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,9 +31,15 @@ import jakarta.servlet.http.HttpSession;
 public class UserController {
 
 	private final UserService userService;
+	private final MessageSource messageSource;
 
-	public UserController(UserService userService) {
+	public UserController(UserService userService, MessageSource messageSource) {
 		this.userService = userService;
+		this.messageSource = messageSource;
+	}
+
+	private String msg(String key, Object... args) {
+		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
 	}
 
 	private boolean isAuthenticated(HttpSession session) {
@@ -92,9 +100,9 @@ public class UserController {
 
 	private String restrictedReason(HttpSession session) {
 		if (isAdmin(session)) {
-			return "Tài khoản này nằm ngoài phạm vi thao tác hiện tại.";
+			return msg("msg.user.restrictedReasonAdmin");
 		}
-		return "Manager chỉ có thể chỉnh sửa tài khoản thuộc nhóm STAFF hoặc CUSTOMER.";
+		return msg("msg.user.restrictedReasonManager");
 	}
 
 	private Map<Long, Set<RoleName>> assignedRolesByUserId(List<User> users) {
@@ -164,12 +172,12 @@ public class UserController {
 				? EnumSet.of(RoleName.MANAGER, RoleName.STAFF, RoleName.CUSTOMER)
 				: EnumSet.of(RoleName.STAFF, RoleName.CUSTOMER);
 		if (!allowedCreateRoles.contains(selectedRole)) {
-			redirectAttributes.addFlashAttribute("errorMessage", "Bạn không có quyền tạo tài khoản với vai trò này.");
+			redirectAttributes.addFlashAttribute("errorMessage", msg("msg.user.noPermissionCreateRole"));
 			return "redirect:/users";
 		}
 
 		userService.registerInternalUser(user.getUsername(), user.getPassword(), user.getEmail(), user.getFullName(), selectedRole);
-		redirectAttributes.addFlashAttribute("successMessage", "Tạo người dùng thành công.");
+		redirectAttributes.addFlashAttribute("successMessage", msg("msg.user.created"));
 		return "redirect:/users";
 	}
 
@@ -219,7 +227,7 @@ public class UserController {
 
 		User targetUser = userService.getUserById(id);
 		if (!canEditTargetUser(session, targetUser)) {
-			redirectAttributes.addFlashAttribute("errorMessage", "Bạn không có quyền cập nhật tài khoản này.");
+			redirectAttributes.addFlashAttribute("errorMessage", msg("msg.user.noPermissionUpdateAccount"));
 			return "redirect:/users";
 		}
 
@@ -227,7 +235,7 @@ public class UserController {
 				.map(RoleName::valueOf)
 				.collect(Collectors.toSet());
 		if (selectedRoles.isEmpty()) {
-			redirectAttributes.addFlashAttribute("errorMessage", "Người dùng phải có ít nhất một vai trò.");
+			redirectAttributes.addFlashAttribute("errorMessage", msg("msg.user.mustHaveAtLeastOneRole"));
 			return "redirect:/users";
 		}
 
@@ -235,12 +243,12 @@ public class UserController {
 				? EnumSet.allOf(RoleName.class)
 				: EnumSet.of(RoleName.STAFF, RoleName.CUSTOMER);
 		if (!allowedRoles.containsAll(selectedRoles)) {
-			redirectAttributes.addFlashAttribute("errorMessage", "Bạn chỉ được phép gán vai trò phù hợp với quyền hiện tại.");
+			redirectAttributes.addFlashAttribute("errorMessage", msg("msg.user.roleAssignmentNotAllowed"));
 			return "redirect:/users";
 		}
 
 		userService.updateUserRoles(id, selectedRoles);
-		redirectAttributes.addFlashAttribute("successMessage", "Cập nhật phân quyền thành công.");
+		redirectAttributes.addFlashAttribute("successMessage", msg("msg.user.rolesUpdated"));
 		return "redirect:/users";
 	}
 }
