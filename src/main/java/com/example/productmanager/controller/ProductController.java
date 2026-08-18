@@ -16,7 +16,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.example.productmanager.model.Product;
 import com.example.productmanager.model.RoleName;
 import com.example.productmanager.model.User;
+import com.example.productmanager.service.CartService;
+import com.example.productmanager.service.CartService.CartView;
 import com.example.productmanager.service.ProductService;
+import com.example.productmanager.service.UserService;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -27,13 +30,25 @@ import jakarta.validation.Valid;
 public class ProductController {
 
 	private final ProductService productService;
+	private final CartService cartService;
+	private final UserService userService;
 
-	public ProductController(ProductService productService) {
+	public ProductController(ProductService productService, CartService cartService, UserService userService) {
 		this.productService = productService;
+		this.cartService = cartService;
+		this.userService = userService;
 	}
 
 	private boolean isAuthenticated(HttpSession session) {
 		return session.getAttribute("loggedInUser") != null;
+	}
+
+	private boolean isGuestSession(HttpSession session) {
+		return Boolean.TRUE.equals(session.getAttribute("guestCheckout"));
+	}
+
+	private boolean canShop(HttpSession session) {
+		return isAuthenticated(session) || isGuestSession(session);
 	}
 
 	private boolean hasPermission(HttpSession session, RoleName... allowedRoles) {
@@ -58,11 +73,12 @@ public class ProductController {
 			@RequestParam(value = "category", required = false) String category,
 			HttpSession session,
 			Model model) {
-		if (!isAuthenticated(session)) {
+		if (isAuthenticated(session)
+				&& !hasPermission(session, RoleName.ADMIN, RoleName.MANAGER, RoleName.STAFF, RoleName.CUSTOMER)) {
 			return "redirect:/login";
 		}
-		if (!hasPermission(session, RoleName.ADMIN, RoleName.MANAGER, RoleName.STAFF, RoleName.CUSTOMER)) {
-			return "redirect:/login";
+		if (!canShop(session) && session.getAttribute("loggedInUser") == null) {
+			session.setAttribute("guestCheckout", true);
 		}
 		model.addAttribute("products", productService.getFilteredProducts(keyword, category));
 		model.addAttribute("product", new Product());
@@ -70,7 +86,61 @@ public class ProductController {
 		model.addAttribute("category", category == null ? "" : category);
 		model.addAttribute("categories", productService.getAllCategories());
 		model.addAttribute("canManageProducts", hasPermission(session, RoleName.ADMIN, RoleName.MANAGER));
+		model.addAttribute("isCustomer", hasPermission(session, RoleName.CUSTOMER));
+		model.addAttribute("isGuest", !isAuthenticated(session));
+		model.addAttribute("cart", getOrCreateCart(session));
 		return "products";
+	}
+
+	@PostMapping("/{id}/cart")
+	public String addToCart(@PathVariable Long id,
+			@RequestParam(defaultValue = "1") int quantity,
+			HttpSession session,
+			org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+		if (!hasPermission(session, RoleName.CUSTOMER) && !isGuestSession(session)) {
+			return "redirect:/login";
+		}
+		try {
+			Product product = productService.getProductById(id);
+			CartView updatedCart = cartService.addItem(getOrCreateCart(session), product, quantity);
+			session.setAttribute("shoppingCart", updatedCart);
+			User currentUser = (User) session.getAttribute("loggedInUser");
+			if (currentUser != null) {
+				userService.recordActivity(currentUser.getId(), "Thêm vào giỏ", "Đã thêm " + product.getName() + " vào giỏ hàng");
+			}
+			redirectAttributes.addFlashAttribute("successMessage", "Đã thêm sản phẩm vào giỏ hàng.");
+		} catch (IllegalArgumentException ex) {
+			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+		}
+		return "redirect:/products";
+	}
+
+	@PostMapping("/cart/{productId}/quantity")
+	public String updateCartItemQuantity(@PathVariable Long productId,
+			@RequestParam int quantity,
+			HttpSession session,
+			org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+		if (!hasPermission(session, RoleName.CUSTOMER) && !isGuestSession(session)) {
+			return "redirect:/login";
+		}
+		try {
+			Product product = productService.getProductById(productId);
+			CartView updatedCart = cartService.updateItemQuantity(getOrCreateCart(session), productId, quantity, product.getQuantity());
+			session.setAttribute("shoppingCart", updatedCart);
+			redirectAttributes.addFlashAttribute("successMessage", "Giỏ hàng đã được cập nhật.");
+		} catch (IllegalArgumentException ex) {
+			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+		}
+		return "redirect:/products";
+	}
+
+	@PostMapping("/cart/{productId}/remove")
+	public String removeCartItem(@PathVariable Long productId, HttpSession session) {
+		if (!hasPermission(session, RoleName.CUSTOMER) && !isGuestSession(session)) {
+			return "redirect:/login";
+		}
+		session.setAttribute("shoppingCart", cartService.removeItem(getOrCreateCart(session), productId));
+		return "redirect:/products";
 	}
 
 	@PostMapping
@@ -113,6 +183,15 @@ public class ProductController {
 		}
 		productService.updateProduct(id, product);
 		return "redirect:/products";
+	}
+
+	private CartView getOrCreateCart(HttpSession session) {
+		CartView cart = (CartView) session.getAttribute("shoppingCart");
+		if (cart == null) {
+			cart = new CartView();
+			session.setAttribute("shoppingCart", cart);
+		}
+		return cart;
 	}
 }
 

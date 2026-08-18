@@ -172,6 +172,12 @@ public class UserService {
 		logActivity(user, "Đăng xuất", "Người dùng đăng xuất khỏi hệ thống");
 	}
 
+	@Transactional
+	public void recordActivity(Long userId, String action, String details) {
+		User user = getUserById(userId);
+		logActivity(user, action, details);
+	}
+
 	@Transactional(readOnly = true)
 	public List<UserActivity> getRecentActivities(Long userId) {
 		return userActivityRepository.findRecentActivitiesByUserId(userId, PageRequest.of(0, 10));

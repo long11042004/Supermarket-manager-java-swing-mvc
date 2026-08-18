@@ -50,6 +50,7 @@
         <span class="badge bg-secondary" th:text="${currentUser.fullName}">Khách hàng</span>
         <a th:href="@{/profile}" class="btn btn-outline-dark">Tài khoản</a>
         <a th:href="@{/products}" class="btn btn-primary">Xem sản phẩm</a>
+        <a th:href="@{/orders}" class="btn btn-outline-warning">Đơn hàng của tôi</a>
         <form th:action="@{/logout}" method="post" class="d-inline">
           <button type="submit" class="btn btn-outline-secondary">Đăng xuất</button>
         </form>
@@ -86,6 +87,15 @@
         <span class="badge bg-success-subtle text-success-emphasis p-2">Giảm giá 10% cho thực phẩm tươi</span>
         <span class="badge bg-warning-subtle text-warning-emphasis p-2">Mua 2 tặng 1 vào cuối tuần</span>
         <span class="badge bg-info-subtle text-info-emphasis p-2">Miễn phí giao hàng từ 300k</span>
+      </div>
+    </div>
+
+    <div class="card-box">
+      <h4 class="mb-3">Mua sắm trực tuyến</h4>
+      <div class="d-flex flex-wrap gap-2">
+        <a th:href="@{/products}" class="btn btn-primary">Mở gian hàng</a>
+        <a th:href="@{/orders}" class="btn btn-outline-dark">Xem lịch sử đơn</a>
+        <a th:href="@{/profile}" class="btn btn-outline-secondary">Cập nhật địa chỉ giao hàng</a>
       </div>
     </div>
 

@@ -9,6 +9,9 @@
 </head>
 <body>
   <div class="container py-4">
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}">Thành công</div>
+    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">Có lỗi xảy ra</div>
+
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
         <p class="text-primary fw-bold mb-1 text-uppercase small" th:text="#{app.system}">Hệ thống siêu thị</p>
@@ -20,11 +23,15 @@
           <strong th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}">13/08/2026</strong>
         </div>
         <span class="badge bg-primary fs-6" th:text="#{app.total(${#lists.size(products)})}">Tổng: 0</span>
+        <span th:if="${isCustomer or isGuest}" class="badge bg-warning text-dark fs-6" th:text="'Giỏ: ' + ${cart.itemCount}">Giỏ: 0</span>
 
         <div class="d-flex align-items-center gap-2">
           <span class="badge bg-secondary" th:if="${session.loggedInUser != null}" th:text="${session.loggedInUser.fullName}">Người dùng</span>
-          <a th:href="@{/dashboard}" class="btn btn-outline-primary btn-sm">Dashboard</a>
-          <form th:action="@{/logout}" method="post" class="d-inline">
+          <span th:if="${isGuest}" class="badge bg-light text-dark border">Khách vãng lai</span>
+          <a th:if="${!isGuest}" th:href="@{/dashboard}" class="btn btn-outline-primary btn-sm">Dashboard</a>
+          <a th:if="${isGuest}" th:href="@{/login}" class="btn btn-outline-primary btn-sm">Đăng nhập</a>
+          <a th:if="${isCustomer}" th:href="@{/orders}" class="btn btn-outline-dark btn-sm">Đơn hàng của tôi</a>
+          <form th:if="${!isGuest}" th:action="@{/logout}" method="post" class="d-inline">
             <button type="submit" class="btn btn-outline-secondary btn-sm">Đăng xuất</button>
           </form>
         </div>
@@ -64,6 +71,74 @@
 
     <div class="row g-4">
       <div class="col-lg-4">
+        <div th:if="${isCustomer or isGuest}" class="card p-4 mb-4 customer-cart-panel">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h3 class="mb-1">Giỏ hàng</h3>
+              <p class="text-muted mb-0">Chọn sản phẩm và đặt mua trực tuyến</p>
+            </div>
+            <span class="badge rounded-pill text-bg-warning" th:text="${cart.itemCount} + ' món'">0 món</span>
+          </div>
+
+          <div th:if="${#lists.isEmpty(cart.items)}" class="text-muted empty-cart-state">
+            Giỏ hàng đang trống. Thêm sản phẩm ở danh sách bên phải để bắt đầu.
+          </div>
+
+          <div th:unless="${#lists.isEmpty(cart.items)}">
+            <div class="cart-items">
+              <div class="cart-item" th:each="cartItem : ${cart.items}">
+                <div>
+                  <div class="fw-semibold" th:text="${cartItem.productName}">Tên sản phẩm</div>
+                  <div class="text-muted small" th:text="${#numbers.formatDecimal(cartItem.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' ₫ / ' + ${cartItem.unitLabel}">0 ₫ / sp</div>
+                </div>
+                <form th:action="@{/products/cart/{productId}/quantity(productId=${cartItem.productId})}" method="post" class="cart-qty-form">
+                  <input type="number" name="quantity" min="0" class="form-control form-control-sm" th:value="${cartItem.quantity}" />
+                  <button type="submit" class="btn btn-sm btn-outline-primary">Cập nhật</button>
+                </form>
+                <div class="text-end">
+                  <div class="fw-semibold" th:text="${#numbers.formatDecimal(cartItem.lineTotal, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</div>
+                  <form th:action="@{/products/cart/{productId}/remove(productId=${cartItem.productId})}" method="post">
+                    <button type="submit" class="btn btn-link btn-sm text-danger px-0">Xóa</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <div class="cart-summary mt-4">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted">Tổng thanh toán</span>
+                <strong th:text="${#numbers.formatDecimal(cart.grandTotal, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</strong>
+              </div>
+
+              <form th:action="@{/orders/checkout}" method="post" class="row g-3">
+                <div class="col-md-6" th:if="${isGuest}">
+                  <label class="form-label">Tên người nhận</label>
+                  <input type="text" name="guestName" class="form-control" required />
+                </div>
+                <div class="col-md-6" th:if="${isGuest}">
+                  <label class="form-label">Email xác nhận</label>
+                  <input type="email" name="guestEmail" class="form-control" required />
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Địa chỉ giao hàng</label>
+                  <textarea name="deliveryAddress" class="form-control" rows="2" required th:text="${session.loggedInUser != null ? session.loggedInUser.address : ''}"></textarea>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Số điện thoại</label>
+                  <input type="text" name="contactPhone" class="form-control" th:value="${session.loggedInUser != null ? session.loggedInUser.phoneNumber : ''}" />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Ghi chú</label>
+                  <input type="text" name="note" class="form-control" placeholder="Ví dụ: giao giờ hành chính" />
+                </div>
+                <div class="col-12">
+                  <button type="submit" class="btn btn-warning w-100 fw-semibold">Đặt hàng ngay</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
         <div class="mb-3">
           <button th:if="${canManageProducts}"
                   type="button" id="show-product-form" class="btn btn-primary w-100 add-product-btn" th:classappend="${product.id != null} ? 'd-none' : ''">
@@ -162,6 +237,12 @@
                               class="btn btn-sm btn-outline-danger"
                               th:attr="data-confirm-message=#{app.confirmDelete}"
                               th:text="#{app.delete}">Xóa</button>
+                    </form>
+                    <form th:if="${isCustomer or isGuest}" th:action="@{/products/{id}/cart(id=${item.id})}" method="post" class="customer-add-form mt-2 mt-lg-0">
+                      <div class="input-group input-group-sm customer-buy-box">
+                        <input type="number" name="quantity" min="1" th:attr="max=${item.quantity}" value="1" class="form-control" />
+                        <button type="submit" class="btn btn-warning" th:disabled="${item.quantity == 0}" th:text="${item.quantity == 0 ? 'Hết hàng' : 'Thêm giỏ'}">Thêm giỏ</button>
+                      </div>
                     </form>
                   </td>
                 </tr>
