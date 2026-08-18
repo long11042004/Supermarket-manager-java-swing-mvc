@@ -13,14 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.productmanager.model.OrderStatus;
 import com.example.productmanager.repository.CustomerOrderRepository;
 
+import lombok.AllArgsConstructor;
+
 @Service
+@AllArgsConstructor
 public class ReportService {
 
 	private final CustomerOrderRepository customerOrderRepository;
-
-	public ReportService(CustomerOrderRepository customerOrderRepository) {
-		this.customerOrderRepository = customerOrderRepository;
-	}
 
 	@Transactional(readOnly = true)
 	public ReportData generateReport(LocalDate fromDate, LocalDate toDate, OrderStatus statusFilter) {

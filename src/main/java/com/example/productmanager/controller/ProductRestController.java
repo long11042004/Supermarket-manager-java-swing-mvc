@@ -18,16 +18,14 @@ import com.example.productmanager.model.Product;
 import com.example.productmanager.service.ProductService;
 
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 
 @RestController
 @RequestMapping("/api/products")
+@AllArgsConstructor
 public class ProductRestController {
 
 	private final ProductService productService;
-
-	public ProductRestController(ProductService productService) {
-		this.productService = productService;
-	}
 
 	@GetMapping
 	public List<Product> getAllProducts() {

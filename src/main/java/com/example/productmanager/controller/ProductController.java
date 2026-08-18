@@ -25,26 +25,18 @@ import com.example.productmanager.service.UserService;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 
 @Controller
 @RequestMapping("/products")
 @Validated
+@AllArgsConstructor
 public class ProductController {
 
 	private final ProductService productService;
 	private final CartService cartService;
 	private final UserService userService;
 	private final MessageSource messageSource;
-
-	public ProductController(ProductService productService,
-			CartService cartService,
-			UserService userService,
-			MessageSource messageSource) {
-		this.productService = productService;
-		this.cartService = cartService;
-		this.userService = userService;
-		this.messageSource = messageSource;
-	}
 
 	private String msg(String key, Object... args) {
 		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());

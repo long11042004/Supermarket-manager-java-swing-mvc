@@ -14,13 +14,12 @@ import org.springframework.stereotype.Service;
 import com.example.productmanager.model.CartItem;
 import com.example.productmanager.model.Product;
 
+import lombok.AllArgsConstructor;
+
 @Service
+@AllArgsConstructor
 public class CartService {
 	private final MessageSource messageSource;
-
-	public CartService(MessageSource messageSource) {
-		this.messageSource = messageSource;
-	}
 
 	private String msg(String key, Object... args) {
 		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());

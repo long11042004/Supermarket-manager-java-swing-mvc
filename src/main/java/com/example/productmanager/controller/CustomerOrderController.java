@@ -23,21 +23,17 @@ import com.example.productmanager.service.CartService.CartView;
 import com.example.productmanager.service.OrderService;
 
 import jakarta.servlet.http.HttpSession;
+import lombok.AllArgsConstructor;
 
 @Controller
 @RequestMapping("/orders")
+@AllArgsConstructor
 public class CustomerOrderController {
 	private static final Logger log = LoggerFactory.getLogger(CustomerOrderController.class);
 
 	private final OrderService orderService;
 	private final CartService cartService;
 	private final MessageSource messageSource;
-
-	public CustomerOrderController(OrderService orderService, CartService cartService, MessageSource messageSource) {
-		this.orderService = orderService;
-		this.cartService = cartService;
-		this.messageSource = messageSource;
-	}
 
 	private String msg(String key, Object... args) {
 		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());

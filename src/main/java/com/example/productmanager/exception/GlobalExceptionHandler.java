@@ -12,14 +12,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.AllArgsConstructor;
 
 @RestControllerAdvice
+@AllArgsConstructor
 public class GlobalExceptionHandler {
 	private final MessageSource messageSource;
-
-	public GlobalExceptionHandler(MessageSource messageSource) {
-		this.messageSource = messageSource;
-	}
 
 	private String msg(String key, Object... args) {
 		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());

@@ -15,17 +15,14 @@ import com.example.productmanager.service.ProductService;
 import com.example.productmanager.service.UserService;
 
 import jakarta.servlet.http.HttpSession;
+import lombok.AllArgsConstructor;
 
 @Controller
+@AllArgsConstructor
 public class DashboardController {
 
 	private final ProductService productService;
 	private final UserService userService;
-
-	public DashboardController(ProductService productService, UserService userService) {
-		this.productService = productService;
-		this.userService = userService;
-	}
 
 	@GetMapping("/dashboard")
 	public String dashboard(Model model, HttpSession session) {

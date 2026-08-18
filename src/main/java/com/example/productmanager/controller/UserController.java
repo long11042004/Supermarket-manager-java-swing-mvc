@@ -25,18 +25,15 @@ import com.example.productmanager.model.User;
 import com.example.productmanager.service.UserService;
 
 import jakarta.servlet.http.HttpSession;
+import lombok.AllArgsConstructor;
 
 @Controller
 @RequestMapping("/users")
+@AllArgsConstructor
 public class UserController {
 
 	private final UserService userService;
 	private final MessageSource messageSource;
-
-	public UserController(UserService userService, MessageSource messageSource) {
-		this.userService = userService;
-		this.messageSource = messageSource;
-	}
 
 	private String msg(String key, Object... args) {
 		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());

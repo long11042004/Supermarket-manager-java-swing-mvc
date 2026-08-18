@@ -13,17 +13,14 @@ import com.example.productmanager.model.User;
 import com.example.productmanager.service.UserService;
 
 import jakarta.servlet.http.HttpSession;
+import lombok.AllArgsConstructor;
 
 @Controller
+@AllArgsConstructor
 public class AuthController {
 
 	private final UserService userService;
 	private final MessageSource messageSource;
-
-	public AuthController(UserService userService, MessageSource messageSource) {
-		this.userService = userService;
-		this.messageSource = messageSource;
-	}
 
 	private String msg(String key, Object... args) {
 		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());

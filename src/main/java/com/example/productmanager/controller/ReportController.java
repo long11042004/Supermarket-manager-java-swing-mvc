@@ -16,16 +16,14 @@ import com.example.productmanager.model.User;
 import com.example.productmanager.service.ReportService;
 
 import jakarta.servlet.http.HttpSession;
+import lombok.AllArgsConstructor;
 
 @Controller
 @RequestMapping("/reports")
+@AllArgsConstructor
 public class ReportController {
 
 	private final ReportService reportService;
-
-	public ReportController(ReportService reportService) {
-		this.reportService = reportService;
-	}
 
 	@GetMapping
 	public String reports(@RequestParam(value = "fromDate", required = false) LocalDate fromDate,

@@ -9,14 +9,13 @@ import org.springframework.stereotype.Service;
 import com.example.productmanager.model.Product;
 import com.example.productmanager.repository.ProductRepository;
 
+import lombok.AllArgsConstructor;
+
 @Service
+@AllArgsConstructor
 public class ProductService {
 
 	private final ProductRepository productRepository;
-
-	public ProductService(ProductRepository productRepository) {
-		this.productRepository = productRepository;
-	}
 
 	public List<Product> getAllProducts() {
 		return productRepository.findAll();

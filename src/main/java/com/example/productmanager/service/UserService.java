@@ -18,23 +18,16 @@ import com.example.productmanager.repository.RoleRepository;
 import com.example.productmanager.repository.UserActivityRepository;
 import com.example.productmanager.repository.UserRepository;
 
+import lombok.AllArgsConstructor;
+
 @Service
+@AllArgsConstructor
 public class UserService {
 
 	private final UserRepository userRepository;
 	private final RoleRepository roleRepository;
 	private final UserActivityRepository userActivityRepository;
 	private final MessageSource messageSource;
-
-	public UserService(UserRepository userRepository,
-			RoleRepository roleRepository,
-			UserActivityRepository userActivityRepository,
-			MessageSource messageSource) {
-		this.userRepository = userRepository;
-		this.roleRepository = roleRepository;
-		this.userActivityRepository = userActivityRepository;
-		this.messageSource = messageSource;
-	}
 
 	private String msg(String key, Object... args) {
 		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());

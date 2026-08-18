@@ -20,7 +20,10 @@ import com.example.productmanager.repository.ProductRepository;
 import com.example.productmanager.repository.UserRepository;
 import com.example.productmanager.service.CartService.CartView;
 
+import lombok.AllArgsConstructor;
+
 @Service
+@AllArgsConstructor
 public class OrderService {
 
 	private final CustomerOrderRepository customerOrderRepository;
@@ -28,18 +31,6 @@ public class OrderService {
 	private final UserRepository userRepository;
 	private final UserService userService;
 	private final MessageSource messageSource;
-
-	public OrderService(CustomerOrderRepository customerOrderRepository,
-			ProductRepository productRepository,
-			UserRepository userRepository,
-			UserService userService,
-			MessageSource messageSource) {
-		this.customerOrderRepository = customerOrderRepository;
-		this.productRepository = productRepository;
-		this.userRepository = userRepository;
-		this.userService = userService;
-		this.messageSource = messageSource;
-	}
 
 	private String msg(String key, Object... args) {
 		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
