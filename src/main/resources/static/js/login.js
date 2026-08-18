@@ -7,6 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   form.addEventListener('submit', () => {
     submitButton.disabled = true;
-    submitButton.textContent = 'Đang đăng nhập...';
+    submitButton.textContent = submitButton.dataset.loadingMessage || submitButton.textContent;
   });
 });

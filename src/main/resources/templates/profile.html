@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tài khoản & hồ sơ</title>
+  <title th:text="#{profile.title}">Tài khoản & hồ sơ</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" th:href="@{/css/profile.css}" />
 </head>
@@ -11,14 +11,21 @@
   <div class="container py-4">
     <div class="profile-topbar">
       <div>
-        <p class="eyebrow mb-1">Tài khoản</p>
-        <h1 class="mb-0">Hồ sơ cá nhân</h1>
+        <p class="eyebrow mb-1" th:text="#{profile.account}">Tài khoản</p>
+        <h1 class="mb-0" th:text="#{profile.heading}">Hồ sơ cá nhân</h1>
       </div>
       <div class="d-flex gap-2 flex-wrap">
-        <a th:href="@{/dashboard}" class="btn btn-outline-secondary">Dashboard</a>
-        <a th:href="@{/products}" class="btn btn-outline-primary">Sản phẩm</a>
+        <a th:href="@{/dashboard}" class="btn btn-outline-secondary" th:text="#{common.dashboard}">Dashboard</a>
+        <a th:href="@{/products}" class="btn btn-outline-primary" th:text="#{common.products}">Sản phẩm</a>
+        <form method="get" th:action="@{/profile}" class="d-inline-flex align-items-center gap-2">
+          <label class="visually-hidden" for="profile-language-select" th:text="#{app.language}">Language</label>
+          <select id="profile-language-select" class="form-select form-select-sm" name="lang" onchange="this.form.submit()">
+            <option value="vi" th:selected="${#locale.language == 'vi'}" th:text="#{common.language.vi}">Tiếng Việt</option>
+            <option value="en" th:selected="${#locale.language == 'en'}" th:text="#{common.language.en}">English</option>
+          </select>
+        </form>
         <form th:action="@{/logout}" method="post" class="d-inline">
-          <button type="submit" class="btn btn-dark">Đăng xuất</button>
+          <button type="submit" class="btn btn-dark" th:text="#{common.logout}">Đăng xuất</button>
         </form>
       </div>
     </div>
@@ -35,94 +42,94 @@
                  alt="Avatar"
                  class="avatar-image" />
             <div th:unless="${currentUser.avatarUrl != null and !#strings.isEmpty(currentUser.avatarUrl)}" class="avatar-placeholder">
-              Avatar
+              <span th:text="#{profile.avatarPlaceholder}">Avatar</span>
             </div>
           </div>
           <h2 class="mt-3 mb-1" th:text="${currentUser.fullName != null and !#strings.isEmpty(currentUser.fullName) ? currentUser.fullName : currentUser.username}">Người dùng</h2>
           <p class="text-muted mb-3" th:text="${currentUser.email}">email@example.com</p>
           <div class="meta-list">
-            <div><span>Số điện thoại</span><strong th:text="${currentUser.phoneNumber != null and !#strings.isEmpty(currentUser.phoneNumber) ? currentUser.phoneNumber : 'Chưa cập nhật'}">Chưa cập nhật</strong></div>
-            <div><span>Địa chỉ</span><strong th:text="${currentUser.address != null and !#strings.isEmpty(currentUser.address) ? currentUser.address : 'Chưa cập nhật'}">Chưa cập nhật</strong></div>
-            <div><span>Ngày tạo</span><strong th:text="${#temporals.format(currentUser.createdAt, 'dd/MM/yyyy HH:mm')}">18/08/2026 10:00</strong></div>
+            <div><span th:text="#{profile.phoneNumber}">Số điện thoại</span><strong th:text="${currentUser.phoneNumber != null and !#strings.isEmpty(currentUser.phoneNumber) ? currentUser.phoneNumber : #messages.msg('common.notUpdated')}">Chưa cập nhật</strong></div>
+            <div><span th:text="#{profile.address}">Địa chỉ</span><strong th:text="${currentUser.address != null and !#strings.isEmpty(currentUser.address) ? currentUser.address : #messages.msg('common.notUpdated')}">Chưa cập nhật</strong></div>
+            <div><span th:text="#{profile.createdAt}">Ngày tạo</span><strong th:text="${#temporals.format(currentUser.createdAt, 'dd/MM/yyyy HH:mm')}">18/08/2026 10:00</strong></div>
           </div>
         </div>
 
         <div class="profile-card mt-4">
-          <h3 class="section-title">Avatar</h3>
+          <h3 class="section-title" th:text="#{profile.avatar}">Avatar</h3>
           <form th:action="@{/profile/avatar}" method="post">
             <div class="mb-3">
-              <label class="form-label">Đường dẫn ảnh đại diện</label>
+              <label class="form-label" th:text="#{profile.avatarUrl}">Đường dẫn ảnh đại diện</label>
               <input type="url" name="avatarUrl" class="form-control" th:value="${currentUser.avatarUrl}" placeholder="https://example.com/avatar.jpg" />
             </div>
-            <button type="submit" class="btn btn-primary w-100">Cập nhật avatar</button>
+            <button type="submit" class="btn btn-primary w-100" th:text="#{profile.updateAvatar}">Cập nhật avatar</button>
           </form>
         </div>
       </div>
 
       <div class="col-lg-8">
         <div class="profile-card">
-          <h3 class="section-title">Thông tin cá nhân</h3>
+          <h3 class="section-title" th:text="#{profile.personalInfo}">Thông tin cá nhân</h3>
           <form th:action="@{/profile/update}" method="post">
             <div class="row g-3">
               <div class="col-md-6">
-                <label class="form-label">Họ và tên</label>
+                <label class="form-label" th:text="#{common.fullName}">Họ và tên</label>
                 <input type="text" name="fullName" class="form-control" th:value="${currentUser.fullName}" />
               </div>
               <div class="col-md-6">
-                <label class="form-label">Email</label>
+                <label class="form-label" th:text="#{common.email}">Email</label>
                 <input type="email" name="email" class="form-control" th:value="${currentUser.email}" required />
               </div>
               <div class="col-md-6">
-                <label class="form-label">Số điện thoại</label>
+                <label class="form-label" th:text="#{common.phone}">Số điện thoại</label>
                 <input type="text" name="phoneNumber" class="form-control" th:value="${currentUser.phoneNumber}" />
               </div>
               <div class="col-md-6">
-                <label class="form-label">Tên đăng nhập</label>
+                <label class="form-label" th:text="#{common.username}">Tên đăng nhập</label>
                 <input type="text" class="form-control" th:value="${currentUser.username}" disabled />
               </div>
               <div class="col-12">
-                <label class="form-label">Địa chỉ</label>
+                <label class="form-label" th:text="#{common.address}">Địa chỉ</label>
                 <textarea name="address" class="form-control" rows="3" th:text="${currentUser.address}"></textarea>
               </div>
             </div>
-            <button type="submit" class="btn btn-primary mt-3">Lưu thông tin</button>
+            <button type="submit" class="btn btn-primary mt-3" th:text="#{profile.saveInfo}">Lưu thông tin</button>
           </form>
         </div>
 
         <div class="profile-card mt-4">
-          <h3 class="section-title">Đổi mật khẩu</h3>
+          <h3 class="section-title" th:text="#{profile.changePassword}">Đổi mật khẩu</h3>
           <form th:action="@{/profile/password}" method="post">
             <div class="row g-3">
               <div class="col-md-4">
-                <label class="form-label">Mật khẩu hiện tại</label>
+                <label class="form-label" th:text="#{profile.currentPassword}">Mật khẩu hiện tại</label>
                 <input type="password" name="currentPassword" class="form-control" required />
               </div>
               <div class="col-md-4">
-                <label class="form-label">Mật khẩu mới</label>
+                <label class="form-label" th:text="#{profile.newPassword}">Mật khẩu mới</label>
                 <input type="password" name="newPassword" class="form-control" required minlength="6" />
               </div>
               <div class="col-md-4">
-                <label class="form-label">Xác nhận mật khẩu</label>
+                <label class="form-label" th:text="#{profile.confirmPassword}">Xác nhận mật khẩu</label>
                 <input type="password" name="confirmPassword" class="form-control" required minlength="6" />
               </div>
             </div>
-            <button type="submit" class="btn btn-dark mt-3">Đổi mật khẩu</button>
+            <button type="submit" class="btn btn-dark mt-3" th:text="#{profile.changePassword}">Đổi mật khẩu</button>
           </form>
         </div>
 
         <div class="profile-card mt-4">
           <div class="history-header">
-            <h3 class="section-title mb-0">Lịch sử hoạt động</h3>
-            <span class="history-caption">10 thao tác gần nhất</span>
+            <h3 class="section-title mb-0" th:text="#{profile.activityHistory}">Lịch sử hoạt động</h3>
+            <span class="history-caption" th:text="#{profile.recent10}">10 thao tác gần nhất</span>
           </div>
-          <div th:if="${#lists.isEmpty(activities)}" class="text-muted">Chưa có hoạt động nào được ghi nhận.</div>
+          <div th:if="${#lists.isEmpty(activities)}" class="text-muted" th:text="#{profile.noActivities}">Chưa có hoạt động nào được ghi nhận.</div>
           <div th:unless="${#lists.isEmpty(activities)}" class="table-responsive">
             <table class="table align-middle mb-0">
               <thead>
                 <tr>
-                  <th>Thời gian</th>
-                  <th>Hành động</th>
-                  <th>Chi tiết</th>
+                  <th th:text="#{profile.createdAt}">Thời gian</th>
+                  <th th:text="#{profile.activityHistory}">Hành động</th>
+                  <th th:text="#{profile.personalInfo}">Chi tiết</th>
                 </tr>
               </thead>
               <tbody>

@@ -122,13 +122,14 @@ body {
 
 .cart-item {
   display: grid;
-  grid-template-columns: minmax(220px, 1.6fr) minmax(170px, 220px) minmax(88px, auto);
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, auto);
   gap: 0.75rem;
   align-items: center;
   border: 1px solid #e5e7eb;
   border-radius: 14px;
   padding: 0.85rem;
   background: rgba(255, 255, 255, 0.85);
+  overflow: hidden;
 }
 
 .cart-item-info {
@@ -146,6 +147,14 @@ body {
   display: flex;
   gap: 0.5rem;
   align-items: center;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.cart-qty-form .form-control,
+.cart-qty-form .btn,
+.cart-item .text-end {
+  min-width: 0;
 }
 
 .cart-summary {

@@ -19,28 +19,28 @@
       </div>
       <div class="d-flex align-items-center gap-2">
         <div class="date-badge">
-          <span class="date-badge-label">Today</span>
+          <span class="date-badge-label" th:text="#{common.today}">Today</span>
           <strong th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}">13/08/2026</strong>
         </div>
         <span class="badge bg-primary fs-6" th:text="#{app.total(${#lists.size(products)})}">Tổng: 0</span>
-        <span th:if="${isCustomer or isGuest}" class="badge bg-warning text-dark fs-6" th:text="'Giỏ: ' + ${cart.itemCount}">Giỏ: 0</span>
+        <span th:if="${isCustomer or isGuest}" class="badge bg-warning text-dark fs-6" th:text="#{app.cartBadge(${cart.itemCount})}">Giỏ: 0</span>
 
         <div class="d-flex align-items-center gap-2">
           <span class="badge bg-secondary" th:if="${session.loggedInUser != null}" th:text="${session.loggedInUser.fullName}">Người dùng</span>
-          <span th:if="${isGuest}" class="badge bg-light text-dark border">Khách vãng lai</span>
-          <a th:if="${!isGuest}" th:href="@{/dashboard}" class="btn btn-outline-primary btn-sm">Dashboard</a>
-          <a th:if="${isGuest}" th:href="@{/login}" class="btn btn-outline-primary btn-sm">Đăng nhập</a>
-          <a th:if="${isCustomer}" th:href="@{/orders}" class="btn btn-outline-dark btn-sm">Đơn hàng của tôi</a>
+          <span th:if="${isGuest}" class="badge bg-light text-dark border" th:text="#{app.guestBadge}">Khách vãng lai</span>
+          <a th:if="${!isGuest}" th:href="@{/dashboard}" class="btn btn-outline-primary btn-sm" th:text="#{common.dashboard}">Dashboard</a>
+          <a th:if="${isGuest}" th:href="@{/login}" class="btn btn-outline-primary btn-sm" th:text="#{app.login}">Đăng nhập</a>
+          <a th:if="${isCustomer}" th:href="@{/orders}" class="btn btn-outline-dark btn-sm" th:text="#{app.myOrders}">Đơn hàng của tôi</a>
           <form th:if="${!isGuest}" th:action="@{/logout}" method="post" class="d-inline">
-            <button type="submit" class="btn btn-outline-secondary btn-sm">Đăng xuất</button>
+            <button type="submit" class="btn btn-outline-secondary btn-sm" th:text="#{common.logout}">Đăng xuất</button>
           </form>
         </div>
 
         <form method="get" th:action="@{/products}" class="language-form" aria-label="Language selector">
           <label class="visually-hidden" for="language-select" th:text="#{app.language}">Language</label>
           <select id="language-select" class="form-select form-select-sm language-select" name="lang" onchange="this.form.submit()">
-            <option value="vi" th:selected="${#locale.language == 'vi'}">Tiếng Việt</option>
-            <option value="en" th:selected="${#locale.language == 'en'}">English</option>
+            <option value="vi" th:selected="${#locale.language == 'vi'}" th:text="#{common.language.vi}">Tiếng Việt</option>
+            <option value="en" th:selected="${#locale.language == 'en'}" th:text="#{common.language.en}">English</option>
           </select>
         </form>
       </div>
@@ -49,13 +49,13 @@
     <div class="search-toolbar card mb-4">
       <form method="get" th:action="@{/products}" class="row g-2 align-items-center">
         <div class="col-md-5">
-          <label class="form-label mb-1" for="keyword">Tìm kiếm</label>
-          <input id="keyword" type="text" class="form-control" name="keyword" th:value="${keyword}" placeholder="Nhập tên sản phẩm..." />
+          <label class="form-label mb-1" for="keyword" th:text="#{app.searchLabel}">Tìm kiếm</label>
+          <input id="keyword" type="text" class="form-control" name="keyword" th:value="${keyword}" th:placeholder="#{app.searchPlaceholder}" />
         </div>
         <div class="col-md-4">
-          <label class="form-label mb-1" for="categoryFilter">Danh mục</label>
+          <label class="form-label mb-1" for="categoryFilter" th:text="#{app.category}">Danh mục</label>
           <select id="categoryFilter" class="form-select" name="category">
-            <option value="">Tất cả</option>
+            <option value="" th:text="#{app.allCategories}">Tất cả</option>
             <option th:each="item : ${categories}"
                     th:value="${item}"
                     th:text="${item}"
@@ -63,8 +63,8 @@
           </select>
         </div>
         <div class="col-md-3 d-flex align-items-end gap-2">
-          <button type="submit" class="btn btn-primary flex-fill">Tìm kiếm</button>
-          <a th:href="@{/products}" class="btn btn-outline-secondary">Xóa lọc</a>
+          <button type="submit" class="btn btn-primary flex-fill" th:text="#{common.search}">Tìm kiếm</button>
+          <a th:href="@{/products}" class="btn btn-outline-secondary" th:text="#{common.filter.clear}">Xóa lọc</a>
         </div>
       </form>
     </div>
@@ -74,14 +74,14 @@
         <div th:if="${isCustomer or isGuest}" class="card p-4 mb-4 customer-cart-panel">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
-              <h3 class="mb-1">Giỏ hàng</h3>
-              <p class="text-muted mb-0">Chọn sản phẩm và đặt mua trực tuyến</p>
+              <h3 class="mb-1" th:text="#{app.cartTitle}">Giỏ hàng</h3>
+              <p class="text-muted mb-0" th:text="#{app.cartSubtitle}">Chọn sản phẩm và đặt mua trực tuyến</p>
             </div>
-            <span class="badge rounded-pill text-bg-warning" th:text="${cart.itemCount} + ' món'">0 món</span>
+            <span class="badge rounded-pill text-bg-warning" th:text="#{app.cartItemsCount(${cart.itemCount})}">0 món</span>
           </div>
 
           <div th:if="${#lists.isEmpty(cart.items)}" class="text-muted empty-cart-state">
-            Giỏ hàng đang trống. Thêm sản phẩm ở danh sách bên phải để bắt đầu.
+            <span th:text="#{app.cartEmpty}">Giỏ hàng đang trống. Thêm sản phẩm ở danh sách bên phải để bắt đầu.</span>
           </div>
 
           <div th:unless="${#lists.isEmpty(cart.items)}">
@@ -93,12 +93,12 @@
                 </div>
                 <form th:action="@{/products/cart/{productId}/quantity(productId=${cartItem.productId})}" method="post" class="cart-qty-form">
                   <input type="number" name="quantity" min="0" class="form-control form-control-sm" th:value="${cartItem.quantity}" />
-                  <button type="submit" class="btn btn-sm btn-outline-primary">Cập nhật</button>
+                  <button type="submit" class="btn btn-sm btn-outline-primary" th:text="#{app.updateCart}" th:attr="data-saving-message=#{app.saving}">Cập nhật</button>
                 </form>
                 <div class="text-end">
                   <div class="fw-semibold" th:text="${#numbers.formatDecimal(cartItem.lineTotal, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</div>
                   <form th:action="@{/products/cart/{productId}/remove(productId=${cartItem.productId})}" method="post">
-                    <button type="submit" class="btn btn-link btn-sm text-danger px-0">Xóa</button>
+                    <button type="submit" class="btn btn-link btn-sm text-danger px-0" th:text="#{app.remove}" th:attr="data-saving-message=#{app.saving}">Xóa</button>
                   </form>
                 </div>
               </div>
@@ -106,33 +106,33 @@
 
             <div class="cart-summary mt-4">
               <div class="d-flex justify-content-between align-items-center mb-3">
-                <span class="text-muted">Tổng thanh toán</span>
+                <span class="text-muted" th:text="#{app.totalPayment}">Tổng thanh toán</span>
                 <strong th:text="${#numbers.formatDecimal(cart.grandTotal, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</strong>
               </div>
 
               <form th:action="@{/orders/checkout}" method="post" class="row g-3">
                 <div class="col-md-6" th:if="${isGuest}">
-                  <label class="form-label">Tên người nhận</label>
+                  <label class="form-label" th:text="#{app.recipientName}">Tên người nhận</label>
                   <input type="text" name="guestName" class="form-control" required />
                 </div>
                 <div class="col-md-6" th:if="${isGuest}">
-                  <label class="form-label">Email xác nhận</label>
+                  <label class="form-label" th:text="#{app.confirmationEmail}">Email xác nhận</label>
                   <input type="email" name="guestEmail" class="form-control" required />
                 </div>
                 <div class="col-12">
-                  <label class="form-label">Địa chỉ giao hàng</label>
+                  <label class="form-label" th:text="#{app.deliveryAddress}">Địa chỉ giao hàng</label>
                   <textarea name="deliveryAddress" class="form-control" rows="2" required th:text="${session.loggedInUser != null ? session.loggedInUser.address : ''}"></textarea>
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label">Số điện thoại</label>
+                  <label class="form-label" th:text="#{common.phone}">Số điện thoại</label>
                   <input type="text" name="contactPhone" class="form-control" th:value="${session.loggedInUser != null ? session.loggedInUser.phoneNumber : ''}" />
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label">Ghi chú</label>
-                  <input type="text" name="note" class="form-control" placeholder="Ví dụ: giao giờ hành chính" />
+                  <label class="form-label" th:text="#{common.note}">Ghi chú</label>
+                  <input type="text" name="note" class="form-control" th:placeholder="#{app.notePlaceholder}" />
                 </div>
                 <div class="col-12">
-                  <button type="submit" class="btn btn-warning w-100 fw-semibold">Đặt hàng ngay</button>
+                  <button type="submit" class="btn btn-warning w-100 fw-semibold" th:text="#{app.orderNow}" th:attr="data-saving-message=#{app.saving}">Đặt hàng ngay</button>
                 </div>
               </form>
             </div>
@@ -154,7 +154,7 @@
              th:attr="data-editing=${product.id != null}">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h3 class="mb-0" th:text="${product.id != null} ? #{app.updateProduct} : #{app.addProduct}">Thêm sản phẩm</h3>
-            <button type="button" id="hide-product-form" class="btn btn-sm btn-outline-secondary" th:classappend="${product.id != null} ? 'd-none' : ''">Đóng</button>
+            <button type="button" id="hide-product-form" class="btn btn-sm btn-outline-secondary" th:classappend="${product.id != null} ? 'd-none' : ''" th:text="#{app.hide}">Đóng</button>
           </div>
 
           <form th:action="${product.id != null} ? @{/products/{id}/update(id=${product.id})} : @{/products}" method="post" th:object="${product}">
@@ -241,7 +241,7 @@
                     <form th:if="${isCustomer or isGuest}" th:action="@{/products/{id}/cart(id=${item.id})}" method="post" class="customer-add-form mt-2 mt-lg-0">
                       <div class="input-group input-group-sm customer-buy-box">
                         <input type="number" name="quantity" min="1" th:attr="max=${item.quantity}" value="1" class="form-control" />
-                        <button type="submit" class="btn btn-warning" th:disabled="${item.quantity == 0}" th:text="${item.quantity == 0 ? 'Hết hàng' : 'Thêm giỏ'}">Thêm giỏ</button>
+                        <button type="submit" class="btn btn-warning" th:disabled="${item.quantity == 0}" th:text="${item.quantity == 0 ? #messages.msg('app.outOfStock') : #messages.msg('app.addToCart')}" th:attr="data-saving-message=#{app.saving}">Thêm giỏ</button>
                       </div>
                     </form>
                   </td>

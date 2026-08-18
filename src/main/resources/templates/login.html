@@ -3,16 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Đăng nhập Siêu thị</title>
+  <title th:text="#{login.title}">Đăng nhập Siêu thị</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" th:href="@{/css/login.css}" />
 </head>
 <body>
+  <div class="container py-3 d-flex justify-content-end">
+    <form method="get" th:action="@{/login}" class="d-inline-flex align-items-center gap-2">
+      <label class="visually-hidden" for="login-language-select" th:text="#{app.language}">Language</label>
+      <select id="login-language-select" class="form-select form-select-sm" name="lang" onchange="this.form.submit()">
+        <option value="vi" th:selected="${#locale.language == 'vi'}" th:text="#{common.language.vi}">Tiếng Việt</option>
+        <option value="en" th:selected="${#locale.language == 'en'}" th:text="#{common.language.en}">English</option>
+      </select>
+    </form>
+  </div>
   <div class="auth-shell">
     <div class="login-card">
       <div class="text-center mb-4">
-        <div class="brand">Hệ thống siêu thị</div>
-        <h2 class="mt-2 mb-0">Đăng nhập</h2>
+        <div class="brand" th:text="#{app.system}">Hệ thống siêu thị</div>
+        <h2 class="mt-2 mb-0" th:text="#{login.heading}">Đăng nhập</h2>
       </div>
 
       <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}">
@@ -24,45 +33,45 @@
 
       <form th:action="@{/login}" method="post" th:object="${loginUser}">
         <div class="mb-3">
-          <label class="form-label">Tên đăng nhập</label>
-          <input type="text" class="form-control" th:field="*{username}" placeholder="admin" required />
+          <label class="form-label" th:text="#{common.username}">Tên đăng nhập</label>
+          <input type="text" class="form-control" th:field="*{username}" th:placeholder="#{login.usernamePlaceholder}" required />
         </div>
         <div class="mb-3">
-          <label class="form-label">Mật khẩu</label>
-          <input type="password" class="form-control" th:field="*{password}" placeholder="******" required />
+          <label class="form-label" th:text="#{common.password}">Mật khẩu</label>
+          <input type="password" class="form-control" th:field="*{password}" th:placeholder="#{login.passwordPlaceholder}" required />
         </div>
-        <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
+        <button type="submit" class="btn btn-primary w-100" th:text="#{login.loginButton}" th:attr="data-loading-message=#{login.loginLoading}">Đăng nhập</button>
       </form>
 
       <div class="mt-3">
-        <a th:href="@{/products}" class="btn btn-outline-secondary w-100">Đặt hàng không cần tài khoản</a>
+        <a th:href="@{/products}" class="btn btn-outline-secondary w-100" th:text="#{app.guestOrderLink}">Đặt hàng không cần tài khoản</a>
       </div>
     </div>
 
     <div class="register-card">
       <div class="text-center mb-4">
-        <div class="brand">Đăng ký</div>
-        <h2 class="mt-2 mb-0">Tạo tài khoản</h2>
+        <div class="brand" th:text="#{login.registerBrand}">Đăng ký</div>
+        <h2 class="mt-2 mb-0" th:text="#{login.registerHeading}">Tạo tài khoản</h2>
       </div>
 
       <form th:action="@{/register}" method="post" th:object="${registerUser}">
         <div class="mb-3">
-          <label class="form-label">Họ và tên</label>
-          <input type="text" class="form-control" th:field="*{fullName}" placeholder="Nguyễn Văn A" />
+          <label class="form-label" th:text="#{common.fullName}">Họ và tên</label>
+          <input type="text" class="form-control" th:field="*{fullName}" th:placeholder="#{login.fullNamePlaceholder}" />
         </div>
         <div class="mb-3">
-          <label class="form-label">Tên đăng nhập</label>
-          <input type="text" class="form-control" th:field="*{username}" placeholder="nguyenvana" required />
+          <label class="form-label" th:text="#{common.username}">Tên đăng nhập</label>
+          <input type="text" class="form-control" th:field="*{username}" th:placeholder="#{login.usernamePlaceholder}" required />
         </div>
         <div class="mb-3">
-          <label class="form-label">Email</label>
+          <label class="form-label" th:text="#{common.email}">Email</label>
           <input type="email" class="form-control" th:field="*{email}" placeholder="name@example.com" required />
         </div>
         <div class="mb-3">
-          <label class="form-label">Mật khẩu</label>
-          <input type="password" class="form-control" th:field="*{password}" placeholder="Tạo mật khẩu" required />
+          <label class="form-label" th:text="#{common.password}">Mật khẩu</label>
+          <input type="password" class="form-control" th:field="*{password}" th:placeholder="#{login.createPasswordPlaceholder}" required />
         </div>
-        <button type="submit" class="btn btn-dark w-100">Đăng ký tài khoản</button>
+        <button type="submit" class="btn btn-dark w-100" th:text="#{login.registerButton}">Đăng ký tài khoản</button>
       </form>
     </div>
     </div>

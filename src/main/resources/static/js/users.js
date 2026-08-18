@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const submitButton = form.querySelector('button[type="submit"]');
       if (submitButton) {
         submitButton.disabled = true;
-        submitButton.textContent = 'Đang lưu...';
+        submitButton.textContent = submitButton.dataset.savingMessage || submitButton.textContent;
       }
     });
   });

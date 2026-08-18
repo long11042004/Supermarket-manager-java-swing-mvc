@@ -97,6 +97,17 @@ public class UserController {
 		return "Manager chỉ có thể chỉnh sửa tài khoản thuộc nhóm STAFF hoặc CUSTOMER.";
 	}
 
+	private Map<Long, Set<RoleName>> assignedRolesByUserId(List<User> users) {
+		Map<Long, Set<RoleName>> assignedRoles = new HashMap<>();
+		for (User user : users) {
+			Set<RoleName> roleNames = user.getRoles() == null ? Set.of() : user.getRoles().stream()
+					.map(role -> role.getName())
+					.collect(Collectors.toSet());
+			assignedRoles.put(user.getId(), roleNames);
+		}
+		return assignedRoles;
+	}
+
 	@GetMapping
 	public String listUsers(Model model,
 			@RequestParam(value = "keyword", required = false) String keyword,
@@ -130,6 +141,7 @@ public class UserController {
 		model.addAttribute("isAdmin", isAdmin(session));
 		model.addAttribute("restrictedUserIds", restrictedUserIds);
 		model.addAttribute("restrictedReasons", restrictedReasons);
+		model.addAttribute("assignedRoles", assignedRolesByUserId(users));
 		model.addAttribute("newUser", new User());
 		return "users";
 	}
@@ -183,6 +195,7 @@ public class UserController {
 		model.addAttribute("registerRoles", editableRoles(session));
 		model.addAttribute("isAdmin", isAdmin(session));
 		model.addAttribute("restrictedUserIds", restrictedUserIds);
+		model.addAttribute("assignedRoles", assignedRolesByUserId(users));
 		Map<Long, String> restrictedReasons = new HashMap<>();
 		for (User item : users) {
 			if (restrictedUserIds.contains(item.getId())) {
