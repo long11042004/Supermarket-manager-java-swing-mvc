@@ -24,6 +24,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	@Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM User u WHERE u.email = :email")
 	boolean existsByEmail(@Param("email") String email);
 
+	@Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM User u WHERE u.email = :email AND u.id <> :userId")
+	boolean existsByEmailAndIdNot(@Param("email") String email, @Param("userId") Long userId);
+
 	@Query("SELECT u FROM User u WHERE LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) ORDER BY u.fullName ASC")
 	List<User> searchByFullName(@Param("keyword") String keyword);
 

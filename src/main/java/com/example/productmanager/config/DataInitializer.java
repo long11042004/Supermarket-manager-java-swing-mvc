@@ -73,7 +73,7 @@ public class DataInitializer {
 							.build(),
 						User.builder()
 							.username("manager")
-							.password("manager123")
+							.password("manager")
 							.email("manager@demo.com")
 							.fullName("Nguyễn Văn Quản lý")
 							.enabled(true)

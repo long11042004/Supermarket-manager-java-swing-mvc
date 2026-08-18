@@ -4,13 +4,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.productmanager.model.Role;
 import com.example.productmanager.model.RoleName;
 import com.example.productmanager.model.User;
+import com.example.productmanager.model.UserActivity;
 import com.example.productmanager.repository.RoleRepository;
+import com.example.productmanager.repository.UserActivityRepository;
 import com.example.productmanager.repository.UserRepository;
 
 @Service
@@ -18,10 +21,14 @@ public class UserService {
 
 	private final UserRepository userRepository;
 	private final RoleRepository roleRepository;
+	private final UserActivityRepository userActivityRepository;
 
-	public UserService(UserRepository userRepository, RoleRepository roleRepository) {
+	public UserService(UserRepository userRepository,
+			RoleRepository roleRepository,
+			UserActivityRepository userActivityRepository) {
 		this.userRepository = userRepository;
 		this.roleRepository = roleRepository;
+		this.userActivityRepository = userActivityRepository;
 	}
 
 	@Transactional
@@ -45,10 +52,12 @@ public class UserService {
 				.roles(new HashSet<>(Set.of(defaultRole)))
 				.build();
 
-		return userRepository.save(user);
+		User savedUser = userRepository.save(user);
+		logActivity(savedUser, "Tạo tài khoản", "Tài khoản được khởi tạo trong hệ thống");
+		return savedUser;
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional
 	public User login(String username, String password) {
 		User user = userRepository.findByUsername(username)
 				.orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng: " + username));
@@ -60,6 +69,8 @@ public class UserService {
 		if (!user.isEnabled()) {
 			throw new IllegalStateException("Tài khoản đang bị khóa");
 		}
+
+		logActivity(user, "Đăng nhập", "Người dùng đăng nhập vào hệ thống");
 
 		return user;
 	}
@@ -85,7 +96,9 @@ public class UserService {
 			roles.add(role);
 		}
 		user.setRoles(roles);
-		return userRepository.save(user);
+		User savedUser = userRepository.save(user);
+		logActivity(savedUser, "Cập nhật phân quyền", "Vai trò hiện tại: " + roleNames);
+		return savedUser;
 	}
 
 	@Transactional(readOnly = true)
@@ -94,5 +107,81 @@ public class UserService {
 			return getAllUsers();
 		}
 		return userRepository.searchByFullName(keyword.trim());
+	}
+
+	@Transactional
+	public User updateProfile(Long userId,
+			String fullName,
+			String email,
+			String phoneNumber,
+			String address) {
+		User user = getUserById(userId);
+		String normalizedEmail = email == null ? "" : email.trim();
+		if (normalizedEmail.isEmpty()) {
+			throw new IllegalArgumentException("Email không được để trống");
+		}
+		if (userRepository.existsByEmailAndIdNot(normalizedEmail, userId)) {
+			throw new IllegalArgumentException("Email đã tồn tại");
+		}
+
+		user.setFullName(fullName == null ? null : fullName.trim());
+		user.setEmail(normalizedEmail);
+		user.setPhoneNumber(phoneNumber == null ? null : phoneNumber.trim());
+		user.setAddress(address == null ? null : address.trim());
+
+		User savedUser = userRepository.save(user);
+		logActivity(savedUser, "Cập nhật hồ sơ", "Người dùng đã cập nhật thông tin cá nhân");
+		return savedUser;
+	}
+
+	@Transactional
+	public User changePassword(Long userId, String currentPassword, String newPassword, String confirmPassword) {
+		User user = getUserById(userId);
+		if (!user.getPassword().equals(currentPassword)) {
+			throw new IllegalArgumentException("Mật khẩu hiện tại không đúng");
+		}
+		if (newPassword == null || newPassword.length() < 6) {
+			throw new IllegalArgumentException("Mật khẩu mới phải có ít nhất 6 ký tự");
+		}
+		if (!newPassword.equals(confirmPassword)) {
+			throw new IllegalArgumentException("Xác nhận mật khẩu không khớp");
+		}
+		if (newPassword.equals(currentPassword)) {
+			throw new IllegalArgumentException("Mật khẩu mới phải khác mật khẩu hiện tại");
+		}
+
+		user.setPassword(newPassword);
+		User savedUser = userRepository.save(user);
+		logActivity(savedUser, "Đổi mật khẩu", "Người dùng đã thay đổi mật khẩu");
+		return savedUser;
+	}
+
+	@Transactional
+	public User updateAvatar(Long userId, String avatarUrl) {
+		User user = getUserById(userId);
+		String normalizedAvatarUrl = avatarUrl == null ? null : avatarUrl.trim();
+		user.setAvatarUrl((normalizedAvatarUrl == null || normalizedAvatarUrl.isEmpty()) ? null : normalizedAvatarUrl);
+		User savedUser = userRepository.save(user);
+		logActivity(savedUser, "Cập nhật avatar", "Người dùng đã cập nhật ảnh đại diện");
+		return savedUser;
+	}
+
+	@Transactional
+	public void logLogout(Long userId) {
+		User user = getUserById(userId);
+		logActivity(user, "Đăng xuất", "Người dùng đăng xuất khỏi hệ thống");
+	}
+
+	@Transactional(readOnly = true)
+	public List<UserActivity> getRecentActivities(Long userId) {
+		return userActivityRepository.findRecentActivitiesByUserId(userId, PageRequest.of(0, 10));
+	}
+
+	private void logActivity(User user, String action, String details) {
+		userActivityRepository.save(UserActivity.builder()
+				.user(user)
+				.action(action)
+				.details(details)
+				.build());
 	}
 }

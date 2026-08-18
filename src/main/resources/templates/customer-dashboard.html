@@ -48,6 +48,7 @@
       </div>
       <div class="d-flex align-items-center gap-2 flex-wrap">
         <span class="badge bg-secondary" th:text="${currentUser.fullName}">Khách hàng</span>
+        <a th:href="@{/profile}" class="btn btn-outline-dark">Tài khoản</a>
         <a th:href="@{/products}" class="btn btn-primary">Xem sản phẩm</a>
         <form th:action="@{/logout}" method="post" class="d-inline">
           <button type="submit" class="btn btn-outline-secondary">Đăng xuất</button>

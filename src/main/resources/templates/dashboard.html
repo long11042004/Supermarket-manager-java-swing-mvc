@@ -16,6 +16,7 @@
       </div>
       <div class="d-flex align-items-center gap-2 flex-wrap">
         <span class="badge bg-secondary" th:text="${currentUser.fullName}">Người dùng</span>
+        <a th:href="@{/profile}" class="btn btn-outline-dark nav-btn">Tài khoản</a>
         <a th:href="@{/products}" class="btn btn-primary nav-btn">Xem sản phẩm</a>
         <a th:if="${canManageUsers}" th:href="@{/users}" class="btn btn-outline-primary nav-btn">Quản lý người dùng</a>
         <form th:action="@{/logout}" method="post" class="d-inline">
@@ -60,6 +61,7 @@
     <div class="section-card">
       <h4 class="mb-3">Thao tác nhanh</h4>
       <div class="d-flex flex-wrap gap-2">
+        <a th:href="@{/profile}" class="btn btn-outline-dark">Hồ sơ cá nhân</a>
         <a th:href="@{/products}" class="btn btn-primary">Xem sản phẩm</a>
         <a th:if="${canManageUsers}" th:href="@{/users}" class="btn btn-outline-primary">Quản lý nhân sự</a>
         <a th:if="${canManageProducts}" th:href="@{/products}" class="btn btn-outline-success">Nhập hàng / bổ sung</a>

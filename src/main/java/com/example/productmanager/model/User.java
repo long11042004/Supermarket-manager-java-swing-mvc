@@ -63,6 +63,18 @@ public class User {
 	@Column(length = 100)
 	private String fullName;
 
+	@Size(max = 20)
+	@Column(length = 20)
+	private String phoneNumber;
+
+	@Size(max = 255)
+	@Column(length = 255)
+	private String address;
+
+	@Size(max = 500)
+	@Column(length = 500)
+	private String avatarUrl;
+
 	@Column(nullable = false)
 	@Builder.Default
 	private boolean enabled = true;

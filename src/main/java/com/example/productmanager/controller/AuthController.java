@@ -43,6 +43,10 @@ public class AuthController {
 
 	@PostMapping("/logout")
 	public String logout(HttpSession session) {
+		User currentUser = (User) session.getAttribute("loggedInUser");
+		if (currentUser != null) {
+			userService.logLogout(currentUser.getId());
+		}
 		session.invalidate();
 		return "redirect:/login";
 	}
