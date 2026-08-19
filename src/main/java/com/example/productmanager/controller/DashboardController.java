@@ -38,6 +38,7 @@ public class DashboardController {
 		List<Product> products = productService.getAllProducts();
 		List<User> users = userService.getAllUsers();
 		List<Product> lowStockProducts = productService.getLowStockProducts(10);
+		List<Product> expiringSoonProducts = productService.getExpiringSoonProducts(30);
 
 		model.addAttribute("currentUser", currentUser);
 		model.addAttribute("roles", roles);
@@ -50,9 +51,11 @@ public class DashboardController {
 		model.addAttribute("totalProducts", products.size());
 		model.addAttribute("totalUsers", users.size());
 		model.addAttribute("lowStockCount", lowStockProducts.size());
+		model.addAttribute("expiringSoonCount", expiringSoonProducts.size());
 		model.addAttribute("products", products);
 		model.addAttribute("users", users);
 		model.addAttribute("lowStockProducts", lowStockProducts);
+		model.addAttribute("expiringSoonProducts", expiringSoonProducts);
 
 		if (roles.contains(RoleName.CUSTOMER)) {
 			return "customer-dashboard";

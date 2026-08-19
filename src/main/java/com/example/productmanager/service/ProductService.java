@@ -1,5 +1,6 @@
 package com.example.productmanager.service;
 
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -83,5 +84,10 @@ public class ProductService {
 
 	public List<Product> getLowStockProducts(Integer threshold) {
 		return productRepository.findLowStock(threshold);
+	}
+
+	public List<Product> getExpiringSoonProducts(int daysAhead) {
+		LocalDate maxDate = LocalDate.now().plusDays(daysAhead);
+		return productRepository.findExpiringSoon(maxDate);
 	}
 }

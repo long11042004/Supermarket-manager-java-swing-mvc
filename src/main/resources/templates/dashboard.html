@@ -99,6 +99,32 @@
         </table>
       </div>
     </div>
+
+    <div class="section-card mt-4">
+      <h4 class="mb-3" th:text="#{dashboard.expiringSoonList}">Danh sách sản phẩm sắp hết hạn</h4>
+      <div th:if="${#lists.isEmpty(expiringSoonProducts)}" class="text-muted" th:text="#{dashboard.noExpiringSoon}">Không có sản phẩm nào sắp hết hạn.</div>
+      <div th:unless="${#lists.isEmpty(expiringSoonProducts)}" class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th th:text="#{app.name}">Tên sản phẩm</th>
+              <th th:text="#{app.category}">Danh mục</th>
+              <th th:text="#{app.expiryDate}">Hạn sử dụng</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="item : ${expiringSoonProducts}">
+              <td th:text="${item.name}">Tên</td>
+              <td th:text="${item.category}">Danh mục</td>
+              <td>
+                <span class="badge bg-danger-subtle text-danger-emphasis"
+                      th:text="${item.expiryDate != null ? #temporals.format(item.expiryDate, 'dd/MM/yyyy') : '—'}">—</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <script th:src="@{/js/dashboard.js}"></script>

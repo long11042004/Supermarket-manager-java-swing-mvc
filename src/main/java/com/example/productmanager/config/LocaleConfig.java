@@ -13,6 +13,7 @@ import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 @Configuration
 public class LocaleConfig implements WebMvcConfigurer {
 
+	@SuppressWarnings("deprecation")
 	@Bean
 	public LocaleResolver localeResolver() {
 		CookieLocaleResolver resolver = new CookieLocaleResolver("lang");
