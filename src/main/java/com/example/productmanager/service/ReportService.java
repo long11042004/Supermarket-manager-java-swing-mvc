@@ -5,8 +5,10 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,11 @@ import lombok.AllArgsConstructor;
 public class ReportService {
 
 	private final CustomerOrderRepository customerOrderRepository;
+
+	@Async("reportTaskExecutor")
+	public CompletableFuture<ReportData> generateReportAsync(LocalDate fromDate, LocalDate toDate, OrderStatus statusFilter) {
+		return CompletableFuture.completedFuture(generateReport(fromDate, toDate, statusFilter));
+	}
 
 	@Transactional(readOnly = true)
 	public ReportData generateReport(LocalDate fromDate, LocalDate toDate, OrderStatus statusFilter) {

@@ -129,7 +129,11 @@ public class OrderService {
 		order.setTotalAmount(totalAmount);
 		CustomerOrder savedOrder = customerOrderRepository.save(order);
 		if (userId != null) {
-			userService.recordActivity(userId, "Đặt hàng", "Đơn hàng #" + savedOrder.getId() + " đã được tạo");
+			String details = new StringBuilder("Đơn hàng #")
+					.append(savedOrder.getId())
+					.append(" đã được tạo")
+					.toString();
+			userService.recordActivity(userId, "Đặt hàng", details);
 		}
 		return savedOrder;
 	}
@@ -173,6 +177,10 @@ public class OrderService {
 
 		order.setStatus(OrderStatus.CANCELLED);
 		customerOrderRepository.save(order);
-		userService.recordActivity(userId, "Hủy đơn", "Đơn hàng #" + order.getId() + " đã được hủy");
+		String details = new StringBuffer("Đơn hàng #")
+				.append(order.getId())
+				.append(" đã được hủy")
+				.toString();
+		userService.recordActivity(userId, "Hủy đơn", details);
 	}
 }

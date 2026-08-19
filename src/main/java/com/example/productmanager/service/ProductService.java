@@ -33,13 +33,13 @@ public class ProductService {
 							|| product.getCategory() != null && product.getCategory().equalsIgnoreCase(normalizedCategory);
 					return matchKeyword && matchCategory;
 				})
-				.sorted(Comparator.comparing(Product::getName, String.CASE_INSENSITIVE_ORDER))
+				.sorted(Comparator.comparing(product -> product.getName() == null ? "" : product.getName(), String.CASE_INSENSITIVE_ORDER))
 				.collect(Collectors.toList());
 	}
 
 	public List<String> getAllCategories() {
 		return productRepository.findAll().stream()
-				.map(Product::getCategory)
+				.map(product -> product == null ? null : product.getCategory())
 				.filter(category -> category != null && !category.isBlank())
 				.distinct()
 				.sorted(String.CASE_INSENSITIVE_ORDER)
@@ -48,7 +48,9 @@ public class ProductService {
 
 	public Product getProductById(Long id) {
 		return productRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Khong tim thay san pham voi id: " + id));
+				.orElseThrow(() -> new RuntimeException(new StringBuilder("Khong tim thay san pham voi id: ")
+						.append(id)
+						.toString()));
 	}
 
 	public Product createProduct(Product product) {

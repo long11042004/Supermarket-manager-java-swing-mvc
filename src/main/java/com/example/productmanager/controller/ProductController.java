@@ -109,7 +109,11 @@ public class ProductController {
 			session.setAttribute("shoppingCart", updatedCart);
 			User currentUser = (User) session.getAttribute("loggedInUser");
 			if (currentUser != null) {
-				userService.recordActivity(currentUser.getId(), "Thêm vào giỏ", "Đã thêm " + product.getName() + " vào giỏ hàng");
+				String details = new StringBuilder("Đã thêm ")
+						.append(product.getName())
+						.append(" vào giỏ hàng")
+						.toString();
+				userService.recordActivity(currentUser.getId(), "Thêm vào giỏ", details);
 			}
 			redirectAttributes.addFlashAttribute("successMessage", msg("msg.cart.added"));
 		} catch (IllegalArgumentException ex) {

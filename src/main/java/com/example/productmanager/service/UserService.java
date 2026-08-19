@@ -7,6 +7,7 @@ import java.util.Set;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +29,7 @@ public class UserService {
 	private final RoleRepository roleRepository;
 	private final UserActivityRepository userActivityRepository;
 	private final MessageSource messageSource;
+	private final PasswordEncoder passwordEncoder;
 
 	private String msg(String key, Object... args) {
 		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
@@ -69,7 +71,7 @@ public class UserService {
 
 		User user = User.builder()
 				.username(username)
-				.password(password)
+				.password(passwordEncoder.encode(password))
 				.email(email)
 				.fullName(fullName)
 				.enabled(true)
@@ -86,8 +88,14 @@ public class UserService {
 		User user = userRepository.findByUsername(username)
 				.orElseThrow(() -> new RuntimeException(msg("err.auth.userNotFound", username)));
 
-		if (!user.getPassword().equals(password)) {
+		boolean passwordMatched = passwordEncoder.matches(password, user.getPassword()) || user.getPassword().equals(password);
+		if (!passwordMatched) {
 			throw new IllegalArgumentException(msg("err.auth.invalidPassword"));
+		}
+
+		if (!isEncodedPassword(user.getPassword())) {
+			user.setPassword(passwordEncoder.encode(password));
+			userRepository.save(user);
 		}
 
 		if (!user.isEnabled()) {
@@ -97,6 +105,13 @@ public class UserService {
 		logActivity(user, "Đăng nhập", "Người dùng đăng nhập vào hệ thống");
 
 		return user;
+	}
+
+	private boolean isEncodedPassword(String password) {
+		if (password == null || password.isBlank()) {
+			return false;
+		}
+		return password.startsWith("{") || password.startsWith("$2a$") || password.startsWith("$2b$") || password.startsWith("$2y$");
 	}
 
 	@Transactional(readOnly = true)
@@ -121,7 +136,10 @@ public class UserService {
 		}
 		user.setRoles(roles);
 		User savedUser = userRepository.save(user);
-		logActivity(savedUser, "Cập nhật phân quyền", "Vai trò hiện tại: " + roleNames);
+		String details = new StringBuffer("Vai trò hiện tại: ")
+				.append(roleNames)
+				.toString();
+		logActivity(savedUser, "Cập nhật phân quyền", details);
 		return savedUser;
 	}
 
