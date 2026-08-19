@@ -33,7 +33,13 @@ class OrderServiceTests {
 	private final UserRepository userRepository = org.mockito.Mockito.mock(UserRepository.class);
 	private final UserService userService = org.mockito.Mockito.mock(UserService.class);
 	private final ResourceBundleMessageSource messageSource = createMessageSource();
-	private final OrderService orderService = new OrderService(customerOrderRepository, productRepository, userRepository, userService, messageSource);
+	private final OrderService orderService = new OrderService(
+			customerOrderRepository,
+			productRepository,
+			userRepository,
+			userService,
+			messageSource,
+			new ConsoleEmailService());
 	private final CartService cartService = new CartService(messageSource);
 
 	private ResourceBundleMessageSource createMessageSource() {

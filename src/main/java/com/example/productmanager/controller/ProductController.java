@@ -89,6 +89,9 @@ public class ProductController {
 		model.addAttribute("category", category == null ? "" : category);
 		model.addAttribute("categories", productService.getAllCategories());
 		model.addAttribute("canManageProducts", hasPermission(session, RoleName.ADMIN, RoleName.MANAGER));
+		model.addAttribute("isAdmin", hasPermission(session, RoleName.ADMIN));
+		model.addAttribute("isManager", hasPermission(session, RoleName.MANAGER));
+		model.addAttribute("isStaff", hasPermission(session, RoleName.STAFF));
 		model.addAttribute("isCustomer", hasPermission(session, RoleName.CUSTOMER));
 		model.addAttribute("isGuest", !isAuthenticated(session));
 		model.addAttribute("cart", getOrCreateCart(session));
@@ -180,6 +183,9 @@ public class ProductController {
 		model.addAttribute("category", "");
 		model.addAttribute("categories", productService.getAllCategories());
 		model.addAttribute("canManageProducts", true);
+		model.addAttribute("isAdmin", hasPermission(session, RoleName.ADMIN));
+		model.addAttribute("isManager", hasPermission(session, RoleName.MANAGER));
+		model.addAttribute("isStaff", hasPermission(session, RoleName.STAFF));
 		model.addAttribute("isCustomer", hasPermission(session, RoleName.CUSTOMER));
 		model.addAttribute("isGuest", false);
 		model.addAttribute("cart", getOrCreateCart(session));

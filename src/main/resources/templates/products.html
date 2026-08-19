@@ -15,14 +15,15 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
         <p class="text-primary fw-bold mb-1 text-uppercase small" th:text="#{app.system}">Hệ thống siêu thị</p>
-        <h1 class="mb-0" th:text="#{app.title}">Quản lý sản phẩm</h1>
+        <h1 class="mb-0"
+            th:text="${isCustomer or isGuest} ? #{app.title} : 'Quản lý kho & sản phẩm'">Quản lý sản phẩm</h1>
       </div>
       <div class="d-flex align-items-center gap-2">
         <div class="date-badge">
           <span class="date-badge-label" th:text="#{common.today}">Today</span>
           <strong th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}">13/08/2026</strong>
         </div>
-        <span class="badge bg-primary fs-6" th:text="#{app.total(${#lists.size(products)})}">Tổng: 0</span>
+        <span class="badge bg-primary fs-6" th:text="${isCustomer or isGuest} ? #{app.total(${#lists.size(products)})} : ${#lists.size(products)} + ' sản phẩm'">Tổng: 0</span>
         <span th:if="${isCustomer or isGuest}" class="badge bg-warning text-dark fs-6" th:text="#{app.cartBadge(${cart.itemCount})}">Giỏ: 0</span>
 
         <div class="d-flex align-items-center gap-2">
@@ -46,8 +47,26 @@
       </div>
     </div>
 
-    <div class="search-toolbar card mb-4">
-      <form method="get" th:action="@{/products}" class="row g-2 align-items-center">
+    <div class="shop-toolbar card mb-4">
+      <div class="toolbar-top">
+        <div>
+          <div class="eyebrow" th:text="${isCustomer or isGuest} ? 'Shop collection' : 'Inventory overview'">Shop collection</div>
+          <h2 class="toolbar-title"
+              th:text="${isCustomer or isGuest} ? 'Mua sắm thông minh, tiết kiệm hơn' : 'Quản lý kho và sản phẩm hiệu quả'">Mua sắm thông minh, tiết kiệm hơn</h2>
+        </div>
+        <div class="summary-pills">
+          <span class="summary-pill">
+            <strong th:text="${#lists.size(products)}">0</strong>
+            <small th:text="${isCustomer or isGuest} ? #{app.totalProducts} : 'Sản phẩm kho'">Sản phẩm</small>
+          </span>
+          <span class="summary-pill muted">
+            <strong th:text="${#lists.size(categories)}">0</strong>
+            <small th:text="#{app.category}">Danh mục</small>
+          </span>
+        </div>
+      </div>
+
+      <form method="get" th:action="@{/products}" class="row g-2 align-items-center toolbar-form">
         <div class="col-md-5">
           <label class="form-label mb-1" for="keyword" th:text="#{app.searchLabel}">Tìm kiếm</label>
           <input id="keyword" type="text" class="form-control" name="keyword" th:value="${keyword}" th:placeholder="#{app.searchPlaceholder}" />
@@ -69,7 +88,7 @@
       </form>
     </div>
 
-    <div class="row g-4">
+    <div class="row g-4 align-items-start">
       <div class="col-lg-4">
         <div th:if="${isCustomer or isGuest}" class="card p-4 mb-4 customer-cart-panel">
           <div class="d-flex justify-content-between align-items-center mb-3">
@@ -139,9 +158,8 @@
           </div>
         </div>
 
-        <div class="mb-3">
-          <button th:if="${canManageProducts}"
-                  type="button" id="show-product-form" class="btn btn-primary w-100 add-product-btn" th:classappend="${product.id != null} ? 'd-none' : ''">
+        <div class="mb-3" th:if="${canManageProducts}">
+          <button type="button" id="show-product-form" class="btn btn-primary w-100 add-product-btn" th:classappend="${product.id != null} ? 'd-none' : ''">
             <span class="add-product-icon">＋</span>
             <span th:text="#{app.addProduct}">Thêm sản phẩm</span>
           </button>
@@ -201,53 +219,53 @@
       </div>
 
       <div class="col-lg-8">
-        <div class="card p-3">
-          <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th th:text="#{app.name}">Tên</th>
-                  <th th:text="#{app.category}">Danh mục</th>
-                  <th th:text="#{app.price}">Giá</th>
-                  <th th:text="#{app.quantity}">Số lượng</th>
-                  <th th:text="#{app.unit}">Đơn vị</th>
-                  <th th:text="#{app.expiryDate}">Hạn sử dụng</th>
-                  <th th:text="#{app.edit}">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr th:each="item, state : ${products}">
-                  <td th:text="${state.count}">1</td>
-                  <td>
-                    <div class="fw-semibold" th:text="${item.name}">Tên</div>
-                  </td>
-                  <td th:text="${item.category}">Danh mục</td>
-                  <td th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
-                  <td>
-                    <span class="badge" th:classappend="${item.quantity <= 10} ? 'badge-low' : 'badge-good'"
-                          th:text="${item.quantity}">0</span>
-                  </td>
-                  <td th:text="${item.unit != null ? item.unit : '—'}">—</td>
-                  <td th:text="${item.expiryDate != null ? #temporals.format(item.expiryDate, 'dd/MM/yyyy') : '—'}">—</td>
-                  <td>
-                    <a th:if="${canManageProducts}" class="btn btn-sm btn-outline-primary me-1" th:href="@{/products/{id}/edit(id=${item.id})}" th:text="#{app.edit}">Sửa</a>
-                    <form th:if="${canManageProducts}" th:action="@{/products/{id}/delete(id=${item.id})}" method="post" style="display:inline;">
-                      <button type="submit"
-                              class="btn btn-sm btn-outline-danger"
-                              th:attr="data-confirm-message=#{app.confirmDelete}"
-                              th:text="#{app.delete}">Xóa</button>
+        <div class="catalog-panel card p-3">
+          <div class="catalog-header">
+            <div>
+              <h3 class="mb-1" th:text="${isCustomer or isGuest} ? 'Sản phẩm nổi bật' : 'Danh sách hàng hóa'">Sản phẩm nổi bật</h3>
+              <p class="mb-0 text-muted"
+                 th:text="${isCustomer or isGuest} ? 'Khám phá những lựa chọn mới nhất cho bạn' : 'Theo dõi trạng thái kho, giá và hạn sử dụng của sản phẩm'">Khám phá những lựa chọn mới nhất cho bạn</p>
+            </div>
+            <span class="catalog-count" th:text="${isCustomer or isGuest} ? #{app.total(${#lists.size(products)})} : ${#lists.size(products)} + ' mặt hàng'">Tổng: 0</span>
+          </div>
+
+          <div class="product-grid">
+            <article class="product-card" th:each="item, state : ${products}">
+              <div class="product-card-media">
+                <span class="category-chip" th:text="${item.category}">Danh mục</span>
+                <span class="stock-badge" th:classappend="${item.quantity <= 10} ? 'low' : 'good'"
+                      th:text="${item.quantity <= 10 ? (isCustomer or isGuest ? 'Sắp hết' : 'Thiếu hàng') : (isCustomer or isGuest ? 'Còn hàng' : 'Đủ hàng')}">Còn hàng</span>
+              </div>
+
+              <div class="product-card-body">
+                <div class="product-name" th:text="${item.name}">Tên sản phẩm</div>
+                <div class="product-meta">
+                  <span th:text="${item.unit != null ? item.unit : 'Đơn vị'}">Đơn vị</span>
+                  <span th:text="${item.expiryDate != null ? #temporals.format(item.expiryDate, 'dd/MM/yyyy') : '—'}">—</span>
+                </div>
+                <div class="product-price" th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</div>
+
+                <div class="product-card-actions" th:if="${canManageProducts or isCustomer or isGuest or isStaff}">
+                  <div class="d-flex gap-2" th:if="${canManageProducts}">
+                    <a class="btn btn-sm btn-outline-primary" th:href="@{/products/{id}/edit(id=${item.id})}" th:text="#{app.edit}">Sửa</a>
+                    <form th:action="@{/products/{id}/delete(id=${item.id})}" method="post" style="display:inline;">
+                      <button type="submit" class="btn btn-sm btn-outline-danger" th:attr="data-confirm-message=#{app.confirmDelete}" th:text="#{app.delete}">Xóa</button>
                     </form>
-                    <form th:if="${isCustomer or isGuest}" th:action="@{/products/{id}/cart(id=${item.id})}" method="post" class="customer-add-form mt-2 mt-lg-0">
-                      <div class="input-group input-group-sm customer-buy-box">
-                        <input type="number" name="quantity" min="1" th:attr="max=${item.quantity}" value="1" class="form-control" />
-                        <button type="submit" class="btn btn-warning" th:disabled="${item.quantity == 0}" th:text="${item.quantity == 0 ? #messages.msg('app.outOfStock') : #messages.msg('app.addToCart')}" th:attr="data-saving-message=#{app.saving}">Thêm giỏ</button>
-                      </div>
-                    </form>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                  </div>
+
+                  <div th:if="${isStaff and !canManageProducts}" class="text-muted small fw-semibold border rounded-pill px-2 py-1 d-inline-block">
+                    Chỉ xem thông tin kho
+                  </div>
+
+                  <form th:if="${isCustomer or isGuest}" th:action="@{/products/{id}/cart(id=${item.id})}" method="post" class="customer-add-form w-100">
+                    <div class="input-group input-group-sm customer-buy-box">
+                      <input type="number" name="quantity" min="1" th:attr="max=${item.quantity}" value="1" class="form-control" />
+                      <button type="submit" class="btn btn-warning" th:disabled="${item.quantity == 0}" th:text="${item.quantity == 0 ? #messages.msg('app.outOfStock') : #messages.msg('app.addToCart')}" th:attr="data-saving-message=#{app.saving}">Thêm giỏ</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </article>
           </div>
         </div>
       </div>

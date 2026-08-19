@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Xác nhận đơn hàng</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 24px; background-color: #f9fafb;">
+    <div style="max-width: 640px; margin: 0 auto; background: #ffffff; border-radius: 12px; padding: 32px; border: 1px solid #e5e7eb;">
+        <h2 style="color: #111827; margin-top: 0;">Xác nhận đơn hàng</h2>
+        <p>Xin chào <strong th:text="${recipientName}">Khách hàng</strong>,</p>
+        <p>Đơn hàng #<span th:text="${order.id}">0</span> đã được tạo thành công.</p>
+
+        <p><strong>Tổng tiền:</strong> <span th:text="${formattedTotal}">0</span> ₫</p>
+        <p><strong>Địa chỉ giao hàng:</strong> <span th:text="${order.deliveryAddress}">-</span></p>
+        <p><strong>Trạng thái:</strong> <span th:text="${order.status}">PENDING</span></p>
+
+        <p>Cảm ơn bạn đã tin tưởng mua sắm tại cửa hàng của chúng tôi.</p>
+    </div>
+</body>
+</html>
