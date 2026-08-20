@@ -10,11 +10,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import com.example.productmanager.model.CustomerOrder;
 import com.example.productmanager.model.CustomerOrderItem;
@@ -32,6 +34,8 @@ class OrderServiceTests {
 	private final ProductRepository productRepository = org.mockito.Mockito.mock(ProductRepository.class);
 	private final UserRepository userRepository = org.mockito.Mockito.mock(UserRepository.class);
 	private final UserService userService = org.mockito.Mockito.mock(UserService.class);
+	private final EmailService emailService = org.mockito.Mockito.mock(EmailService.class);
+	private final SpringTemplateEngine templateEngine = org.mockito.Mockito.mock(SpringTemplateEngine.class);
 	private final ResourceBundleMessageSource messageSource = createMessageSource();
 	private final OrderService orderService = new OrderService(
 			customerOrderRepository,
@@ -39,7 +43,8 @@ class OrderServiceTests {
 			userRepository,
 			userService,
 			messageSource,
-			new ConsoleEmailService());
+			emailService,
+			templateEngine);
 	private final CartService cartService = new CartService(messageSource);
 
 	private ResourceBundleMessageSource createMessageSource() {
@@ -153,13 +158,14 @@ class OrderServiceTests {
 
 		CustomerOrder order = CustomerOrder.builder()
 				.id(101L)
-				.user(User.builder().id(9L).build())
+				.user(User.builder().id(9L).email("customer@demo.com").build())
 				.status(OrderStatus.PENDING)
 				.items(List.of(CustomerOrderItem.builder().product(product).quantity(3).build()))
 				.build();
 
 		when(customerOrderRepository.findDetailByIdAndUserId(101L, 9L)).thenReturn(Optional.of(order));
 		when(productRepository.findById(50L)).thenReturn(Optional.of(product));
+		when(templateEngine.process(eq("email/order-cancelled"), any())).thenReturn("<html>cancelled</html>");
 
 		orderService.cancelOrderForUser(9L, 101L);
 
@@ -167,6 +173,10 @@ class OrderServiceTests {
 		assertEquals(10, product.getQuantity());
 		verify(customerOrderRepository).save(order);
 		verify(userService).recordActivity(9L, "Hủy đơn", "Đơn hàng #101 đã được hủy");
+		verify(emailService).sendHtmlEmail(
+					eq("customer@demo.com"),
+					eq("Đơn hàng #101 đã được hủy"),
+					eq("<html>cancelled</html>"));
 	}
 
 	@Test

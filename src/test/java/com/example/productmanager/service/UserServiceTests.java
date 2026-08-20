@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.Mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -16,6 +17,8 @@ import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import com.example.productmanager.model.Role;
 import com.example.productmanager.model.RoleName;
@@ -36,6 +39,15 @@ class UserServiceTests {
 	@Mock
 	private UserActivityRepository userActivityRepository;
 
+	@Mock
+	private EmailService emailService;
+
+	@Mock
+	private PasswordEncoder passwordEncoder;
+
+	@Mock
+	private SpringTemplateEngine templateEngine;
+
 	private final ResourceBundleMessageSource messageSource = createMessageSource();
 
 	private UserService userService;
@@ -51,22 +63,28 @@ class UserServiceTests {
 	@Test
 	void registerCustomerShouldAssignCustomerRole() {
 		Role customerRole = Role.builder().name(RoleName.CUSTOMER).build();
-		userService = new UserService(userRepository, roleRepository, userActivityRepository, messageSource, null);
+		userService = new UserService(userRepository, roleRepository, userActivityRepository, messageSource, passwordEncoder, emailService, templateEngine);
 		when(userRepository.existsByUsername("new-customer")).thenReturn(false);
 		when(userRepository.existsByEmail("customer@example.com")).thenReturn(false);
 		when(roleRepository.findByName(RoleName.CUSTOMER)).thenReturn(Optional.of(customerRole));
+		when(passwordEncoder.encode("secret123")).thenReturn("encoded-secret123");
+		when(templateEngine.process(eq("email/welcome-account"), any())).thenReturn("<html>welcome</html>");
 		when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
 		User savedUser = userService.registerCustomer("new-customer", "secret123", "customer@example.com", "Khách mới");
 
 		assertEquals(RoleName.CUSTOMER, savedUser.getRoles().stream().findFirst().orElseThrow().getName());
 		verify(userActivityRepository).save(any());
+		verify(emailService).sendHtmlEmail(
+					eq("customer@example.com"),
+					eq("Chào mừng bạn đến với hệ thống"),
+					eq("<html>welcome</html>"));
 	}
 
 	@Test
 	void updateProfileShouldPersistFieldsAndLogActivity() {
 		User existingUser = buildExistingUser();
-		userService = new UserService(userRepository, roleRepository, userActivityRepository, messageSource, null);
+		userService = new UserService(userRepository, roleRepository, userActivityRepository, messageSource, passwordEncoder, emailService, templateEngine);
 		when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
 		when(userRepository.existsByEmailAndIdNot("new@demo.com", 1L)).thenReturn(false);
 		when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -84,7 +102,7 @@ class UserServiceTests {
 	@Test
 	void updateProfileShouldRejectDuplicateEmail() {
 		User existingUser = buildExistingUser();
-		userService = new UserService(userRepository, roleRepository, userActivityRepository, messageSource, null);
+		userService = new UserService(userRepository, roleRepository, userActivityRepository, messageSource, passwordEncoder, emailService, templateEngine);
 		when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
 		when(userRepository.existsByEmailAndIdNot("admin@demo.com", 1L)).thenReturn(true);
 
@@ -98,7 +116,7 @@ class UserServiceTests {
 	@Test
 	void changePasswordShouldUpdatePasswordAndLogActivity() {
 		User existingUser = buildExistingUser();
-		userService = new UserService(userRepository, roleRepository, userActivityRepository, messageSource, null);
+		userService = new UserService(userRepository, roleRepository, userActivityRepository, messageSource, passwordEncoder, emailService, templateEngine);
 		when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
 		when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -112,7 +130,7 @@ class UserServiceTests {
 	@Test
 	void changePasswordShouldRejectWrongCurrentPassword() {
 		User existingUser = buildExistingUser();
-		userService = new UserService(userRepository, roleRepository, userActivityRepository, messageSource, null);
+		userService = new UserService(userRepository, roleRepository, userActivityRepository, messageSource, passwordEncoder, emailService, templateEngine);
 		when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
 
 		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,

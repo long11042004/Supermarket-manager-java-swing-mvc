@@ -9,6 +9,14 @@
 </head>
 <body>
   <div class="shell">
+    <div th:if="${specialNoticeMessage}" class="alert" role="alert"
+         th:classappend="${specialNoticeLevel == 'warning'} ? ' alert-warning' : (${specialNoticeLevel == 'success'} ? ' alert-success' : ' alert-info')">
+      <strong>Thông báo:</strong>
+      <span th:text="${specialNoticeMessage}">Thong bao</span>
+      <small class="d-block mt-1 text-muted" th:if="${specialNoticeUpdatedAt != null}"
+             th:text="'Cap nhat: ' + ${#temporals.format(specialNoticeUpdatedAt, 'dd/MM/yyyy HH:mm')}">Cap nhat</small>
+    </div>
+
     <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}">Thành công</div>
     <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">Có lỗi xảy ra</div>
 
@@ -80,5 +88,12 @@
       </div>
     </div>
   </div>
+
+  <script th:if="${previewUrl != null}" th:inline="javascript">
+    const previewUrl = /*[[${previewUrl}]]*/ '';
+    if (previewUrl) {
+      window.open(previewUrl, '_blank', 'noopener,noreferrer');
+    }
+  </script>
 </body>
 </html>

@@ -41,6 +41,14 @@
 </head>
 <body>
   <div class="container py-4">
+    <div th:if="${specialNoticeMessage}" class="alert" role="alert"
+         th:classappend="${specialNoticeLevel == 'warning'} ? ' alert-warning' : (${specialNoticeLevel == 'success'} ? ' alert-success' : ' alert-info')">
+      <strong>Thông báo:</strong>
+      <span th:text="${specialNoticeMessage}">Thong bao</span>
+      <small class="d-block mt-1 text-muted" th:if="${specialNoticeUpdatedAt != null}"
+             th:text="'Cap nhat: ' + ${#temporals.format(specialNoticeUpdatedAt, 'dd/MM/yyyy HH:mm')}">Cap nhat</small>
+    </div>
+
     <div class="topbar d-flex justify-content-between align-items-center flex-wrap gap-3">
       <div>
         <div class="text-success fw-bold text-uppercase small" th:text="#{customer.system}">Siêu thị thông minh</div>

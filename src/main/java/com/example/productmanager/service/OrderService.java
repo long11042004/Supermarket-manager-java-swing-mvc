@@ -8,6 +8,8 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import com.example.productmanager.model.CartItem;
 import com.example.productmanager.model.CustomerOrder;
@@ -31,6 +33,8 @@ public class OrderService {
 	private final UserRepository userRepository;
 	private final UserService userService;
 	private final MessageSource messageSource;
+	private final EmailService emailService;
+	private final SpringTemplateEngine templateEngine;
 
 	private String msg(String key, Object... args) {
 		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
@@ -182,5 +186,15 @@ public class OrderService {
 				.append(" đã được hủy")
 				.toString();
 		userService.recordActivity(userId, "Hủy đơn", details);
+		if (order.getUser() != null && order.getUser().getEmail() != null && !order.getUser().getEmail().isBlank()) {
+			Context context = new Context();
+			context.setVariable("order", order);
+			context.setVariable("recipientName", order.getUser().getFullName());
+			String htmlContent = templateEngine.process("email/order-cancelled", context);
+			emailService.sendHtmlEmail(
+					order.getUser().getEmail(),
+					"Đơn hàng #" + order.getId() + " đã được hủy",
+					htmlContent);
+		}
 	}
 }

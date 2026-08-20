@@ -113,6 +113,15 @@ public class UserController {
 		return assignedRoles;
 	}
 
+	private boolean isCustomerUser(User user) {
+		if (user == null || user.getRoles() == null) {
+			return false;
+		}
+		return user.getRoles().stream()
+				.map(role -> role.getName())
+				.anyMatch(RoleName.CUSTOMER::equals);
+	}
+
 	@GetMapping
 	public String listUsers(Model model,
 			@RequestParam(value = "keyword", required = false) String keyword,
@@ -121,7 +130,9 @@ public class UserController {
 		if (!hasPermission(session, RoleName.ADMIN, RoleName.MANAGER)) {
 			return "redirect:/login";
 		}
-		List<User> users = userService.searchUsers(keyword);
+		List<User> users = userService.searchUsers(keyword).stream()
+				.filter(user -> !isCustomerUser(user))
+				.toList();
 		if (manageableOnly) {
 			users = users.stream()
 					.filter(user -> canEditTargetUser(session, user))
@@ -173,8 +184,14 @@ public class UserController {
 			return "redirect:/users";
 		}
 
-		userService.registerInternalUser(user.getUsername(), user.getPassword(), user.getEmail(), user.getFullName(), selectedRole);
+		User createdUser = userService.registerInternalUser(
+				user.getUsername(),
+				user.getPassword(),
+				user.getEmail(),
+				user.getFullName(),
+				selectedRole);
 		redirectAttributes.addFlashAttribute("successMessage", msg("msg.user.created"));
+		redirectAttributes.addFlashAttribute("previewUrl", "/mail-preview/welcome-account/" + createdUser.getId());
 		return "redirect:/users";
 	}
 
@@ -187,7 +204,9 @@ public class UserController {
 		if (!canEditTargetUser(session, user)) {
 			return "redirect:/users";
 		}
-		List<User> users = userService.getAllUsers();
+		List<User> users = userService.getAllUsers().stream()
+				.filter(item -> !isCustomerUser(item))
+				.toList();
 		Set<Long> restrictedUserIds = users.stream()
 				.filter(item -> !canEditTargetUser(session, item))
 				.map(item -> item.getId())

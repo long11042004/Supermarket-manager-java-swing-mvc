@@ -10,6 +10,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import com.example.productmanager.model.Role;
 import com.example.productmanager.model.RoleName;
@@ -30,6 +32,8 @@ public class UserService {
 	private final UserActivityRepository userActivityRepository;
 	private final MessageSource messageSource;
 	private final PasswordEncoder passwordEncoder;
+	private final EmailService emailService;
+	private final SpringTemplateEngine templateEngine;
 
 	private String msg(String key, Object... args) {
 		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
@@ -80,6 +84,17 @@ public class UserService {
 
 		User savedUser = userRepository.save(user);
 		logActivity(savedUser, "Tạo tài khoản", "Tài khoản được khởi tạo trong hệ thống");
+		if (savedUser.getEmail() != null && !savedUser.getEmail().isBlank()) {
+			String recipientName = savedUser.getFullName() == null ? savedUser.getUsername() : savedUser.getFullName();
+			Context context = new Context();
+			context.setVariable("recipientName", recipientName);
+			context.setVariable("username", savedUser.getUsername());
+			String htmlContent = templateEngine.process("email/welcome-account", context);
+			emailService.sendHtmlEmail(
+					savedUser.getEmail(),
+					"Chào mừng bạn đến với hệ thống",
+					htmlContent);
+		}
 		return savedUser;
 	}
 

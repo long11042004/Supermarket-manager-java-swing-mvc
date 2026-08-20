@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.productmanager.model.CustomerOrder;
 import com.example.productmanager.model.RoleName;
 import com.example.productmanager.model.User;
 import com.example.productmanager.service.CartService;
@@ -67,13 +68,15 @@ public class CustomerOrderController {
 		}
 
 		try {
+			CustomerOrder createdOrder;
 			if (currentUser != null) {
-				orderService.checkout(currentUser.getId(), getOrCreateCart(session), deliveryAddress, contactPhone, note);
+				createdOrder = orderService.checkout(currentUser.getId(), getOrCreateCart(session), deliveryAddress, contactPhone, note);
 			} else {
-				orderService.checkoutAsGuest(guestName, guestEmail, getOrCreateCart(session), deliveryAddress, contactPhone, note);
+				createdOrder = orderService.checkoutAsGuest(guestName, guestEmail, getOrCreateCart(session), deliveryAddress, contactPhone, note);
 			}
 			session.setAttribute("shoppingCart", cartService.clear(getOrCreateCart(session)));
 			redirectAttributes.addFlashAttribute("successMessage", msg("msg.order.created"));
+			redirectAttributes.addFlashAttribute("previewUrl", "/mail-preview/order-confirmation/" + createdOrder.getId());
 		} catch (IllegalArgumentException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 		} catch (DataIntegrityViolationException ex) {
@@ -98,6 +101,7 @@ public class CustomerOrderController {
 		try {
 			orderService.cancelOrderForUser(currentUser.getId(), orderId);
 			redirectAttributes.addFlashAttribute("successMessage", msg("msg.order.cancelled"));
+			redirectAttributes.addFlashAttribute("previewUrl", "/mail-preview/order-cancelled/" + orderId);
 		} catch (IllegalArgumentException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 		} catch (RuntimeException ex) {

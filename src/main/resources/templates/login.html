@@ -20,6 +20,13 @@
     </div>
     <div class="auth-shell">
       <div class="login-card">
+
+      <div th:if="${specialNoticeMessage}" class="alert" role="alert"
+           th:classappend="${specialNoticeLevel == 'warning'} ? ' alert-warning' : (${specialNoticeLevel == 'success'} ? ' alert-success' : ' alert-info')">
+        <strong>Thông báo:</strong>
+        <span th:text="${specialNoticeMessage}">Thong bao</span>
+      </div>
+
       <div class="text-center mb-4">
         <div class="brand" th:text="#{app.system}">Hệ thống siêu thị</div>
         <h2 class="mt-2 mb-0" th:text="#{login.heading}">Đăng nhập</h2>

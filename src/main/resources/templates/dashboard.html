@@ -9,6 +9,14 @@
 </head>
 <body>
   <div class="container py-4">
+    <div th:if="${specialNoticeMessage}" class="alert" role="alert"
+         th:classappend="${specialNoticeLevel == 'warning'} ? ' alert-warning' : (${specialNoticeLevel == 'success'} ? ' alert-success' : ' alert-info')">
+      <strong>Thông báo:</strong>
+      <span th:text="${specialNoticeMessage}">Thong bao</span>
+      <small class="d-block mt-1 text-muted" th:if="${specialNoticeUpdatedAt != null}"
+             th:text="'Cap nhat: ' + ${#temporals.format(specialNoticeUpdatedAt, 'dd/MM/yyyy HH:mm')}">Cap nhat</small>
+    </div>
+
     <div class="topbar d-flex justify-content-between align-items-center flex-wrap gap-3">
       <div>
         <div class="text-primary fw-bold text-uppercase small" th:text="#{dashboard.system}">Hệ thống siêu thị</div>
@@ -19,7 +27,7 @@
         <a th:href="@{/profile}" class="btn btn-outline-dark nav-btn" th:text="#{common.profile}">Tài khoản</a>
         <a th:href="@{/products}" class="btn btn-primary nav-btn" th:text="#{dashboard.viewProducts}">Xem sản phẩm</a>
         <a th:if="${canManageUsers}" th:href="@{/reports}" class="btn btn-outline-success nav-btn" th:text="#{dashboard.report}">Báo cáo</a>
-        <a th:if="${canManageUsers}" th:href="@{/users}" class="btn btn-outline-primary nav-btn" th:text="#{dashboard.manageUsers}">Quản lý người dùng</a>
+        <a th:if="${canManageUsers}" th:href="@{/users}" class="btn btn-outline-primary nav-btn" th:text="#{dashboard.manageUsers}">Quản lý nhân sự</a>
         <form method="get" th:action="@{/dashboard}" class="d-inline-flex align-items-center gap-2">
           <label class="visually-hidden" for="dashboard-language-select" th:text="#{app.language}">Language</label>
           <select id="dashboard-language-select" class="form-select form-select-sm" name="lang" onchange="this.form.submit()">
