@@ -2,6 +2,7 @@ package com.example.productmanager.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.example.productmanager.model.Product;
+import com.example.productmanager.model.User;
 import com.example.productmanager.repository.CustomerOrderRepository;
 
 @Service
@@ -21,30 +23,36 @@ public class SchedulerService {
 	private static final Logger log = LoggerFactory.getLogger(SchedulerService.class);
 
 	private final ProductService productService;
+	private final UserService userService;
+	private final AppSpecialNoticeService appSpecialNoticeService;
 	private final CustomerOrderRepository customerOrderRepository;
 	private final EmailService emailService;
-	private final AppSpecialNoticeService appSpecialNoticeService;
 	private final int lowStockThreshold;
 	private final int expiringDaysAhead;
 	private final String summaryRecipient;
-	private final String specialNoticeMessage;
+	private final String profileReminderTemplate;
+	private final int profileReminderMaxMissingFields;
 
 	public SchedulerService(ProductService productService,
+			UserService userService,
+			AppSpecialNoticeService appSpecialNoticeService,
 			CustomerOrderRepository customerOrderRepository,
 			EmailService emailService,
-			AppSpecialNoticeService appSpecialNoticeService,
 			@Value("${app.scheduling.low-stock-threshold:10}") int lowStockThreshold,
 			@Value("${app.scheduling.expiring-days-ahead:7}") int expiringDaysAhead,
 			@Value("${app.scheduling.daily-summary.recipient:}") String summaryRecipient,
-			@Value("${app.scheduling.special-notice.promo-message:Khuyen mai dac biet hom nay: Giam 10% cho hoa don tu 300.000 VND}") String specialNoticeMessage) {
+			@Value("${app.scheduling.profile-reminder.template:Ban chua bo sung day du thong tin: %s. Vui long cap nhat trong trang ho so.}") String profileReminderTemplate,
+			@Value("${app.scheduling.profile-reminder.max-missing-fields:3}") int profileReminderMaxMissingFields) {
 		this.productService = productService;
+		this.userService = userService;
+		this.appSpecialNoticeService = appSpecialNoticeService;
 		this.customerOrderRepository = customerOrderRepository;
 		this.emailService = emailService;
-		this.appSpecialNoticeService = appSpecialNoticeService;
 		this.lowStockThreshold = lowStockThreshold;
 		this.expiringDaysAhead = expiringDaysAhead;
 		this.summaryRecipient = summaryRecipient;
-		this.specialNoticeMessage = specialNoticeMessage;
+		this.profileReminderTemplate = profileReminderTemplate;
+		this.profileReminderMaxMissingFields = profileReminderMaxMissingFields;
 	}
 
 	@Scheduled(
@@ -59,24 +67,6 @@ public class SchedulerService {
 				expiringSoonProducts.size(),
 				lowStockThreshold,
 				expiringDaysAhead);
-
-		if (!lowStockProducts.isEmpty() || !expiringSoonProducts.isEmpty()) {
-			String warning = new StringBuilder("Canh bao he thong: ")
-					.append(lowStockProducts.size())
-					.append(" san pham sap het, ")
-					.append(expiringSoonProducts.size())
-					.append(" san pham sap het han.")
-					.toString();
-			appSpecialNoticeService.publishWarning(warning);
-		} else {
-			appSpecialNoticeService.publishSuccess("Kho hang dang on dinh. Chua co canh bao ton kho hoac han su dung.");
-		}
-	}
-
-	@Scheduled(cron = "${app.scheduling.special-notice.cron:0 0 9 * * *}", zone = "${app.scheduling.zone:Asia/Ho_Chi_Minh}")
-	public void publishSpecialNotice() {
-		appSpecialNoticeService.publishInfo(specialNoticeMessage);
-		log.info("[SCHEDULED][SPECIAL_NOTICE] published in-app special notice");
 	}
 
 	@Scheduled(cron = "${app.scheduling.daily-summary.cron:0 0 8 * * *}", zone = "${app.scheduling.zone:Asia/Ho_Chi_Minh}")
@@ -105,5 +95,55 @@ public class SchedulerService {
 
 		emailService.sendSimpleEmail(summaryRecipient, "Bao cao he thong hang ngay", report);
 		log.info("[SCHEDULED][DAILY_SUMMARY] sent to {}", summaryRecipient);
+	}
+
+	@Scheduled(cron = "${app.scheduling.profile-reminder.cron:0 */10 * * * *}", zone = "${app.scheduling.zone:Asia/Ho_Chi_Minh}")
+	public void publishIncompleteProfileReminders() {
+		List<User> users = userService.getAllUsers();
+		int warnedUsers = 0;
+
+		for (User user : users) {
+			if (user == null || user.getId() == null || !user.isEnabled()) {
+				continue;
+			}
+
+			List<String> missingFields = collectMissingProfileFields(user);
+			if (missingFields.isEmpty()) {
+				appSpecialNoticeService.clearUserNotice(user.getId());
+				continue;
+			}
+
+			String missingText = String.join(", ", missingFields);
+			String reminder = String.format(profileReminderTemplate, missingText);
+			appSpecialNoticeService.publishUserWarning(user.getId(), reminder);
+			warnedUsers++;
+		}
+
+		log.info("[SCHEDULED][PROFILE_REMINDER] warnedUsers={}, totalUsers={}", warnedUsers, users.size());
+	}
+
+	private List<String> collectMissingProfileFields(User user) {
+		List<String> missing = new ArrayList<>();
+		if (isBlank(user.getPhoneNumber())) {
+			missing.add("so dien thoai");
+		}
+		if (isBlank(user.getAddress())) {
+			missing.add("dia chi");
+		}
+		if (isBlank(user.getEmail())) {
+			missing.add("email");
+		}
+		if (isBlank(user.getFullName())) {
+			missing.add("ho ten");
+		}
+
+		if (missing.size() <= profileReminderMaxMissingFields) {
+			return missing;
+		}
+		return missing.subList(0, profileReminderMaxMissingFields);
+	}
+
+	private boolean isBlank(String value) {
+		return value == null || value.isBlank();
 	}
 }

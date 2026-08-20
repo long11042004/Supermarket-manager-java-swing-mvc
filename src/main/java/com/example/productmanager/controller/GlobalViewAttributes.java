@@ -4,9 +4,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
+import com.example.productmanager.model.User;
 import com.example.productmanager.service.AppSpecialNoticeService;
 import com.example.productmanager.service.AppSpecialNoticeService.Notice;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 
 @ControllerAdvice
@@ -16,8 +18,17 @@ public class GlobalViewAttributes {
 	private final AppSpecialNoticeService appSpecialNoticeService;
 
 	@ModelAttribute
-	public void addGlobalNotice(Model model) {
-		Notice notice = appSpecialNoticeService.getCurrentNotice();
+	public void addGlobalNotice(Model model, HttpSession session) {
+		Notice notice = null;
+		Object loggedInUser = session == null ? null : session.getAttribute("loggedInUser");
+		if (loggedInUser instanceof User user) {
+			notice = appSpecialNoticeService.getUserNotice(user.getId());
+		}
+
+		if (notice == null) {
+			notice = appSpecialNoticeService.getCurrentNotice();
+		}
+
 		if (notice == null) {
 			return;
 		}
