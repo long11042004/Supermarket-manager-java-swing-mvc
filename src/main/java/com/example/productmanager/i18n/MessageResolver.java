@@ -8,11 +8,11 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class MessageResolver {
+public final class MessageResolver {
 
 	private final MessageSource messageSource;
 
-	public String msg(String key, Object... args) {
+	public final String msg(String key, Object... args) {
 		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
 	}
 }

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.productmanager.controller.support.SessionController;
 import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.lifecycle.PrototypeRequestMarker;
 import com.example.productmanager.lifecycle.SessionLifecycleBean;
@@ -32,49 +33,19 @@ import lombok.AllArgsConstructor;
 @Controller
 @RequestMapping("/users")
 @AllArgsConstructor
-public class UserController {
+public class UserController extends SessionController {
 
 	private final UserService userService;
 	private final MessageResolver messageResolver;
 	private final SessionLifecycleBean sessionLifecycleBean;
 	private final ObjectProvider<PrototypeRequestMarker> prototypeRequestMarkerProvider;
 
-	private boolean isAuthenticated(HttpSession session) {
-		return session.getAttribute("loggedInUser") != null;
-	}
-
-	private boolean hasPermission(HttpSession session, RoleName... allowedRoles) {
-		if (!isAuthenticated(session)) {
-			return false;
-		}
-		User currentUser = (User) session.getAttribute("loggedInUser");
-		Set<RoleName> roleNames = currentUser.getRoles() == null ? Set.of() : currentUser.getRoles().stream()
-				.map(role -> role.getName())
-				.collect(Collectors.toSet());
-		for (RoleName role : allowedRoles) {
-			if (roleNames.contains(role)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private Set<RoleName> currentUserRoles(HttpSession session) {
-		if (!isAuthenticated(session)) {
-			return Set.of();
-		}
-		User currentUser = (User) session.getAttribute("loggedInUser");
-		return currentUser.getRoles() == null ? Set.of() : currentUser.getRoles().stream()
-				.map(role -> role.getName())
-				.collect(Collectors.toSet());
-	}
-
 	private boolean isAdmin(HttpSession session) {
-		return currentUserRoles(session).contains(RoleName.ADMIN);
+		return hasRole(session, RoleName.ADMIN);
 	}
 
 	private boolean canEditTargetUser(HttpSession session, User targetUser) {
-		Set<RoleName> actorRoles = currentUserRoles(session);
+		Set<RoleName> actorRoles = currentRoleNames(session);
 		Set<RoleName> targetRoles = targetUser.getRoles() == null ? Set.of() : targetUser.getRoles().stream()
 				.map(role -> role.getName())
 				.collect(Collectors.toSet());

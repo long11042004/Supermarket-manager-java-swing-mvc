@@ -27,11 +27,6 @@ public class ProductRestController {
 
 	private final ProductService productService;
 
-	@GetMapping
-	public List<Product> getAllProducts() {
-		return productService.getProducts(null);
-	}
-
 	@GetMapping("/{id}")
 	public Product getProductById(@PathVariable Long id) {
 		return productService.getProductById(id);

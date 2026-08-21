@@ -1,8 +1,5 @@
 package com.example.productmanager.controller;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -15,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.example.productmanager.controller.support.SessionController;
 import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.lifecycle.PrototypeRequestMarker;
 import com.example.productmanager.lifecycle.SessionLifecycleBean;
@@ -34,7 +32,7 @@ import lombok.AllArgsConstructor;
 @RequestMapping("/products")
 @Validated
 @AllArgsConstructor
-public class ProductController {
+public class ProductController extends SessionController {
 
 	private final ProductService productService;
 	private final CartService cartService;
@@ -43,32 +41,8 @@ public class ProductController {
 	private final SessionLifecycleBean sessionLifecycleBean;
 	private final ObjectProvider<PrototypeRequestMarker> prototypeRequestMarkerProvider;
 
-	private boolean isAuthenticated(HttpSession session) {
-		return session.getAttribute("loggedInUser") != null;
-	}
-
-	private boolean isGuestSession(HttpSession session) {
-		return Boolean.TRUE.equals(session.getAttribute("guestCheckout"));
-	}
-
 	private boolean canShop(HttpSession session) {
 		return isAuthenticated(session) || isGuestSession(session);
-	}
-
-	private boolean hasPermission(HttpSession session, RoleName... allowedRoles) {
-		if (!isAuthenticated(session)) {
-			return false;
-		}
-		User currentUser = (User) session.getAttribute("loggedInUser");
-		Set<RoleName> roleNames = currentUser.getRoles() == null ? Set.of() : currentUser.getRoles().stream()
-				.map(role -> role.getName())
-				.collect(Collectors.toSet());
-		for (RoleName role : allowedRoles) {
-			if (roleNames.contains(role)) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	@GetMapping
@@ -123,7 +97,7 @@ public class ProductController {
 			Product product = productService.getProductById(id);
 			CartView updatedCart = cartService.addItem(getOrCreateCart(session), product, quantity);
 			session.setAttribute("shoppingCart", updatedCart);
-			User currentUser = (User) session.getAttribute("loggedInUser");
+			User currentUser = getCurrentUser(session);
 			if (currentUser != null) {
 				String details = new StringBuilder("Đã thêm ")
 						.append(product.getName())

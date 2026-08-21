@@ -1,8 +1,5 @@
 package com.example.productmanager.controller;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -15,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.productmanager.controller.support.SessionController;
 import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.lifecycle.PrototypeRequestMarker;
 import com.example.productmanager.lifecycle.SessionLifecycleBean;
@@ -31,7 +29,7 @@ import lombok.AllArgsConstructor;
 @Controller
 @RequestMapping("/orders")
 @AllArgsConstructor
-public class CustomerOrderController {
+public class CustomerOrderController extends SessionController {
 	private static final Logger log = LoggerFactory.getLogger(CustomerOrderController.class);
 
 	private final OrderService orderService;
@@ -117,14 +115,11 @@ public class CustomerOrderController {
 	}
 
 	private User getCustomer(HttpSession session) {
-		User currentUser = (User) session.getAttribute("loggedInUser");
-		if (currentUser == null) {
+		User currentUser = getCurrentUser(session);
+		if (currentUser == null || !hasRole(session, RoleName.CUSTOMER)) {
 			return null;
 		}
-		Set<RoleName> roleNames = currentUser.getRoles() == null ? Set.of() : currentUser.getRoles().stream()
-				.map(role -> role.getName())
-				.collect(Collectors.toSet());
-		return roleNames.contains(RoleName.CUSTOMER) ? currentUser : null;
+		return currentUser;
 	}
 
 	private CartView getOrCreateCart(HttpSession session) {
