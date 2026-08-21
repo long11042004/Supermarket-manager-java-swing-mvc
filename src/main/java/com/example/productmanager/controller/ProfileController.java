@@ -1,5 +1,6 @@
 package com.example.productmanager.controller;
 
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +11,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.model.User;
+import com.example.productmanager.model.UserActivity;
 import com.example.productmanager.service.UserService;
 
 import jakarta.servlet.http.HttpSession;
@@ -24,16 +26,23 @@ public class ProfileController {
 	private final MessageResolver messageResolver;
 
 	@GetMapping
-	public String profile(Model model, HttpSession session) {
+	public String profile(Model model,
+			@RequestParam(value = "page", defaultValue = "0") int page,
+			@RequestParam(value = "size", defaultValue = "10") int size,
+			HttpSession session) {
 		User currentUser = getAuthenticatedUser(session);
 		if (currentUser == null) {
 			return "redirect:/login";
 		}
 
 		User freshUser = userService.getUserById(currentUser.getId());
+		Page<UserActivity> activitiesPage = userService.getActivities(freshUser.getId(), page, size);
 		session.setAttribute("loggedInUser", freshUser);
 		model.addAttribute("currentUser", freshUser);
-		model.addAttribute("activities", userService.getRecentActivities(freshUser.getId()));
+		model.addAttribute("activities", activitiesPage.getContent());
+		model.addAttribute("currentPage", activitiesPage.getNumber());
+		model.addAttribute("totalPages", activitiesPage.getTotalPages());
+		model.addAttribute("pageSize", activitiesPage.getSize());
 		return "profile";
 	}
 

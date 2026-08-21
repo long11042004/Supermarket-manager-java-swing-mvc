@@ -120,7 +120,18 @@
         <div class="profile-card mt-4">
           <div class="history-header">
             <h3 class="section-title mb-0" th:text="#{profile.activityHistory}">Lịch sử hoạt động</h3>
-            <span class="history-caption" th:text="#{profile.recent10}">10 thao tác gần nhất</span>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <span class="history-caption" th:text="'Trang ' + (${currentPage} + 1) + ' / ' + (${totalPages == 0 ? 1 : totalPages})">Trang 1 / 1</span>
+              <form method="get" th:action="@{/profile}" class="d-inline-flex align-items-center gap-2">
+                <input type="hidden" name="page" value="0" />
+                <label for="activity-page-size" class="small text-muted">Mỗi trang</label>
+                <select id="activity-page-size" name="size" class="form-select form-select-sm" onchange="this.form.submit()">
+                  <option value="5" th:selected="${pageSize == 5}">5</option>
+                  <option value="10" th:selected="${pageSize == 10}">10</option>
+                  <option value="20" th:selected="${pageSize == 20}">20</option>
+                </select>
+              </form>
+            </div>
           </div>
           <div th:if="${#lists.isEmpty(activities)}" class="text-muted" th:text="#{profile.noActivities}">Chưa có hoạt động nào được ghi nhận.</div>
           <div th:unless="${#lists.isEmpty(activities)}" class="table-responsive">
@@ -140,6 +151,25 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mt-3" th:if="${totalPages > 1}">
+            <a class="btn btn-outline-secondary btn-sm"
+               th:href="@{/profile(page=${currentPage - 1},size=${pageSize})}"
+               th:classappend="${currentPage == 0} ? ' disabled' : ''"
+               aria-label="Trang trước">Trước</a>
+
+            <div class="d-flex align-items-center gap-2">
+              <a th:each="pageIndex : ${#numbers.sequence(0, totalPages - 1)}"
+                 th:href="@{/profile(page=${pageIndex},size=${pageSize})}"
+                 class="btn btn-sm"
+                 th:classappend="${pageIndex == currentPage} ? ' btn-primary' : ' btn-outline-primary'"
+                 th:text="${pageIndex + 1}">1</a>
+            </div>
+
+            <a class="btn btn-outline-secondary btn-sm"
+               th:href="@{/profile(page=${currentPage + 1},size=${pageSize})}"
+               th:classappend="${currentPage + 1 >= totalPages} ? ' disabled' : ''"
+               aria-label="Trang sau">Sau</a>
           </div>
         </div>
       </div>

@@ -31,7 +31,7 @@
           <span class="date-badge-label" th:text="#{common.today}">Today</span>
           <strong th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}">13/08/2026</strong>
         </div>
-        <span class="badge bg-primary fs-6" th:text="${isCustomer or isGuest} ? #{app.total(${#lists.size(products)})} : ${#lists.size(products)} + ' sản phẩm'">Tổng: 0</span>
+        <span class="badge bg-primary fs-6" th:text="${isCustomer or isGuest} ? #{app.total(${totalProducts})} : ${totalProducts} + ' sản phẩm'">Tổng: 0</span>
         <span th:if="${isCustomer or isGuest}" class="badge bg-warning text-dark fs-6" th:text="#{app.cartBadge(${cart.itemCount})}">Giỏ: 0</span>
 
         <div class="d-flex align-items-center gap-2">
@@ -64,7 +64,7 @@
         </div>
         <div class="summary-pills">
           <span class="summary-pill">
-            <strong th:text="${#lists.size(products)}">0</strong>
+            <strong th:text="${totalProducts}">0</strong>
             <small th:text="${isCustomer or isGuest} ? #{app.totalProducts} : 'Sản phẩm kho'">Sản phẩm</small>
           </span>
           <span class="summary-pill muted">
@@ -75,6 +75,8 @@
       </div>
 
       <form method="get" th:action="@{/products}" class="row g-2 align-items-center toolbar-form">
+        <input type="hidden" name="page" value="0" />
+        <input type="hidden" name="size" th:value="${pageSize}" />
         <div class="col-md-5">
           <label class="form-label mb-1" for="keyword" th:text="#{app.searchLabel}">Tìm kiếm</label>
           <input id="keyword" type="text" class="form-control" name="keyword" th:value="${keyword}" th:placeholder="#{app.searchPlaceholder}" />
@@ -234,7 +236,20 @@
               <p class="mb-0 text-muted"
                  th:text="${isCustomer or isGuest} ? 'Khám phá những lựa chọn mới nhất cho bạn' : 'Theo dõi trạng thái kho, giá và hạn sử dụng của sản phẩm'">Khám phá những lựa chọn mới nhất cho bạn</p>
             </div>
-            <span class="catalog-count" th:text="${isCustomer or isGuest} ? #{app.total(${#lists.size(products)})} : ${#lists.size(products)} + ' mặt hàng'">Tổng: 0</span>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <span class="catalog-count" th:text="${isCustomer or isGuest} ? #{app.total(${totalProducts})} : ${totalProducts} + ' mặt hàng'">Tổng: 0</span>
+              <form method="get" th:action="@{/products}" class="d-inline-flex align-items-center gap-2">
+                <input type="hidden" name="keyword" th:value="${keyword}" />
+                <input type="hidden" name="category" th:value="${category}" />
+                <input type="hidden" name="page" value="0" />
+                <label for="product-page-size" class="small text-muted">Mỗi trang</label>
+                <select id="product-page-size" name="size" class="form-select form-select-sm" onchange="this.form.submit()">
+                  <option value="8" th:selected="${pageSize == 8}">8</option>
+                  <option value="12" th:selected="${pageSize == 12}">12</option>
+                  <option value="20" th:selected="${pageSize == 20}">20</option>
+                </select>
+              </form>
+            </div>
           </div>
 
           <div class="product-grid">
@@ -274,6 +289,26 @@
                 </div>
               </div>
             </article>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mt-3" th:if="${totalPages > 1}">
+            <a class="btn btn-outline-secondary btn-sm"
+               th:href="@{/products(page=${currentPage - 1},size=${pageSize},keyword=${keyword},category=${category})}"
+               th:classappend="${currentPage == 0} ? ' disabled' : ''"
+               aria-label="Trang trước">Trước</a>
+
+            <div class="d-flex align-items-center gap-2">
+              <a th:each="pageIndex : ${#numbers.sequence(0, totalPages - 1)}"
+                 th:href="@{/products(page=${pageIndex},size=${pageSize},keyword=${keyword},category=${category})}"
+                 class="btn btn-sm"
+                 th:classappend="${pageIndex == currentPage} ? ' btn-primary' : ' btn-outline-primary'"
+                 th:text="${pageIndex + 1}">1</a>
+            </div>
+
+            <a class="btn btn-outline-secondary btn-sm"
+               th:href="@{/products(page=${currentPage + 1},size=${pageSize},keyword=${keyword},category=${category})}"
+               th:classappend="${currentPage + 1 >= totalPages} ? ' disabled' : ''"
+               aria-label="Trang sau">Sau</a>
           </div>
         </div>
       </div>

@@ -3,6 +3,8 @@ package com.example.productmanager.repository;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,7 +19,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 			  AND (:category = '' OR LOWER(p.category) = LOWER(:category))
 			ORDER BY LOWER(p.name) ASC
 			""")
-	List<Product> findByKeywordAndCategory(@Param("keyword") String keyword, @Param("category") String category);
+	Page<Product> findByKeywordAndCategory(
+			@Param("keyword") String keyword,
+			@Param("category") String category,
+			Pageable pageable);
 
 	@Query("SELECT DISTINCT p.category FROM Product p WHERE p.category IS NOT NULL AND TRIM(p.category) <> '' ORDER BY LOWER(p.category) ASC")
 	List<String> findDistinctCategories();

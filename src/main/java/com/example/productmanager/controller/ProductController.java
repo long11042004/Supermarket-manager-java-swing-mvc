@@ -3,6 +3,7 @@ package com.example.productmanager.controller;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
@@ -69,6 +70,8 @@ public class ProductController {
 	public String showProductsPage(
 			@RequestParam(value = "keyword", required = false) String keyword,
 			@RequestParam(value = "category", required = false) String category,
+			@RequestParam(value = "page", defaultValue = "0") int page,
+			@RequestParam(value = "size", defaultValue = "12") int size,
 			HttpSession session,
 			Model model) {
 		if (isAuthenticated(session)
@@ -78,7 +81,12 @@ public class ProductController {
 		if (!canShop(session) && session.getAttribute("loggedInUser") == null) {
 			session.setAttribute("guestCheckout", true);
 		}
-		model.addAttribute("products", productService.getFilteredProducts(keyword, category));
+		Page<Product> productsPage = productService.getFilteredProducts(keyword, category, page, size);
+		model.addAttribute("products", productsPage.getContent());
+		model.addAttribute("currentPage", productsPage.getNumber());
+		model.addAttribute("totalPages", productsPage.getTotalPages());
+		model.addAttribute("pageSize", productsPage.getSize());
+		model.addAttribute("totalProducts", productsPage.getTotalElements());
 		model.addAttribute("product", new Product());
 		model.addAttribute("keyword", keyword == null ? "" : keyword);
 		model.addAttribute("category", category == null ? "" : category);
@@ -179,8 +187,13 @@ public class ProductController {
 			return "redirect:/login";
 		}
 		Product product = productService.getProductById(id);
+		Page<Product> productsPage = productService.getFilteredProducts(null, null, 0, 12);
 		model.addAttribute("product", product);
-		model.addAttribute("products", productService.getFilteredProducts(null, null));
+		model.addAttribute("products", productsPage.getContent());
+		model.addAttribute("currentPage", productsPage.getNumber());
+		model.addAttribute("totalPages", productsPage.getTotalPages());
+		model.addAttribute("pageSize", productsPage.getSize());
+		model.addAttribute("totalProducts", productsPage.getTotalElements());
 		model.addAttribute("keyword", "");
 		model.addAttribute("category", "");
 		model.addAttribute("categories", productService.getAllCategories());

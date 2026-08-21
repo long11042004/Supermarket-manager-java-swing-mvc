@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -242,8 +243,10 @@ public class UserService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<UserActivity> getRecentActivities(Long userId) {
-		return userActivityRepository.findRecentActivitiesByUserId(userId, PageRequest.of(0, 10));
+	public Page<UserActivity> getActivities(Long userId, int page, int size) {
+		int normalizedPage = Math.max(page, 0);
+		int normalizedSize = (size == 5 || size == 10 || size == 20) ? size : 10;
+		return userActivityRepository.findRecentActivitiesByUserId(userId, PageRequest.of(normalizedPage, normalizedSize));
 	}
 
 	private void logActivity(User user, String action, String details) {

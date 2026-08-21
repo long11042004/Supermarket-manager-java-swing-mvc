@@ -15,6 +15,7 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
+import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.model.Role;
 import com.example.productmanager.model.RoleName;
 import com.example.productmanager.model.User;
@@ -23,8 +24,8 @@ import com.example.productmanager.service.UserService;
 class UserControllerTests {
 
 	private final UserService userService = org.mockito.Mockito.mock(UserService.class);
-	private final ResourceBundleMessageSource messageSource = createMessageSource();
-	private final UserController userController = new UserController(userService, messageSource);
+	private final MessageResolver messageResolver = new MessageResolver(createMessageSource());
+	private final UserController userController = new UserController(userService, messageResolver);
 
 	private ResourceBundleMessageSource createMessageSource() {
 		LocaleContextHolder.setLocale(Locale.forLanguageTag("vi-VN"));

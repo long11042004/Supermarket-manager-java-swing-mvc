@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.example.productmanager.model.Product;
@@ -23,11 +25,15 @@ public class ProductService {
 		return productRepository.findAll();
 	}
 
-	public List<Product> getFilteredProducts(String keyword, String category) {
+	public Page<Product> getFilteredProducts(String keyword, String category, int page, int size) {
 		String normalizedKeyword = keyword == null ? "" : keyword.trim();
 		String normalizedCategory = category == null ? "" : category.trim();
-
-		return productRepository.findByKeywordAndCategory(normalizedKeyword, normalizedCategory);
+		int normalizedPage = Math.max(page, 0);
+		int normalizedSize = (size == 8 || size == 12 || size == 20) ? size : 12;
+		return productRepository.findByKeywordAndCategory(
+				normalizedKeyword,
+				normalizedCategory,
+				PageRequest.of(normalizedPage, normalizedSize));
 	}
 
 	public List<String> getAllCategories() {
