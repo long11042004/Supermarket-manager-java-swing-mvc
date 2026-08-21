@@ -126,11 +126,6 @@ public class UserService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<User> getAllUsers() {
-		return userRepository.findAll();
-	}
-
-	@Transactional(readOnly = true)
 	public User getUserById(Long id) {
 		return userRepository.findById(id)
 				.orElseThrow(() -> new RuntimeException(messageResolver.msg("err.user.notFoundById", id)));
@@ -156,10 +151,8 @@ public class UserService {
 
 	@Transactional(readOnly = true)
 	public List<User> searchUsers(String keyword) {
-		if (keyword == null || keyword.trim().isEmpty()) {
-			return getAllUsers();
-		}
-		return userRepository.searchByFullName(keyword.trim());
+		String normalizedKeyword = keyword == null ? "" : keyword.trim();
+		return userRepository.searchByFullName(normalizedKeyword);
 	}
 
 	@Transactional(readOnly = true)

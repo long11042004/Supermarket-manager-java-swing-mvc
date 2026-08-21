@@ -29,7 +29,7 @@ public class ProductRestController {
 
 	@GetMapping
 	public List<Product> getAllProducts() {
-		return productService.getAllProducts();
+		return productService.getProducts(null);
 	}
 
 	@GetMapping("/{id}")
@@ -52,11 +52,6 @@ public class ProductRestController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteProduct(@PathVariable Long id) {
 		productService.deleteProduct(id);
-	}
-
-	@GetMapping("/search")
-	public List<Product> searchByName(@RequestParam String keyword) {
-		return productService.searchByName(keyword);
 	}
 
 	@GetMapping("/category")

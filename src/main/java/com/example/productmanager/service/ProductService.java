@@ -21,8 +21,9 @@ public class ProductService {
 	private final ProductRepository productRepository;
 	private final CustomerOrderRepository customerOrderRepository;
 
-	public List<Product> getAllProducts() {
-		return productRepository.findAll();
+	public List<Product> getProducts(String keyword) {
+		String normalizedKeyword = keyword == null ? "" : keyword.trim();
+		return productRepository.getProducts(normalizedKeyword);
 	}
 
 	public Page<Product> getFilteredProducts(String keyword, String category, int page, int size) {
@@ -73,10 +74,6 @@ public class ProductService {
 		} catch (DataIntegrityViolationException ex) {
 			throw new IllegalArgumentException("Khong the xoa san pham nay vi da phat sinh du lieu lien quan (don hang).", ex);
 		}
-	}
-
-	public List<Product> searchByName(String keyword) {
-		return productRepository.searchByName(keyword);
 	}
 
 	public List<Product> filterByCategory(String category) {

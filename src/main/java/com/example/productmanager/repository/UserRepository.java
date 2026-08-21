@@ -45,7 +45,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	List<User> searchByKeywordExcludingRoles(@Param("keyword") String keyword,
 			@Param("excludedRoles") List<RoleName> excludedRoles);
 
-	@Query("SELECT u FROM User u WHERE LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) ORDER BY u.fullName ASC")
+	@Query("""
+			SELECT u FROM User u
+			WHERE (:keyword = '' OR LOWER(COALESCE(u.fullName, '')) LIKE LOWER(CONCAT('%', :keyword, '%')))
+			ORDER BY LOWER(COALESCE(u.fullName, u.username)) ASC
+			""")
 	List<User> searchByFullName(@Param("keyword") String keyword);
 
 	@Query("SELECT u FROM User u JOIN u.roles r WHERE r.name = :roleName")

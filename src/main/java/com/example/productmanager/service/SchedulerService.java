@@ -99,7 +99,7 @@ public class SchedulerService {
 
 	@Scheduled(cron = "${app.scheduling.profile-reminder.cron:0 */10 * * * *}", zone = "${app.scheduling.zone:Asia/Ho_Chi_Minh}")
 	public void publishIncompleteProfileReminders() {
-		List<User> users = userService.getAllUsers();
+		List<User> users = userService.searchUsers(null);
 		int warnedUsers = 0;
 
 		for (User user : users) {

@@ -10,12 +10,15 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
 import com.example.productmanager.i18n.MessageResolver;
+import com.example.productmanager.lifecycle.PrototypeRequestMarker;
+import com.example.productmanager.lifecycle.SessionLifecycleBean;
 import com.example.productmanager.model.Role;
 import com.example.productmanager.model.RoleName;
 import com.example.productmanager.model.User;
@@ -25,7 +28,10 @@ class UserControllerTests {
 
 	private final UserService userService = org.mockito.Mockito.mock(UserService.class);
 	private final MessageResolver messageResolver = new MessageResolver(createMessageSource());
-	private final UserController userController = new UserController(userService, messageResolver);
+	private final SessionLifecycleBean sessionLifecycleBean = org.mockito.Mockito.mock(SessionLifecycleBean.class);
+	@SuppressWarnings("unchecked")
+	private final ObjectProvider<PrototypeRequestMarker> prototypRequestMarker = org.mockito.Mockito.mock(ObjectProvider.class);
+	private final UserController userController = new UserController(userService, messageResolver, sessionLifecycleBean, prototypRequestMarker);
 
 	private ResourceBundleMessageSource createMessageSource() {
 		LocaleContextHolder.setLocale(Locale.forLanguageTag("vi-VN"));
@@ -96,4 +102,8 @@ class UserControllerTests {
 				.enabled(true)
 				.build();
 	}
+
+    public ObjectProvider<PrototypeRequestMarker> getPrototypRequestMarker() {
+        return prototypRequestMarker;
+    }
 }

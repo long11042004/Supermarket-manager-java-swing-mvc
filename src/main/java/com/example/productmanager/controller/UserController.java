@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.productmanager.i18n.MessageResolver;
+import com.example.productmanager.lifecycle.PrototypeRequestMarker;
+import com.example.productmanager.lifecycle.SessionLifecycleBean;
 import com.example.productmanager.model.RoleName;
 import com.example.productmanager.model.User;
 import com.example.productmanager.service.UserService;
@@ -33,6 +36,8 @@ public class UserController {
 
 	private final UserService userService;
 	private final MessageResolver messageResolver;
+	private final SessionLifecycleBean sessionLifecycleBean;
+	private final ObjectProvider<PrototypeRequestMarker> prototypeRequestMarkerProvider;
 
 	private boolean isAuthenticated(HttpSession session) {
 		return session.getAttribute("loggedInUser") != null;
@@ -116,6 +121,8 @@ public class UserController {
 		if (!hasPermission(session, RoleName.ADMIN, RoleName.MANAGER)) {
 			return "redirect:/login";
 		}
+		PrototypeRequestMarker requestMarker = prototypeRequestMarkerProvider.getObject();
+		int visitCount = sessionLifecycleBean.increaseAndGetVisitCount();
 		List<User> users = userService.searchUsersForManagement(keyword, manageableOnly, isAdmin(session));
 		Set<Long> restrictedUserIds = users.stream()
 				.filter(user -> !canEditTargetUser(session, user))
@@ -138,6 +145,9 @@ public class UserController {
 		model.addAttribute("restrictedReasons", restrictedReasons);
 		model.addAttribute("assignedRoles", assignedRolesByUserId(users));
 		model.addAttribute("newUser", new User());
+		model.addAttribute("lifecycleSessionToken", sessionLifecycleBean.getSessionToken());
+		model.addAttribute("lifecycleVisitCount", visitCount);
+		model.addAttribute("lifecycleRequestMarker", requestMarker.getMarkerId());
 		return "users";
 	}
 
@@ -179,6 +189,8 @@ public class UserController {
 		if (!hasPermission(session, RoleName.ADMIN, RoleName.MANAGER)) {
 			return "redirect:/login";
 		}
+		PrototypeRequestMarker requestMarker = prototypeRequestMarkerProvider.getObject();
+		int visitCount = sessionLifecycleBean.increaseAndGetVisitCount();
 		User user = userService.getUserById(id);
 		if (!canEditTargetUser(session, user)) {
 			return "redirect:/users";
@@ -206,6 +218,9 @@ public class UserController {
 		model.addAttribute("restrictedReasons", restrictedReasons);
 		model.addAttribute("selectedRoles", user.getRoles().stream().map(role -> role.getName()).collect(Collectors.toSet()));
 		model.addAttribute("newUser", new User());
+		model.addAttribute("lifecycleSessionToken", sessionLifecycleBean.getSessionToken());
+		model.addAttribute("lifecycleVisitCount", visitCount);
+		model.addAttribute("lifecycleRequestMarker", requestMarker.getMarkerId());
 		return "users";
 	}
 

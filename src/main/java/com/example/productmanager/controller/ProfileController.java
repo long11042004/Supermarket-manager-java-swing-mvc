@@ -1,5 +1,6 @@
 package com.example.productmanager.controller;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.productmanager.i18n.MessageResolver;
+import com.example.productmanager.lifecycle.PrototypeRequestMarker;
+import com.example.productmanager.lifecycle.SessionLifecycleBean;
 import com.example.productmanager.model.User;
 import com.example.productmanager.model.UserActivity;
 import com.example.productmanager.service.UserService;
@@ -24,6 +27,8 @@ public class ProfileController {
 
 	private final UserService userService;
 	private final MessageResolver messageResolver;
+	private final SessionLifecycleBean sessionLifecycleBean;
+	private final ObjectProvider<PrototypeRequestMarker> prototypeRequestMarkerProvider;
 
 	@GetMapping
 	public String profile(Model model,
@@ -36,6 +41,8 @@ public class ProfileController {
 		}
 
 		User freshUser = userService.getUserById(currentUser.getId());
+		PrototypeRequestMarker requestMarker = prototypeRequestMarkerProvider.getObject();
+		int visitCount = sessionLifecycleBean.increaseAndGetVisitCount();
 		Page<UserActivity> activitiesPage = userService.getActivities(freshUser.getId(), page, size);
 		session.setAttribute("loggedInUser", freshUser);
 		model.addAttribute("currentUser", freshUser);
@@ -43,6 +50,9 @@ public class ProfileController {
 		model.addAttribute("currentPage", activitiesPage.getNumber());
 		model.addAttribute("totalPages", activitiesPage.getTotalPages());
 		model.addAttribute("pageSize", activitiesPage.getSize());
+		model.addAttribute("lifecycleSessionToken", sessionLifecycleBean.getSessionToken());
+		model.addAttribute("lifecycleVisitCount", visitCount);
+		model.addAttribute("lifecycleRequestMarker", requestMarker.getMarkerId());
 		return "profile";
 	}
 

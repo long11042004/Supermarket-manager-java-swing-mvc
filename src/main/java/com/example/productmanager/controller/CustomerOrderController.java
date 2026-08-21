@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.productmanager.i18n.MessageResolver;
+import com.example.productmanager.lifecycle.PrototypeRequestMarker;
+import com.example.productmanager.lifecycle.SessionLifecycleBean;
 import com.example.productmanager.model.CustomerOrder;
 import com.example.productmanager.model.RoleName;
 import com.example.productmanager.model.User;
@@ -34,6 +37,8 @@ public class CustomerOrderController {
 	private final OrderService orderService;
 	private final CartService cartService;
 	private final MessageResolver messageResolver;
+	private final SessionLifecycleBean sessionLifecycleBean;
+	private final ObjectProvider<PrototypeRequestMarker> prototypeRequestMarkerProvider;
 
 	@GetMapping
 	public String myOrders(Model model, HttpSession session) {
@@ -41,10 +46,15 @@ public class CustomerOrderController {
 		if (currentUser == null) {
 			return "redirect:/products";
 		}
+		PrototypeRequestMarker requestMarker = prototypeRequestMarkerProvider.getObject();
+		int visitCount = sessionLifecycleBean.increaseAndGetVisitCount();
 
 		model.addAttribute("currentUser", currentUser);
 		model.addAttribute("orders", orderService.getOrdersForUser(currentUser.getId()));
 		model.addAttribute("cart", getOrCreateCart(session));
+		model.addAttribute("lifecycleSessionToken", sessionLifecycleBean.getSessionToken());
+		model.addAttribute("lifecycleVisitCount", visitCount);
+		model.addAttribute("lifecycleRequestMarker", requestMarker.getMarkerId());
 		return "orders";
 	}
 

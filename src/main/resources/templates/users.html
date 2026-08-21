@@ -19,6 +19,11 @@
 
     <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}">Thành công</div>
     <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">Có lỗi xảy ra</div>
+    <div class="alert alert-light border small py-2" th:if="${lifecycleSessionToken != null and lifecycleRequestMarker != null}">
+      Session token: <strong th:text="${lifecycleSessionToken}">token</strong>
+      | Session visits: <strong th:text="${lifecycleVisitCount}">1</strong>
+      | Request marker: <strong th:text="${lifecycleRequestMarker}">marker</strong>
+    </div>
 
     <div class="toolbar-row mb-4">
       <div>
