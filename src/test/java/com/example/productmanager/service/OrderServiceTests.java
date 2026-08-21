@@ -28,6 +28,7 @@ import com.example.productmanager.repository.CustomerOrderRepository;
 import com.example.productmanager.repository.ProductRepository;
 import com.example.productmanager.repository.UserRepository;
 import com.example.productmanager.service.CartService.CartView;
+import com.example.productmanager.service.emailservice.EmailService;
 
 class OrderServiceTests {
 

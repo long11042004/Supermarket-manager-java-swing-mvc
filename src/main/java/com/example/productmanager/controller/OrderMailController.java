@@ -14,7 +14,7 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import com.example.productmanager.model.CustomerOrder;
 import com.example.productmanager.repository.CustomerOrderRepository;
-import com.example.productmanager.service.EmailService;
+import com.example.productmanager.service.emailservice.EmailService;
 
 import lombok.AllArgsConstructor;
 

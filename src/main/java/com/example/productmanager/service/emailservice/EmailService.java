@@ -1,4 +1,4 @@
-package com.example.productmanager.service;
+package com.example.productmanager.service.emailservice;
 
 public interface EmailService {
 	void sendSimpleEmail(String to, String subject, String text);

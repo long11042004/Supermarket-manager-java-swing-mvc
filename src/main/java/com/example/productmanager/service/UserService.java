@@ -20,6 +20,7 @@ import com.example.productmanager.model.UserActivity;
 import com.example.productmanager.repository.RoleRepository;
 import com.example.productmanager.repository.UserActivityRepository;
 import com.example.productmanager.repository.UserRepository;
+import com.example.productmanager.service.emailservice.EmailService;
 
 import lombok.AllArgsConstructor;
 

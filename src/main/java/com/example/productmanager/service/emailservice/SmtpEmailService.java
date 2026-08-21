@@ -1,4 +1,4 @@
-package com.example.productmanager.service;
+package com.example.productmanager.service.emailservice;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

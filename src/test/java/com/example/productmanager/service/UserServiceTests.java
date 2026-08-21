@@ -27,6 +27,7 @@ import com.example.productmanager.model.User;
 import com.example.productmanager.repository.RoleRepository;
 import com.example.productmanager.repository.UserActivityRepository;
 import com.example.productmanager.repository.UserRepository;
+import com.example.productmanager.service.emailservice.EmailService;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTests {
