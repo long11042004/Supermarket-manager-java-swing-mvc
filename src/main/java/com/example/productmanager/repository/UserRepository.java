@@ -27,6 +27,24 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	@Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM User u WHERE u.email = :email AND u.id <> :userId")
 	boolean existsByEmailAndIdNot(@Param("email") String email, @Param("userId") Long userId);
 
+	@Query("""
+			SELECT DISTINCT u FROM User u
+			WHERE (:keyword = '' OR LOWER(COALESCE(u.fullName, '')) LIKE LOWER(CONCAT('%', :keyword, '%')))
+			  AND NOT EXISTS (SELECT r FROM u.roles r WHERE r.name = :excludedRole)
+			ORDER BY LOWER(COALESCE(u.fullName, u.username)) ASC
+			""")
+	List<User> searchByKeywordExcludingRole(@Param("keyword") String keyword,
+			@Param("excludedRole") RoleName excludedRole);
+
+	@Query("""
+			SELECT DISTINCT u FROM User u
+			WHERE (:keyword = '' OR LOWER(COALESCE(u.fullName, '')) LIKE LOWER(CONCAT('%', :keyword, '%')))
+			  AND NOT EXISTS (SELECT r FROM u.roles r WHERE r.name IN :excludedRoles)
+			ORDER BY LOWER(COALESCE(u.fullName, u.username)) ASC
+			""")
+	List<User> searchByKeywordExcludingRoles(@Param("keyword") String keyword,
+			@Param("excludedRoles") List<RoleName> excludedRoles);
+
 	@Query("SELECT u FROM User u WHERE LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) ORDER BY u.fullName ASC")
 	List<User> searchByFullName(@Param("keyword") String keyword);
 

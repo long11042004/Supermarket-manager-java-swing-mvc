@@ -113,15 +113,6 @@ public class UserController {
 		return assignedRoles;
 	}
 
-	private boolean isCustomerUser(User user) {
-		if (user == null || user.getRoles() == null) {
-			return false;
-		}
-		return user.getRoles().stream()
-				.map(role -> role.getName())
-				.anyMatch(RoleName.CUSTOMER::equals);
-	}
-
 	@GetMapping
 	public String listUsers(Model model,
 			@RequestParam(value = "keyword", required = false) String keyword,
@@ -130,14 +121,7 @@ public class UserController {
 		if (!hasPermission(session, RoleName.ADMIN, RoleName.MANAGER)) {
 			return "redirect:/login";
 		}
-		List<User> users = userService.searchUsers(keyword).stream()
-				.filter(user -> !isCustomerUser(user))
-				.toList();
-		if (manageableOnly) {
-			users = users.stream()
-					.filter(user -> canEditTargetUser(session, user))
-					.toList();
-		}
+		List<User> users = userService.searchUsersForManagement(keyword, manageableOnly, isAdmin(session));
 		Set<Long> restrictedUserIds = users.stream()
 				.filter(user -> !canEditTargetUser(session, user))
 				.map(user -> user.getId())
@@ -204,9 +188,7 @@ public class UserController {
 		if (!canEditTargetUser(session, user)) {
 			return "redirect:/users";
 		}
-		List<User> users = userService.getAllUsers().stream()
-				.filter(item -> !isCustomerUser(item))
-				.toList();
+		List<User> users = userService.searchUsersForManagement(null, false, isAdmin(session));
 		Set<Long> restrictedUserIds = users.stream()
 				.filter(item -> !canEditTargetUser(session, item))
 				.map(item -> item.getId())

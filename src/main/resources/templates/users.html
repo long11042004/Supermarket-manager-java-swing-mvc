@@ -82,7 +82,7 @@
       <div class="col-lg-8">
         <div class="card p-3">
           <div class="section-header">
-            <h3 class="panel-title" th:text="#{users.list}">Danh sách người dùng</h3>
+            <h3 class="panel-title" th:text="#{users.list}">Danh sách nhân sự</h3>
             <form method="get" th:action="@{/users}" class="d-flex gap-2 search-box flex-wrap">
               <input type="text" name="keyword" th:value="${keyword}" class="form-control" th:placeholder="#{users.searchPlaceholder}" />
               <select name="manageableOnly" class="form-select">

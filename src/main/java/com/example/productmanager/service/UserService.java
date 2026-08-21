@@ -166,6 +166,17 @@ public class UserService {
 		return userRepository.searchByFullName(keyword.trim());
 	}
 
+	@Transactional(readOnly = true)
+	public List<User> searchUsersForManagement(String keyword, boolean manageableOnly, boolean isAdmin) {
+		String normalizedKeyword = keyword == null ? "" : keyword.trim();
+		if (isAdmin || !manageableOnly) {
+			return userRepository.searchByKeywordExcludingRole(normalizedKeyword, RoleName.CUSTOMER);
+		}
+		return userRepository.searchByKeywordExcludingRoles(
+				normalizedKeyword,
+				List.of(RoleName.CUSTOMER, RoleName.ADMIN, RoleName.MANAGER));
+	}
+
 	@Transactional
 	public User updateProfile(Long userId,
 			String fullName,

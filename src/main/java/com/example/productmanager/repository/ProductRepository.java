@@ -11,6 +11,17 @@ import com.example.productmanager.model.Product;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
+	@Query("""
+			SELECT p FROM Product p
+			WHERE (:keyword = '' OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')))
+			  AND (:category = '' OR LOWER(p.category) = LOWER(:category))
+			ORDER BY LOWER(p.name) ASC
+			""")
+	List<Product> findByKeywordAndCategory(@Param("keyword") String keyword, @Param("category") String category);
+
+	@Query("SELECT DISTINCT p.category FROM Product p WHERE p.category IS NOT NULL AND TRIM(p.category) <> '' ORDER BY LOWER(p.category) ASC")
+	List<String> findDistinctCategories();
+
 	@Query("SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
 	List<Product> searchByName(@Param("keyword") String keyword);
 

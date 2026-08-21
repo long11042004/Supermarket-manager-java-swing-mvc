@@ -163,11 +163,18 @@ public class ProductController {
 	}
 
 	@PostMapping("/{id}/delete")
-	public String deleteProduct(@PathVariable Long id, HttpSession session) {
+	public String deleteProduct(@PathVariable Long id,
+			HttpSession session,
+			org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
 		if (!hasPermission(session, RoleName.ADMIN, RoleName.MANAGER)) {
 			return "redirect:/login";
 		}
-		productService.deleteProduct(id);
+		try {
+			productService.deleteProduct(id);
+			redirectAttributes.addFlashAttribute("successMessage", "Xoa san pham thanh cong.");
+		} catch (IllegalArgumentException ex) {
+			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+		}
 		return "redirect:/products";
 	}
 

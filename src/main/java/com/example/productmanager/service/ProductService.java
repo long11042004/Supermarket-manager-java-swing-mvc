@@ -1,13 +1,13 @@
 package com.example.productmanager.service;
 
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.example.productmanager.model.Product;
+import com.example.productmanager.repository.CustomerOrderRepository;
 import com.example.productmanager.repository.ProductRepository;
 
 import lombok.AllArgsConstructor;
@@ -17,6 +17,7 @@ import lombok.AllArgsConstructor;
 public class ProductService {
 
 	private final ProductRepository productRepository;
+	private final CustomerOrderRepository customerOrderRepository;
 
 	public List<Product> getAllProducts() {
 		return productRepository.findAll();
@@ -26,25 +27,11 @@ public class ProductService {
 		String normalizedKeyword = keyword == null ? "" : keyword.trim();
 		String normalizedCategory = category == null ? "" : category.trim();
 
-		return productRepository.findAll().stream()
-				.filter(product -> {
-					boolean matchKeyword = normalizedKeyword.isEmpty()
-							|| product.getName() != null && product.getName().toLowerCase().contains(normalizedKeyword.toLowerCase());
-					boolean matchCategory = normalizedCategory.isEmpty()
-							|| product.getCategory() != null && product.getCategory().equalsIgnoreCase(normalizedCategory);
-					return matchKeyword && matchCategory;
-				})
-				.sorted(Comparator.comparing(product -> product.getName() == null ? "" : product.getName(), String.CASE_INSENSITIVE_ORDER))
-				.collect(Collectors.toList());
+		return productRepository.findByKeywordAndCategory(normalizedKeyword, normalizedCategory);
 	}
 
 	public List<String> getAllCategories() {
-		return productRepository.findAll().stream()
-				.map(product -> product == null ? null : product.getCategory())
-				.filter(category -> category != null && !category.isBlank())
-				.distinct()
-				.sorted(String.CASE_INSENSITIVE_ORDER)
-				.collect(Collectors.toList());
+		return productRepository.findDistinctCategories();
 	}
 
 	public Product getProductById(Long id) {
@@ -70,8 +57,16 @@ public class ProductService {
 	}
 
 	public void deleteProduct(Long id) {
+		if (customerOrderRepository.existsOrderItemByProductId(id)) {
+			throw new IllegalArgumentException("Khong the xoa san pham nay vi da phat sinh du lieu lien quan (don hang).");
+		}
 		Product existing = getProductById(id);
-		productRepository.delete(existing);
+		try {
+			productRepository.delete(existing);
+			productRepository.flush();
+		} catch (DataIntegrityViolationException ex) {
+			throw new IllegalArgumentException("Khong the xoa san pham nay vi da phat sinh du lieu lien quan (don hang).", ex);
+		}
 	}
 
 	public List<Product> searchByName(String keyword) {

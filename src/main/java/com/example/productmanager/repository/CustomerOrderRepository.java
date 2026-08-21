@@ -21,6 +21,9 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
 	@Query("SELECT o FROM CustomerOrder o LEFT JOIN FETCH o.items i LEFT JOIN FETCH i.product WHERE o.id = :orderId AND o.user.id = :userId")
 	Optional<CustomerOrder> findDetailByIdAndUserId(@Param("orderId") Long orderId, @Param("userId") Long userId);
 
+	@Query("SELECT COUNT(i) > 0 FROM CustomerOrderItem i WHERE i.product.id = :productId")
+	boolean existsOrderItemByProductId(@Param("productId") Long productId);
+
 	@Query("SELECT COUNT(o) FROM CustomerOrder o WHERE o.createdAt BETWEEN :startTime AND :endTime AND (:status IS NULL OR o.status = :status)")
 	long countOrdersInPeriod(@Param("startTime") LocalDateTime startTime,
 			@Param("endTime") LocalDateTime endTime,
