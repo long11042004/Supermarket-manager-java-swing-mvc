@@ -1,7 +1,5 @@
 package com.example.productmanager.controller;
 
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.model.User;
 import com.example.productmanager.service.UserService;
 
@@ -22,11 +21,7 @@ import lombok.AllArgsConstructor;
 public class ProfileController {
 
 	private final UserService userService;
-	private final MessageSource messageSource;
-
-	private String msg(String key, Object... args) {
-		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
-	}
+	private final MessageResolver messageResolver;
 
 	@GetMapping
 	public String profile(Model model, HttpSession session) {
@@ -57,7 +52,7 @@ public class ProfileController {
 		try {
 			User updatedUser = userService.updateProfile(currentUser.getId(), fullName, email, phoneNumber, address);
 			session.setAttribute("loggedInUser", updatedUser);
-			redirectAttributes.addFlashAttribute("successMessage", msg("msg.profile.updated"));
+			redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.profile.updated"));
 		} catch (IllegalArgumentException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 		}
@@ -78,7 +73,7 @@ public class ProfileController {
 		try {
 			User updatedUser = userService.changePassword(currentUser.getId(), currentPassword, newPassword, confirmPassword);
 			session.setAttribute("loggedInUser", updatedUser);
-			redirectAttributes.addFlashAttribute("successMessage", msg("msg.profile.passwordChanged"));
+			redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.profile.passwordChanged"));
 		} catch (IllegalArgumentException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 		}
@@ -96,7 +91,7 @@ public class ProfileController {
 
 		User updatedUser = userService.updateAvatar(currentUser.getId(), avatarUrl);
 		session.setAttribute("loggedInUser", updatedUser);
-		redirectAttributes.addFlashAttribute("successMessage", msg("msg.profile.avatarUpdated"));
+		redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.profile.avatarUpdated"));
 		return "redirect:/profile";
 	}
 

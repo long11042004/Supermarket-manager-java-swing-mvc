@@ -18,6 +18,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.model.CustomerOrder;
 import com.example.productmanager.model.CustomerOrderItem;
 import com.example.productmanager.model.OrderStatus;
@@ -36,16 +37,16 @@ class OrderServiceTests {
 	private final UserService userService = org.mockito.Mockito.mock(UserService.class);
 	private final EmailService emailService = org.mockito.Mockito.mock(EmailService.class);
 	private final SpringTemplateEngine templateEngine = org.mockito.Mockito.mock(SpringTemplateEngine.class);
-	private final ResourceBundleMessageSource messageSource = createMessageSource();
+	private final MessageResolver messageResolver = new MessageResolver(createMessageSource());
 	private final OrderService orderService = new OrderService(
 			customerOrderRepository,
 			productRepository,
 			userRepository,
 			userService,
-			messageSource,
+			messageResolver,
 			emailService,
 			templateEngine);
-	private final CartService cartService = new CartService(messageSource);
+	private final CartService cartService = new CartService(messageResolver);
 
 	private ResourceBundleMessageSource createMessageSource() {
 		LocaleContextHolder.setLocale(Locale.forLanguageTag("vi-VN"));

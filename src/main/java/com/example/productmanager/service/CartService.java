@@ -7,10 +7,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.model.CartItem;
 import com.example.productmanager.model.Product;
 
@@ -19,15 +18,11 @@ import lombok.AllArgsConstructor;
 @Service
 @AllArgsConstructor
 public class CartService {
-	private final MessageSource messageSource;
-
-	private String msg(String key, Object... args) {
-		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
-	}
+	private final MessageResolver messageResolver;
 
 	public CartView addItem(CartView cart, Product product, int quantity) {
 		if (quantity <= 0) {
-			throw new IllegalArgumentException(msg("err.cart.quantityPositive"));
+			throw new IllegalArgumentException(messageResolver.msg("err.cart.quantityPositive"));
 		}
 		CartView workingCart = cart == null ? new CartView() : cart;
 		Map<Long, CartItem> indexedItems = new LinkedHashMap<>();
@@ -41,7 +36,7 @@ public class CartService {
 			newQuantity += existingItem.getQuantity();
 		}
 		if (newQuantity > product.getQuantity()) {
-			throw new IllegalArgumentException(msg("err.cart.quantityExceedsStock"));
+			throw new IllegalArgumentException(messageResolver.msg("err.cart.quantityExceedsStock"));
 		}
 
 		indexedItems.put(product.getId(), new CartItem(
@@ -61,7 +56,7 @@ public class CartService {
 			return removeItem(workingCart, productId);
 		}
 		if (quantity > availableQuantity) {
-			throw new IllegalArgumentException(msg("err.cart.updateExceedsStock"));
+			throw new IllegalArgumentException(messageResolver.msg("err.cart.updateExceedsStock"));
 		}
 
 		for (CartItem item : workingCart.getItems()) {

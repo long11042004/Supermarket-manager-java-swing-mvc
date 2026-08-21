@@ -5,8 +5,6 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.model.CustomerOrder;
 import com.example.productmanager.model.RoleName;
 import com.example.productmanager.model.User;
@@ -34,11 +33,7 @@ public class CustomerOrderController {
 
 	private final OrderService orderService;
 	private final CartService cartService;
-	private final MessageSource messageSource;
-
-	private String msg(String key, Object... args) {
-		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
-	}
+	private final MessageResolver messageResolver;
 
 	@GetMapping
 	public String myOrders(Model model, HttpSession session) {
@@ -75,16 +70,16 @@ public class CustomerOrderController {
 				createdOrder = orderService.checkoutAsGuest(guestName, guestEmail, getOrCreateCart(session), deliveryAddress, contactPhone, note);
 			}
 			session.setAttribute("shoppingCart", cartService.clear(getOrCreateCart(session)));
-			redirectAttributes.addFlashAttribute("successMessage", msg("msg.order.created"));
+			redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.order.created"));
 			redirectAttributes.addFlashAttribute("previewUrl", "/mail-preview/order-confirmation/" + createdOrder.getId());
 		} catch (IllegalArgumentException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 		} catch (DataIntegrityViolationException ex) {
 			log.warn("Checkout failed due to data integrity issue", ex);
-			redirectAttributes.addFlashAttribute("errorMessage", msg("msg.order.checkoutInvalidData"));
+			redirectAttributes.addFlashAttribute("errorMessage", messageResolver.msg("msg.order.checkoutInvalidData"));
 		} catch (RuntimeException ex) {
 			log.error("Unexpected checkout failure", ex);
-			redirectAttributes.addFlashAttribute("errorMessage", msg("msg.order.checkoutUnexpected"));
+			redirectAttributes.addFlashAttribute("errorMessage", messageResolver.msg("msg.order.checkoutUnexpected"));
 		}
 		return "redirect:/products";
 	}
@@ -100,13 +95,13 @@ public class CustomerOrderController {
 
 		try {
 			orderService.cancelOrderForUser(currentUser.getId(), orderId);
-			redirectAttributes.addFlashAttribute("successMessage", msg("msg.order.cancelled"));
+			redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.order.cancelled"));
 			redirectAttributes.addFlashAttribute("previewUrl", "/mail-preview/order-cancelled/" + orderId);
 		} catch (IllegalArgumentException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 		} catch (RuntimeException ex) {
 			log.error("Unexpected cancel order failure", ex);
-			redirectAttributes.addFlashAttribute("errorMessage", msg("msg.order.cancelUnexpected"));
+			redirectAttributes.addFlashAttribute("errorMessage", messageResolver.msg("msg.order.cancelUnexpected"));
 		}
 		return "redirect:/orders";
 	}

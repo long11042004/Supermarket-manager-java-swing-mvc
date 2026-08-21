@@ -4,8 +4,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -13,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.model.Role;
 import com.example.productmanager.model.RoleName;
 import com.example.productmanager.model.User;
@@ -30,14 +29,10 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final RoleRepository roleRepository;
 	private final UserActivityRepository userActivityRepository;
-	private final MessageSource messageSource;
+	private final MessageResolver messageResolver;
 	private final PasswordEncoder passwordEncoder;
 	private final EmailService emailService;
 	private final SpringTemplateEngine templateEngine;
-
-	private String msg(String key, Object... args) {
-		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
-	}
 
 	@Transactional
 	public User registerUser(String username, String password, String email, String fullName) {
@@ -64,14 +59,14 @@ public class UserService {
 			String fullName,
 			RoleName defaultRoleName) {
 		if (userRepository.existsByUsername(username)) {
-			throw new IllegalArgumentException(msg("err.user.usernameExists"));
+			throw new IllegalArgumentException(messageResolver.msg("err.user.usernameExists"));
 		}
 		if (userRepository.existsByEmail(email)) {
-			throw new IllegalArgumentException(msg("err.user.emailExists"));
+			throw new IllegalArgumentException(messageResolver.msg("err.user.emailExists"));
 		}
 
 		Role defaultRole = roleRepository.findByName(defaultRoleName)
-				.orElseThrow(() -> new RuntimeException(msg("err.role.defaultNotFound", defaultRoleName)));
+				.orElseThrow(() -> new RuntimeException(messageResolver.msg("err.role.defaultNotFound", defaultRoleName)));
 
 		User user = User.builder()
 				.username(username)
@@ -101,11 +96,11 @@ public class UserService {
 	@Transactional
 	public User login(String username, String password) {
 		User user = userRepository.findByUsername(username)
-				.orElseThrow(() -> new RuntimeException(msg("err.auth.userNotFound", username)));
+				.orElseThrow(() -> new RuntimeException(messageResolver.msg("err.auth.userNotFound", username)));
 
 		boolean passwordMatched = passwordEncoder.matches(password, user.getPassword()) || user.getPassword().equals(password);
 		if (!passwordMatched) {
-			throw new IllegalArgumentException(msg("err.auth.invalidPassword"));
+			throw new IllegalArgumentException(messageResolver.msg("err.auth.invalidPassword"));
 		}
 
 		if (!isEncodedPassword(user.getPassword())) {
@@ -114,7 +109,7 @@ public class UserService {
 		}
 
 		if (!user.isEnabled()) {
-			throw new IllegalStateException(msg("err.auth.accountLocked"));
+			throw new IllegalStateException(messageResolver.msg("err.auth.accountLocked"));
 		}
 
 		logActivity(user, "Đăng nhập", "Người dùng đăng nhập vào hệ thống");
@@ -137,7 +132,7 @@ public class UserService {
 	@Transactional(readOnly = true)
 	public User getUserById(Long id) {
 		return userRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException(msg("err.user.notFoundById", id)));
+				.orElseThrow(() -> new RuntimeException(messageResolver.msg("err.user.notFoundById", id)));
 	}
 
 	@Transactional
@@ -146,7 +141,7 @@ public class UserService {
 		Set<Role> roles = new HashSet<>();
 		for (RoleName roleName : roleNames) {
 			Role role = roleRepository.findByName(roleName)
-					.orElseThrow(() -> new RuntimeException(msg("err.role.notFound", roleName)));
+					.orElseThrow(() -> new RuntimeException(messageResolver.msg("err.role.notFound", roleName)));
 			roles.add(role);
 		}
 		user.setRoles(roles);
@@ -186,10 +181,10 @@ public class UserService {
 		User user = getUserById(userId);
 		String normalizedEmail = email == null ? "" : email.trim();
 		if (normalizedEmail.isEmpty()) {
-			throw new IllegalArgumentException(msg("err.user.emailRequired"));
+			throw new IllegalArgumentException(messageResolver.msg("err.user.emailRequired"));
 		}
 		if (userRepository.existsByEmailAndIdNot(normalizedEmail, userId)) {
-			throw new IllegalArgumentException(msg("err.user.emailExists"));
+			throw new IllegalArgumentException(messageResolver.msg("err.user.emailExists"));
 		}
 
 		user.setFullName(fullName == null ? null : fullName.trim());
@@ -206,16 +201,16 @@ public class UserService {
 	public User changePassword(Long userId, String currentPassword, String newPassword, String confirmPassword) {
 		User user = getUserById(userId);
 		if (!user.getPassword().equals(currentPassword)) {
-			throw new IllegalArgumentException(msg("err.user.currentPasswordInvalid"));
+			throw new IllegalArgumentException(messageResolver.msg("err.user.currentPasswordInvalid"));
 		}
 		if (newPassword == null || newPassword.length() < 6) {
-			throw new IllegalArgumentException(msg("err.user.newPasswordMin"));
+			throw new IllegalArgumentException(messageResolver.msg("err.user.newPasswordMin"));
 		}
 		if (!newPassword.equals(confirmPassword)) {
-			throw new IllegalArgumentException(msg("err.user.passwordConfirmMismatch"));
+			throw new IllegalArgumentException(messageResolver.msg("err.user.passwordConfirmMismatch"));
 		}
 		if (newPassword.equals(currentPassword)) {
-			throw new IllegalArgumentException(msg("err.user.passwordMustDiffer"));
+			throw new IllegalArgumentException(messageResolver.msg("err.user.passwordMustDiffer"));
 		}
 
 		user.setPassword(newPassword);

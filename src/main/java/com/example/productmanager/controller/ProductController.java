@@ -3,8 +3,6 @@ package com.example.productmanager.controller;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
@@ -15,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.model.Product;
 import com.example.productmanager.model.RoleName;
 import com.example.productmanager.model.User;
@@ -36,11 +35,7 @@ public class ProductController {
 	private final ProductService productService;
 	private final CartService cartService;
 	private final UserService userService;
-	private final MessageSource messageSource;
-
-	private String msg(String key, Object... args) {
-		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
-	}
+	private final MessageResolver messageResolver;
 
 	private boolean isAuthenticated(HttpSession session) {
 		return session.getAttribute("loggedInUser") != null;
@@ -118,7 +113,7 @@ public class ProductController {
 						.toString();
 				userService.recordActivity(currentUser.getId(), "Thêm vào giỏ", details);
 			}
-			redirectAttributes.addFlashAttribute("successMessage", msg("msg.cart.added"));
+			redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.cart.added"));
 		} catch (IllegalArgumentException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 		}
@@ -137,7 +132,7 @@ public class ProductController {
 			Product product = productService.getProductById(productId);
 			CartView updatedCart = cartService.updateItemQuantity(getOrCreateCart(session), productId, quantity, product.getQuantity());
 			session.setAttribute("shoppingCart", updatedCart);
-			redirectAttributes.addFlashAttribute("successMessage", msg("msg.cart.updated"));
+			redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.cart.updated"));
 		} catch (IllegalArgumentException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 		}

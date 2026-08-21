@@ -20,6 +20,7 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.model.Role;
 import com.example.productmanager.model.RoleName;
 import com.example.productmanager.model.User;
@@ -48,8 +49,6 @@ class UserServiceTests {
 	@Mock
 	private SpringTemplateEngine templateEngine;
 
-	private final ResourceBundleMessageSource messageSource = createMessageSource();
-
 	private UserService userService;
 
 	private ResourceBundleMessageSource createMessageSource() {
@@ -63,7 +62,14 @@ class UserServiceTests {
 	@Test
 	void registerCustomerShouldAssignCustomerRole() {
 		Role customerRole = Role.builder().name(RoleName.CUSTOMER).build();
-		userService = new UserService(userRepository, roleRepository, userActivityRepository, messageSource, passwordEncoder, emailService, templateEngine);
+		userService = new UserService(
+			userRepository, 
+			roleRepository, 
+			userActivityRepository, 
+			new MessageResolver(createMessageSource()), 
+			passwordEncoder, 
+			emailService, 
+			templateEngine);
 		when(userRepository.existsByUsername("new-customer")).thenReturn(false);
 		when(userRepository.existsByEmail("customer@example.com")).thenReturn(false);
 		when(roleRepository.findByName(RoleName.CUSTOMER)).thenReturn(Optional.of(customerRole));
@@ -84,7 +90,14 @@ class UserServiceTests {
 	@Test
 	void updateProfileShouldPersistFieldsAndLogActivity() {
 		User existingUser = buildExistingUser();
-		userService = new UserService(userRepository, roleRepository, userActivityRepository, messageSource, passwordEncoder, emailService, templateEngine);
+		userService = new UserService(
+			userRepository, 
+			roleRepository, 
+			userActivityRepository, 
+			new MessageResolver(createMessageSource()), 
+			passwordEncoder, 
+			emailService, 
+			templateEngine);
 		when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
 		when(userRepository.existsByEmailAndIdNot("new@demo.com", 1L)).thenReturn(false);
 		when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -102,7 +115,14 @@ class UserServiceTests {
 	@Test
 	void updateProfileShouldRejectDuplicateEmail() {
 		User existingUser = buildExistingUser();
-		userService = new UserService(userRepository, roleRepository, userActivityRepository, messageSource, passwordEncoder, emailService, templateEngine);
+		userService = new UserService(
+			userRepository, 
+			roleRepository, 
+			userActivityRepository, 
+			new MessageResolver(createMessageSource()), 
+			passwordEncoder, 
+			emailService, 
+			templateEngine);
 		when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
 		when(userRepository.existsByEmailAndIdNot("admin@demo.com", 1L)).thenReturn(true);
 
@@ -116,7 +136,14 @@ class UserServiceTests {
 	@Test
 	void changePasswordShouldUpdatePasswordAndLogActivity() {
 		User existingUser = buildExistingUser();
-		userService = new UserService(userRepository, roleRepository, userActivityRepository, messageSource, passwordEncoder, emailService, templateEngine);
+		userService = new UserService(
+			userRepository, 
+			roleRepository, 
+			userActivityRepository, 
+			new MessageResolver(createMessageSource()), 
+			passwordEncoder, 
+			emailService, 
+			templateEngine);
 		when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
 		when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -130,7 +157,14 @@ class UserServiceTests {
 	@Test
 	void changePasswordShouldRejectWrongCurrentPassword() {
 		User existingUser = buildExistingUser();
-		userService = new UserService(userRepository, roleRepository, userActivityRepository, messageSource, passwordEncoder, emailService, templateEngine);
+		userService = new UserService(
+			userRepository, 
+			roleRepository, 
+			userActivityRepository, 
+			new MessageResolver(createMessageSource()), 
+			passwordEncoder, 
+			emailService, 
+			templateEngine);
 		when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
 
 		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,

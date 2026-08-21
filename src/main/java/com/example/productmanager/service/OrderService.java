@@ -4,13 +4,12 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.model.CartItem;
 import com.example.productmanager.model.CustomerOrder;
 import com.example.productmanager.model.CustomerOrderItem;
@@ -32,16 +31,16 @@ public class OrderService {
 	private final ProductRepository productRepository;
 	private final UserRepository userRepository;
 	private final UserService userService;
-	private final MessageSource messageSource;
+	private final MessageResolver messageResolver;
 	private final EmailService emailService;
 	private final SpringTemplateEngine templateEngine;
 
-	private String msg(String key, Object... args) {
-		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
-	}
-
 	@Transactional
-	public CustomerOrder checkout(Long userId, CartView cart, String deliveryAddress, String contactPhone, String note) {
+	public CustomerOrder checkout(Long userId, 
+		CartView cart, 
+		String deliveryAddress, 
+		String contactPhone, 
+		String note) {
 		return checkout(userId, null, null, cart, deliveryAddress, contactPhone, note);
 	}
 
@@ -63,22 +62,22 @@ public class OrderService {
 			String contactPhone,
 			String note) {
 		if (cart == null || cart.getItems().isEmpty()) {
-			throw new IllegalArgumentException(msg("err.order.cartEmpty"));
+			throw new IllegalArgumentException(messageResolver.msg("err.order.cartEmpty"));
 		}
 		if (deliveryAddress == null || deliveryAddress.trim().isEmpty()) {
-			throw new IllegalArgumentException(msg("err.order.deliveryAddressRequired"));
+			throw new IllegalArgumentException(messageResolver.msg("err.order.deliveryAddressRequired"));
 		}
 		if (userId == null && (guestName == null || guestName.trim().isEmpty())) {
-			throw new IllegalArgumentException(msg("err.order.guestNameRequired"));
+			throw new IllegalArgumentException(messageResolver.msg("err.order.guestNameRequired"));
 		}
 		if (userId == null && (guestEmail == null || guestEmail.trim().isEmpty())) {
-			throw new IllegalArgumentException(msg("err.order.guestEmailRequired"));
+			throw new IllegalArgumentException(messageResolver.msg("err.order.guestEmailRequired"));
 		}
 
 		User user = null;
 		if (userId != null) {
 			user = userRepository.findById(userId)
-					.orElseThrow(() -> new IllegalArgumentException(msg("err.order.userNotFoundForOrder")));
+					.orElseThrow(() -> new IllegalArgumentException(messageResolver.msg("err.order.userNotFoundForOrder")));
 		}
 
 		List<CustomerOrderItem> orderItems = new ArrayList<>();
@@ -97,21 +96,21 @@ public class OrderService {
 
 		for (CartItem cartItem : cart.getItems()) {
 			if (cartItem.getProductId() == null) {
-				throw new IllegalArgumentException(msg("err.order.invalidCartProduct"));
+				throw new IllegalArgumentException(messageResolver.msg("err.order.invalidCartProduct"));
 			}
 			if (cartItem.getQuantity() <= 0) {
-				throw new IllegalArgumentException(msg("err.order.invalidCartQuantity"));
+				throw new IllegalArgumentException(messageResolver.msg("err.order.invalidCartQuantity"));
 			}
 			Product product = productRepository.findById(cartItem.getProductId())
-					.orElseThrow(() -> new IllegalArgumentException(msg("err.order.productNotFoundInCart")));
+					.orElseThrow(() -> new IllegalArgumentException(messageResolver.msg("err.order.productNotFoundInCart")));
 			if (product.getPrice() == null) {
-				throw new IllegalArgumentException(msg("err.order.productPriceInvalid", product.getName()));
+				throw new IllegalArgumentException(messageResolver.msg("err.order.productPriceInvalid", product.getName()));
 			}
 			if (product.getQuantity() == null) {
-				throw new IllegalArgumentException(msg("err.order.productStockInvalid", product.getName()));
+				throw new IllegalArgumentException(messageResolver.msg("err.order.productStockInvalid", product.getName()));
 			}
 			if (product.getQuantity() < cartItem.getQuantity()) {
-				throw new IllegalArgumentException(msg("err.order.productNotEnoughStock", product.getName()));
+				throw new IllegalArgumentException(messageResolver.msg("err.order.productNotEnoughStock", product.getName()));
 			}
 
 			BigDecimal lineTotal = product.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()));
@@ -150,16 +149,16 @@ public class OrderService {
 	@Transactional
 	public void cancelOrderForUser(Long userId, Long orderId) {
 		if (userId == null) {
-			throw new IllegalArgumentException(msg("err.order.userInfoNotFound"));
+			throw new IllegalArgumentException(messageResolver.msg("err.order.userInfoNotFound"));
 		}
 		CustomerOrder order = customerOrderRepository.findDetailByIdAndUserId(orderId, userId)
-				.orElseThrow(() -> new IllegalArgumentException(msg("err.order.orderNotFoundToCancel")));
+				.orElseThrow(() -> new IllegalArgumentException(messageResolver.msg("err.order.orderNotFoundToCancel")));
 
 		if (order.getStatus() == OrderStatus.CANCELLED) {
-			throw new IllegalArgumentException(msg("err.order.alreadyCancelled"));
+			throw new IllegalArgumentException(messageResolver.msg("err.order.alreadyCancelled"));
 		}
 		if (order.getStatus() == OrderStatus.COMPLETED || order.getStatus() == OrderStatus.DELIVERING) {
-			throw new IllegalArgumentException(msg("err.order.cannotCancelDeliveredCompleted"));
+			throw new IllegalArgumentException(messageResolver.msg("err.order.cannotCancelDeliveredCompleted"));
 		}
 
 		for (CustomerOrderItem item : order.getItems()) {

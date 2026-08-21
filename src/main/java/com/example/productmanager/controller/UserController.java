@@ -8,8 +8,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.model.RoleName;
 import com.example.productmanager.model.User;
 import com.example.productmanager.service.UserService;
@@ -33,11 +32,7 @@ import lombok.AllArgsConstructor;
 public class UserController {
 
 	private final UserService userService;
-	private final MessageSource messageSource;
-
-	private String msg(String key, Object... args) {
-		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
-	}
+	private final MessageResolver messageResolver;
 
 	private boolean isAuthenticated(HttpSession session) {
 		return session.getAttribute("loggedInUser") != null;
@@ -97,9 +92,9 @@ public class UserController {
 
 	private String restrictedReason(HttpSession session) {
 		if (isAdmin(session)) {
-			return msg("msg.user.restrictedReasonAdmin");
+			return messageResolver.msg("msg.user.restrictedReasonAdmin");
 		}
-		return msg("msg.user.restrictedReasonManager");
+		return messageResolver.msg("msg.user.restrictedReasonManager");
 	}
 
 	private Map<Long, Set<RoleName>> assignedRolesByUserId(List<User> users) {
@@ -164,7 +159,7 @@ public class UserController {
 				? EnumSet.of(RoleName.MANAGER, RoleName.STAFF, RoleName.CUSTOMER)
 				: EnumSet.of(RoleName.STAFF, RoleName.CUSTOMER);
 		if (!allowedCreateRoles.contains(selectedRole)) {
-			redirectAttributes.addFlashAttribute("errorMessage", msg("msg.user.noPermissionCreateRole"));
+			redirectAttributes.addFlashAttribute("errorMessage", messageResolver.msg("msg.user.noPermissionCreateRole"));
 			return "redirect:/users";
 		}
 
@@ -174,7 +169,7 @@ public class UserController {
 				user.getEmail(),
 				user.getFullName(),
 				selectedRole);
-		redirectAttributes.addFlashAttribute("successMessage", msg("msg.user.created"));
+		redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.user.created"));
 		redirectAttributes.addFlashAttribute("previewUrl", "/mail-preview/welcome-account/" + createdUser.getId());
 		return "redirect:/users";
 	}
@@ -225,7 +220,7 @@ public class UserController {
 
 		User targetUser = userService.getUserById(id);
 		if (!canEditTargetUser(session, targetUser)) {
-			redirectAttributes.addFlashAttribute("errorMessage", msg("msg.user.noPermissionUpdateAccount"));
+			redirectAttributes.addFlashAttribute("errorMessage", messageResolver.msg("msg.user.noPermissionUpdateAccount"));
 			return "redirect:/users";
 		}
 
@@ -233,7 +228,7 @@ public class UserController {
 				.map(RoleName::valueOf)
 				.collect(Collectors.toSet());
 		if (selectedRoles.isEmpty()) {
-			redirectAttributes.addFlashAttribute("errorMessage", msg("msg.user.mustHaveAtLeastOneRole"));
+			redirectAttributes.addFlashAttribute("errorMessage", messageResolver.msg("msg.user.mustHaveAtLeastOneRole"));
 			return "redirect:/users";
 		}
 
@@ -241,12 +236,12 @@ public class UserController {
 				? EnumSet.allOf(RoleName.class)
 				: EnumSet.of(RoleName.STAFF, RoleName.CUSTOMER);
 		if (!allowedRoles.containsAll(selectedRoles)) {
-			redirectAttributes.addFlashAttribute("errorMessage", msg("msg.user.roleAssignmentNotAllowed"));
+			redirectAttributes.addFlashAttribute("errorMessage", messageResolver.msg("msg.user.roleAssignmentNotAllowed"));
 			return "redirect:/users";
 		}
 
 		userService.updateUserRoles(id, selectedRoles);
-		redirectAttributes.addFlashAttribute("successMessage", msg("msg.user.rolesUpdated"));
+		redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.user.rolesUpdated"));
 		return "redirect:/users";
 	}
 }
