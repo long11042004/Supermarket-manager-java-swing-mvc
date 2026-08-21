@@ -3,6 +3,7 @@ package com.example.productmanager.controller;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.productmanager.i18n.MessageResolver;
+import com.example.productmanager.lifecycle.PrototypeRequestMarker;
+import com.example.productmanager.lifecycle.SessionLifecycleBean;
 import com.example.productmanager.model.Product;
 import com.example.productmanager.model.RoleName;
 import com.example.productmanager.model.User;
@@ -37,6 +40,8 @@ public class ProductController {
 	private final CartService cartService;
 	private final UserService userService;
 	private final MessageResolver messageResolver;
+	private final SessionLifecycleBean sessionLifecycleBean;
+	private final ObjectProvider<PrototypeRequestMarker> prototypeRequestMarkerProvider;
 
 	private boolean isAuthenticated(HttpSession session) {
 		return session.getAttribute("loggedInUser") != null;
@@ -81,6 +86,8 @@ public class ProductController {
 		if (!canShop(session) && session.getAttribute("loggedInUser") == null) {
 			session.setAttribute("guestCheckout", true);
 		}
+		PrototypeRequestMarker requestMarker = prototypeRequestMarkerProvider.getObject();
+		int visitCount = sessionLifecycleBean.increaseAndGetVisitCount();
 		Page<Product> productsPage = productService.getFilteredProducts(keyword, category, page, size);
 		model.addAttribute("products", productsPage.getContent());
 		model.addAttribute("currentPage", productsPage.getNumber());
@@ -98,6 +105,9 @@ public class ProductController {
 		model.addAttribute("isCustomer", hasPermission(session, RoleName.CUSTOMER));
 		model.addAttribute("isGuest", !isAuthenticated(session));
 		model.addAttribute("cart", getOrCreateCart(session));
+		model.addAttribute("lifecycleSessionToken", sessionLifecycleBean.getSessionToken());
+		model.addAttribute("lifecycleVisitCount", visitCount);
+		model.addAttribute("lifecycleRequestMarker", requestMarker.getMarkerId());
 		return "products";
 	}
 
