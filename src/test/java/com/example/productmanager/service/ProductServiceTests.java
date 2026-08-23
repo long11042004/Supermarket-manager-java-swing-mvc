@@ -4,8 +4,10 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -47,5 +49,23 @@ class ProductServiceTests {
 
         assertThat(featuredProducts).hasSize(2);
         verify(productRepository).findTopFeaturedProducts(5);
+    }
+
+    @Test
+    void createProductShouldRejectInvalidDataBeforeSave() {
+        ProductRepository productRepository = mock(ProductRepository.class);
+        CustomerOrderRepository customerOrderRepository = mock(CustomerOrderRepository.class);
+        ProductService productService = new ProductService(productRepository, customerOrderRepository);
+
+        Product invalidProduct = Product.builder()
+                .name("   ")
+                .category(ProductCategory.THUC_PHAM)
+                .price(BigDecimal.ZERO)
+                .quantity(-1)
+                .unit("Kg")
+                .build();
+
+        assertThrows(IllegalArgumentException.class, () -> productService.createProduct(invalidProduct));
+        verify(productRepository, never()).save(invalidProduct);
     }
 }

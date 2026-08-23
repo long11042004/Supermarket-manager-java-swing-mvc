@@ -62,10 +62,19 @@ public class UserService {
 			String email,
 			String fullName,
 			RoleName defaultRoleName) {
-		if (userRepository.existsByUsername(username)) {
+		String normalizedUsername = normalizeRequiredText(username, "Tên đăng nhập không được để trống");
+		String normalizedEmail = normalizeRequiredText(email, "Email không được để trống");
+		String normalizedPassword = normalizeRequiredText(password, "Mật khẩu không được để trống");
+		if (normalizedPassword.length() < 6) {
+			throw new IllegalArgumentException("Mật khẩu phải có ít nhất 6 ký tự");
+		}
+		if (!normalizedEmail.contains("@")) {
+			throw new IllegalArgumentException("Email không hợp lệ");
+		}
+		if (userRepository.existsByUsername(normalizedUsername)) {
 			throw new ConflictException(messageResolver.msg("err.user.usernameExists"));
 		}
-		if (userRepository.existsByEmail(email)) {
+		if (userRepository.existsByEmail(normalizedEmail)) {
 			throw new ConflictException(messageResolver.msg("err.user.emailExists"));
 		}
 
@@ -73,10 +82,10 @@ public class UserService {
 				.orElseThrow(() -> new NotFoundException(messageResolver.msg("err.role.defaultNotFound", defaultRoleName)));
 
 		User user = User.builder()
-				.username(username)
-				.password(passwordEncoder.encode(password))
-				.email(email)
-				.fullName(fullName)
+				.username(normalizedUsername)
+				.password(passwordEncoder.encode(normalizedPassword))
+				.email(normalizedEmail)
+				.fullName(fullName == null ? null : fullName.trim())
 				.enabled(true)
 				.roles(new HashSet<>(Set.of(defaultRole)))
 				.build();
@@ -164,6 +173,9 @@ public class UserService {
 		if (normalizedEmail.isEmpty()) {
 			throw new IllegalArgumentException(messageResolver.msg("err.user.emailRequired"));
 		}
+		if (!normalizedEmail.contains("@")) {
+			throw new IllegalArgumentException("Email không hợp lệ");
+		}
 		if (userRepository.existsByEmailAndIdNot(normalizedEmail, userId)) {
 			throw new ConflictException(messageResolver.msg("err.user.emailExists"));
 		}
@@ -236,5 +248,12 @@ public class UserService {
 				.action(action)
 				.details(details)
 				.build());
+	}
+
+	private String normalizeRequiredText(String value, String errorMessage) {
+		if (value == null || value.trim().isEmpty()) {
+			throw new IllegalArgumentException(errorMessage);
+		}
+		return value.trim();
 	}
 }

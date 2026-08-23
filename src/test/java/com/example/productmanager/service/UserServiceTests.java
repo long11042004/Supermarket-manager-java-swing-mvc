@@ -82,6 +82,22 @@ class UserServiceTests {
 	}
 
 	@Test
+	void registerCustomerShouldRejectBlankUsernameOrEmail() {
+		userService = new UserService(
+			userRepository,
+			roleRepository,
+			userActivityRepository,
+			new MessageResolver(createMessageSource()),
+			passwordEncoder,
+			applicationEventPublisher);
+
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+				() -> userService.registerCustomer("   ", "secret123", "customer@example.com", "Khách mới"));
+		assertEquals("Tên đăng nhập không được để trống", ex.getMessage());
+		verify(userRepository, never()).save(any(User.class));
+	}
+
+	@Test
 	void updateProfileShouldPersistFieldsAndLogActivity() {
 		User existingUser = buildExistingUser();
 		userService = new UserService(

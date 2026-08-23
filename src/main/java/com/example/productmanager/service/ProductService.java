@@ -1,5 +1,6 @@
 package com.example.productmanager.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -57,11 +58,13 @@ public class ProductService {
 	}
 
 	public Product createProduct(Product product) {
+		validateProduct(product);
 		return productRepository.save(product);
 	}
 
 	public Product updateProduct(Long id, Product request) {
 		Product existing = getProductById(id);
+		validateProduct(request);
 		existing.setName(request.getName());
 		existing.setCategory(request.getCategory());
 		existing.setPrice(request.getPrice());
@@ -94,6 +97,27 @@ public class ProductService {
 			return null;
 		}
 		return ProductCategory.fromValue(category);
+	}
+
+	private void validateProduct(Product product) {
+		if (product == null) {
+			throw new IllegalArgumentException("Dữ liệu sản phẩm không được để trống");
+		}
+		if (product.getName() == null || product.getName().trim().isEmpty()) {
+			throw new IllegalArgumentException("Tên sản phẩm không được để trống");
+		}
+		if (product.getCategory() == null) {
+			throw new IllegalArgumentException("Danh mục sản phẩm không được để trống");
+		}
+		if (product.getPrice() == null || product.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+			throw new IllegalArgumentException("Giá sản phẩm phải lớn hơn 0");
+		}
+		if (product.getQuantity() == null || product.getQuantity() < 0) {
+			throw new IllegalArgumentException("Số lượng sản phẩm không hợp lệ");
+		}
+		if (product.getUnit() != null && product.getUnit().trim().length() > 30) {
+			throw new IllegalArgumentException("Đơn vị sản phẩm tối đa 30 ký tự");
+		}
 	}
 
 	public List<Product> getLowStockProducts(Integer threshold) {
