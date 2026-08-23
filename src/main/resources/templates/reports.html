@@ -93,7 +93,7 @@
               <tbody>
                 <tr th:each="item : ${report.statusStats}">
                   <td><span class="status-pill" th:text="#{orderStatus.__${item.status.name()}__}">PENDING</span></td>
-                  <td th:text="${item.total}">0</td>
+                  <td th:text="${item.total != null ? item.total : 0}">0</td>
                 </tr>
               </tbody>
             </table>
@@ -117,8 +117,8 @@
               <tbody>
                 <tr th:each="item : ${report.topProducts}">
                   <td th:text="${item.productName}">Tên sản phẩm</td>
-                  <td th:text="${item.totalQuantity + (#strings.isEmpty(item.unit) ? '' : ' ' + item.unit)}">0</td>
-                  <td th:text="${#numbers.formatDecimal(item.totalRevenue, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
+                  <td th:text="${(item.totalQuantity != null ? item.totalQuantity : 0) + (#strings.isEmpty(item.unit) ? '' : ' ' + item.unit)}">0</td>
+                  <td th:text="${#numbers.formatDecimal(item.totalRevenue != null ? item.totalRevenue : 0, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
                 </tr>
               </tbody>
             </table>

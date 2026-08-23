@@ -28,6 +28,11 @@ public class ProductService {
 		return productRepository.getProducts(normalizedKeyword);
 	}
 
+	public List<Product> getFeaturedProducts(int limit) {
+		int normalizedLimit = Math.max(1, Math.min(limit, 10));
+		return productRepository.findTopFeaturedProducts(normalizedLimit);
+	}
+
 	public Page<Product> getFilteredProducts(String keyword, String category, int page, int size) {
 		String normalizedKeyword = keyword == null ? "" : keyword.trim();
 		String normalizedCategory = category == null ? "" : category.trim();

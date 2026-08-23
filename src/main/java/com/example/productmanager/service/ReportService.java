@@ -35,6 +35,9 @@ public class ReportService {
 
 		long totalOrders = customerOrderRepository.countOrdersInPeriod(startTime, endTime, statusFilter);
 		BigDecimal totalRevenue = customerOrderRepository.sumRevenueInPeriod(startTime, endTime, statusFilter);
+		if (totalRevenue == null) {
+			totalRevenue = BigDecimal.ZERO;
+		}
 		long guestOrders = customerOrderRepository.countGuestOrdersInPeriod(startTime, endTime, statusFilter);
 		long memberOrders = Math.max(0L, totalOrders - guestOrders);
 

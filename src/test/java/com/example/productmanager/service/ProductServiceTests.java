@@ -1,0 +1,50 @@
+package com.example.productmanager.service;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.example.productmanager.model.Product;
+import com.example.productmanager.repository.CustomerOrderRepository;
+import com.example.productmanager.repository.ProductRepository;
+
+class ProductServiceTests {
+
+    @Test
+    void shouldReturnOnlyFeaturedProductsWithinRequestedLimit() {
+        ProductRepository productRepository = mock(ProductRepository.class);
+        CustomerOrderRepository customerOrderRepository = mock(CustomerOrderRepository.class);
+        ProductService productService = new ProductService(productRepository, customerOrderRepository);
+
+        Product featuredOne = Product.builder()
+                .id(1L)
+                .name("Sữa tươi Vinamilk")
+                .category("Sữa")
+                .price(new BigDecimal("42000"))
+                .quantity(120)
+                .unit("Hộp")
+                .build();
+
+        Product featuredTwo = Product.builder()
+                .id(2L)
+                .name("Gạo ST25")
+                .category("Thực phẩm")
+                .price(new BigDecimal("52000"))
+                .quantity(80)
+                .unit("Kg")
+                .build();
+
+        when(productRepository.findTopFeaturedProducts(5))
+                .thenReturn(List.of(featuredOne, featuredTwo));
+
+        List<Product> featuredProducts = productService.getFeaturedProducts(5);
+
+        assertThat(featuredProducts).hasSize(2);
+        verify(productRepository).findTopFeaturedProducts(5);
+    }
+}

@@ -43,6 +43,7 @@ public class AuthController {
 			HttpServletResponse response,
 			RedirectAttributes redirectAttributes) {
 		try {
+			SecurityContextHolder.clearContext();
 			User authenticatedUser = userService.login(loginUser.getUsername(), loginUser.getPassword());
 			String token = jwtService.generateToken(authenticatedUser);
 			response.addHeader(HttpHeaders.SET_COOKIE, jwtService.createAccessTokenCookie(token).toString());
@@ -76,8 +77,11 @@ public class AuthController {
 		if (authentication != null && authentication.getPrincipal() instanceof SecurityUserPrincipal principal) {
 			userService.logLogout(principal.getId());
 		}
+		SecurityContextHolder.clearContext();
 		response.addHeader(HttpHeaders.SET_COOKIE, jwtService.clearAccessTokenCookie().toString());
-		session.invalidate();
+		if (session != null) {
+			session.invalidate();
+		}
 		return "redirect:/login";
 	}
 }

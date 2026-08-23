@@ -39,6 +39,7 @@ public class ProductController extends SessionController {
 	private final ProductService productService;
 	private final CartService cartService;
 	private final UserService userService;
+	private final ProductMapper productMapper;
 	private final MessageResolver messageResolver;
 	private final SessionLifecycleBean sessionLifecycleBean;
 	private final ObjectProvider<PrototypeRequestMarker> prototypeRequestMarkerProvider;
@@ -147,7 +148,7 @@ public class ProductController extends SessionController {
 		if (!hasPermission(session, RoleName.ADMIN, RoleName.MANAGER)) {
 			return "redirect:/login";
 		}
-		productService.createProduct(ProductMapper.toEntity(product));
+		productService.createProduct(productMapper.toEntity(product));
 		return "redirect:/products";
 	}
 
@@ -174,7 +175,7 @@ public class ProductController extends SessionController {
 		}
 		Product product = productService.getProductById(id);
 		Page<Product> productsPage = productService.getFilteredProducts(null, null, 0, 12);
-		model.addAttribute("product", ProductMapper.toForm(product));
+		model.addAttribute("product", productMapper.toForm(product));
 		model.addAttribute("products", productsPage.getContent());
 		model.addAttribute("currentPage", productsPage.getNumber());
 		model.addAttribute("totalPages", productsPage.getTotalPages());
@@ -198,7 +199,7 @@ public class ProductController extends SessionController {
 		if (!hasPermission(session, RoleName.ADMIN, RoleName.MANAGER)) {
 			return "redirect:/login";
 		}
-		productService.updateProduct(id, ProductMapper.toEntity(product));
+		productService.updateProduct(id, productMapper.toEntity(product));
 		return "redirect:/products";
 	}
 

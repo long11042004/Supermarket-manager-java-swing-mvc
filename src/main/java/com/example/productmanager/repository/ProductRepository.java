@@ -24,7 +24,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 			@Param("category") String category,
 			Pageable pageable);
 
-	@Query("SELECT DISTINCT p.category FROM Product p WHERE p.category IS NOT NULL AND TRIM(p.category) <> '' ORDER BY LOWER(p.category) ASC")
+	@Query(value = """
+			SELECT DISTINCT p.category
+			FROM products p
+			WHERE p.category IS NOT NULL
+			  AND TRIM(p.category) <> ''
+			ORDER BY LOWER(p.category) ASC
+			""", nativeQuery = true)
 	List<String> findDistinctCategories();
 
 	@Query("""
@@ -37,7 +43,19 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 	@Query("SELECT p FROM Product p WHERE LOWER(p.category) LIKE LOWER(CONCAT('%', :category, '%'))")
 	List<Product> filterByCategory(@Param("category") String category);
 
-	@Query("SELECT p FROM Product p WHERE p.quantity < :threshold ORDER BY p.quantity ASC")
+	@Query(value = """
+			SELECT *
+			FROM products p
+			ORDER BY p.quantity DESC, p.price ASC
+			LIMIT :limit
+			""", nativeQuery = true)
+	List<Product> findTopFeaturedProducts(@Param("limit") int limit);
+
+	@Query(value = """
+			SELECT * FROM products p
+			WHERE p.quantity < :threshold
+			ORDER BY p.quantity ASC
+			""", nativeQuery = true)
 	List<Product> findLowStock(@Param("threshold") Integer threshold);
 
 	@Query("SELECT p FROM Product p WHERE p.expiryDate IS NOT NULL AND p.expiryDate <= :maxDate ORDER BY p.expiryDate ASC")

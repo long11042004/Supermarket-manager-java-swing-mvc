@@ -138,6 +138,9 @@
               <td th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
               <td><span class="badge bg-light text-dark" th:text="${item.quantity}">0</span></td>
             </tr>
+            <tr th:if="${#lists.isEmpty(products)}">
+              <td colspan="4" class="text-center text-muted">Chưa có sản phẩm gợi ý.</td>
+            </tr>
           </tbody>
         </table>
       </div>

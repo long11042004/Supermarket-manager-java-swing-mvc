@@ -43,7 +43,7 @@ public class DashboardController extends SessionController {
 				.map(role -> role.getName())
 				.collect(Collectors.toSet());
 
-		List<Product> products = productService.getProducts(null);
+		List<Product> products = productService.getFeaturedProducts(5);
 		List<User> users = userService.searchUsers(null);
 		List<Product> lowStockProducts = productService.getLowStockProducts(10);
 		List<Product> expiringSoonProducts = productService.getExpiringSoonProducts(30);

@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -40,14 +41,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		}
 
 		String username = jwtService.extractUsername(token);
-		if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-			UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-			UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-					userDetails,
-					null,
-					userDetails.getAuthorities());
-			authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-			SecurityContextHolder.getContext().setAuthentication(authToken);
+		if (username != null) {
+			Authentication currentAuthentication = SecurityContextHolder.getContext().getAuthentication();
+			boolean shouldReplaceAuthentication = currentAuthentication == null
+					|| !username.equals(currentAuthentication.getName())
+					|| !(currentAuthentication.getPrincipal() instanceof UserDetails currentUserDetails)
+					|| !username.equals(currentUserDetails.getUsername());
+			if (shouldReplaceAuthentication) {
+				UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+				UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+						userDetails,
+						null,
+						userDetails.getAuthorities());
+				authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+				SecurityContextHolder.getContext().setAuthentication(authToken);
+			}
 		}
 
 		filterChain.doFilter(request, response);

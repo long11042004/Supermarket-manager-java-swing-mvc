@@ -43,17 +43,19 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
 	List<OrderStatusCountProjection> countOrdersByStatusInPeriod(@Param("startTime") LocalDateTime startTime,
 			@Param("endTime") LocalDateTime endTime);
 
-	@Query("""
-			SELECT i.product.name AS productName,
-			       i.product.unit AS unit,
-			       SUM(i.quantity) AS totalQuantity,
-			       SUM(i.lineTotal) AS totalRevenue
-			FROM CustomerOrderItem i
-			WHERE i.order.createdAt BETWEEN :startTime AND :endTime
-			  AND (:status IS NULL OR i.order.status = :status)
-			GROUP BY i.product.id, i.product.name, i.product.unit
-			ORDER BY SUM(i.lineTotal) DESC
-			""")
+	@Query(value = """
+			SELECT p.name AS productName,
+			       p.unit AS unit,
+			       SUM(coi.quantity) AS totalQuantity,
+			       SUM(coi.line_total) AS totalRevenue
+			FROM customer_order_items coi
+			JOIN products p ON coi.product_id = p.id
+			JOIN customer_orders co ON coi.order_id = co.id
+			WHERE co.created_at BETWEEN :startTime AND :endTime
+			  AND (:status IS NULL OR co.status = :status)
+			GROUP BY p.id, p.name, p.unit
+			ORDER BY SUM(coi.line_total) DESC
+			""", nativeQuery = true)
 	List<TopProductProjection> findTopProductsInPeriod(@Param("startTime") LocalDateTime startTime,
 			@Param("endTime") LocalDateTime endTime,
 			@Param("status") OrderStatus status,

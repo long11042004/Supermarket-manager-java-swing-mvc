@@ -23,6 +23,7 @@ import lombok.AllArgsConstructor;
 public class ReportApiController {
 
 	private final ReportService reportService;
+	private final ReportMapper reportMapper;
 
 	@GetMapping("/sync")
 	public ReportResponseDTO reportSync(
@@ -37,7 +38,7 @@ public class ReportApiController {
 			effectiveTo = temp;
 		}
 
-		return ReportMapper.toResponse(reportService.generateReport(effectiveFrom, effectiveTo, parseStatus(status)));
+		return reportMapper.toResponse(reportService.generateReport(effectiveFrom, effectiveTo, parseStatus(status)));
 	}
 
 	@GetMapping("/async")
@@ -54,7 +55,7 @@ public class ReportApiController {
 		}
 
 		return reportService.generateReportAsync(effectiveFrom, effectiveTo, parseStatus(status))
-				.thenApply(ReportMapper::toResponse);
+				.thenApply(reportMapper::toResponse);
 	}
 
 	private OrderStatus parseStatus(String status) {

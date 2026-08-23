@@ -12,7 +12,7 @@ import com.example.productmanager.model.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-	@Query("SELECT u FROM User u WHERE u.username = :username")
+	@Query(value = "SELECT * FROM users u WHERE u.username = :username", nativeQuery = true)
 	Optional<User> findByUsername(@Param("username") String username);
 
 	@Query("SELECT u FROM User u WHERE u.email = :email")

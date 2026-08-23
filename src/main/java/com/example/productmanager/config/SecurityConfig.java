@@ -17,6 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.example.productmanager.security.CustomUserDetailsService;
 import com.example.productmanager.security.JwtAuthenticationFilter;
+import com.example.productmanager.security.JwtService;
 
 import lombok.AllArgsConstructor;
 
@@ -40,6 +41,12 @@ public class SecurityConfig {
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
 				.authenticationProvider(authenticationProvider())
 				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+				.logout(logout -> logout
+						.logoutUrl("/logout")
+						.clearAuthentication(true)
+						.invalidateHttpSession(true)
+						.deleteCookies(JwtService.ACCESS_TOKEN_COOKIE)
+						.logoutSuccessUrl("/login"))
 				.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
 
 		return http.build();

@@ -31,26 +31,27 @@ import lombok.AllArgsConstructor;
 public class ProductRestController {
 
 	private final ProductService productService;
+	private final ProductMapper productMapper;
 
 	@GetMapping("/{id}")
 	public ProductResponseDTO getProductById(@PathVariable Long id) {
 		Product product = productService.getProductById(id);
-		return ProductMapper.toResponse(product);
+		return productMapper.toResponse(product);
 	}
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	@PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
 	public ProductResponseDTO createProduct(@Valid @RequestBody ProductRequestDTO request) {
-		Product created = productService.createProduct(ProductMapper.toEntity(request));
-		return ProductMapper.toResponse(created);
+		Product created = productService.createProduct(productMapper.toEntity(request));
+		return productMapper.toResponse(created);
 	}
 
 	@PutMapping("/{id}")
 	@PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
 	public ProductResponseDTO updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequestDTO request) {
-		Product updated = productService.updateProduct(id, ProductMapper.toEntity(request));
-		return ProductMapper.toResponse(updated);
+		Product updated = productService.updateProduct(id, productMapper.toEntity(request));
+		return productMapper.toResponse(updated);
 	}
 
 	@DeleteMapping("/{id}")
@@ -64,7 +65,7 @@ public class ProductRestController {
 	public List<ProductResponseDTO> filterByCategory(@RequestParam String value) {
 		return productService.filterByCategory(value)
 				.stream()
-				.map(ProductMapper::toResponse)
+				.map(productMapper::toResponse)
 				.toList();
 	}
 
@@ -72,7 +73,7 @@ public class ProductRestController {
 	public List<ProductResponseDTO> getLowStock(@RequestParam(defaultValue = "10") Integer threshold) {
 		return productService.getLowStockProducts(threshold)
 				.stream()
-				.map(ProductMapper::toResponse)
+				.map(productMapper::toResponse)
 				.toList();
 	}
 }

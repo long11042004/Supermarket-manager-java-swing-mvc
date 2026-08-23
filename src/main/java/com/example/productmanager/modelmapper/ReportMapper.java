@@ -1,34 +1,25 @@
 package com.example.productmanager.modelmapper;
 
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+
 import com.example.productmanager.dto.report.ReportResponseDTO;
+import com.example.productmanager.model.OrderStatus;
 import com.example.productmanager.service.ReportService.ReportData;
+import com.example.productmanager.service.ReportService.StatusStat;
+import com.example.productmanager.service.ReportService.TopProductStat;
 
-public final class ReportMapper {
+@Mapper(componentModel = "spring")
+public interface ReportMapper {
 
-	private ReportMapper() {
-	}
+	ReportResponseDTO toResponse(ReportData data);
 
-	public static ReportResponseDTO toResponse(ReportData data) {
-		if (data == null) {
-			return null;
-		}
-		return new ReportResponseDTO(
-				data.totalOrders(),
-				data.totalRevenue(),
-				data.averageOrderValue(),
-				data.guestOrders(),
-				data.memberOrders(),
-				data.statusStats().stream()
-						.map(item -> new ReportResponseDTO.StatusStatDTO(
-								item.status() == null ? null : item.status().name(),
-								item.total()))
-						.toList(),
-				data.topProducts().stream()
-						.map(item -> new ReportResponseDTO.TopProductStatDTO(
-								item.productName(),
-								item.unit(),
-								item.totalQuantity(),
-								item.totalRevenue()))
-						.toList());
+	@Mapping(target = "status", expression = "java(toStatusValue(stat.status()))")
+	ReportResponseDTO.StatusStatDTO toStatusStatDTO(StatusStat stat);
+
+	ReportResponseDTO.TopProductStatDTO toTopProductStatDTO(TopProductStat stat);
+
+	default String toStatusValue(OrderStatus status) {
+		return status == null ? null : status.name();
 	}
 }

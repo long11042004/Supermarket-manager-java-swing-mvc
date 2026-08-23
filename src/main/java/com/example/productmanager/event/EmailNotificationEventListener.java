@@ -1,43 +1,50 @@
 package com.example.productmanager.event;
 
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import org.thymeleaf.context.Context;
-import org.thymeleaf.spring6.SpringTemplateEngine;
 
-import com.example.productmanager.service.emailservice.EmailService;
+import com.example.productmanager.jms.EmailNotificationMessage;
+import com.example.productmanager.jms.EmailNotificationType;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
+@ConditionalOnProperty(name = "app.jms.enabled", havingValue = "true")
 public class EmailNotificationEventListener {
 
-	private final EmailService emailService;
-	private final SpringTemplateEngine templateEngine;
+	private final JmsTemplate jmsTemplate;
 
-	@Async("emailTaskExecutor")
+	@Value("${app.jms.queue.email-notification:email.notification.queue}")
+	private String emailQueue;
+
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleUserRegisteredEmailEvent(UserRegisteredEmailEvent event) {
-		Context context = new Context();
-		context.setVariable("recipientName", event.recipientName());
-		context.setVariable("username", event.username());
-		String htmlContent = templateEngine.process("email/welcome-account", context);
-		emailService.sendHtmlEmail(event.recipientEmail(), "Chào mừng bạn đến với hệ thống", htmlContent);
+		sendToQueue(new EmailNotificationMessage(
+				EmailNotificationType.USER_REGISTERED,
+				event.recipientEmail(),
+				event.recipientName(),
+				event.username(),
+				null,
+				null));
 	}
 
-	@Async("emailTaskExecutor")
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleOrderCancelledEmailEvent(OrderCancelledEmailEvent event) {
-		Context context = new Context();
-		context.setVariable("recipientName", event.recipientName());
-		context.setVariable("order", new OrderEmailView(event.orderId(), event.orderStatus()));
-		String htmlContent = templateEngine.process("email/order-cancelled", context);
-		emailService.sendHtmlEmail(event.recipientEmail(), "Đơn hàng #" + event.orderId() + " đã được hủy", htmlContent);
+		sendToQueue(new EmailNotificationMessage(
+				EmailNotificationType.ORDER_CANCELLED,
+				event.recipientEmail(),
+				event.recipientName(),
+				null,
+				event.orderId(),
+				event.orderStatus()));
 	}
 
-	public record OrderEmailView(Long id, String status) {
+	private void sendToQueue(EmailNotificationMessage payload) {
+		jmsTemplate.convertAndSend(emailQueue, payload);
 	}
 }
