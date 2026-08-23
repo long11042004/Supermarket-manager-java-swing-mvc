@@ -14,7 +14,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.productmanager.dto.product.ProductRequestDTO;
+import com.example.productmanager.dto.product.ProductResponseDTO;
 import com.example.productmanager.model.Product;
+import com.example.productmanager.modelmapper.ProductMapper;
 import com.example.productmanager.service.ProductService;
 
 import jakarta.validation.Valid;
@@ -28,19 +31,22 @@ public class ProductRestController {
 	private final ProductService productService;
 
 	@GetMapping("/{id}")
-	public Product getProductById(@PathVariable Long id) {
-		return productService.getProductById(id);
+	public ProductResponseDTO getProductById(@PathVariable Long id) {
+		Product product = productService.getProductById(id);
+		return ProductMapper.toResponse(product);
 	}
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public Product createProduct(@Valid @RequestBody Product product) {
-		return productService.createProduct(product);
+	public ProductResponseDTO createProduct(@Valid @RequestBody ProductRequestDTO request) {
+		Product created = productService.createProduct(ProductMapper.toEntity(request));
+		return ProductMapper.toResponse(created);
 	}
 
 	@PutMapping("/{id}")
-	public Product updateProduct(@PathVariable Long id, @Valid @RequestBody Product product) {
-		return productService.updateProduct(id, product);
+	public ProductResponseDTO updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequestDTO request) {
+		Product updated = productService.updateProduct(id, ProductMapper.toEntity(request));
+		return ProductMapper.toResponse(updated);
 	}
 
 	@DeleteMapping("/{id}")
@@ -50,12 +56,18 @@ public class ProductRestController {
 	}
 
 	@GetMapping("/category")
-	public List<Product> filterByCategory(@RequestParam String value) {
-		return productService.filterByCategory(value);
+	public List<ProductResponseDTO> filterByCategory(@RequestParam String value) {
+		return productService.filterByCategory(value)
+				.stream()
+				.map(ProductMapper::toResponse)
+				.toList();
 	}
 
 	@GetMapping("/low-stock")
-	public List<Product> getLowStock(@RequestParam(defaultValue = "10") Integer threshold) {
-		return productService.getLowStockProducts(threshold);
+	public List<ProductResponseDTO> getLowStock(@RequestParam(defaultValue = "10") Integer threshold) {
+		return productService.getLowStockProducts(threshold)
+				.stream()
+				.map(ProductMapper::toResponse)
+				.toList();
 	}
 }

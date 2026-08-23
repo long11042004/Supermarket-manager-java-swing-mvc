@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.productmanager.dto.user.UserLoginDTO;
+import com.example.productmanager.dto.user.UserRegistrationDTO;
 import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.model.User;
 import com.example.productmanager.service.UserService;
@@ -23,13 +25,13 @@ public class AuthController {
 
 	@GetMapping("/login")
 	public String loginPage(Model model) {
-		model.addAttribute("loginUser", new User());
-		model.addAttribute("registerUser", new User());
+		model.addAttribute("loginUser", new UserLoginDTO());
+		model.addAttribute("registerUser", new UserRegistrationDTO());
 		return "login";
 	}
 
 	@PostMapping("/login")
-	public String login(@ModelAttribute("loginUser") User loginUser,
+	public String login(@ModelAttribute("loginUser") UserLoginDTO loginUser,
 			HttpSession session,
 			RedirectAttributes redirectAttributes) {
 		try {
@@ -43,7 +45,7 @@ public class AuthController {
 	}
 
 	@PostMapping("/register")
-	public String register(@ModelAttribute("registerUser") User registerUser,
+	public String register(@ModelAttribute("registerUser") UserRegistrationDTO registerUser,
 			RedirectAttributes redirectAttributes) {
 		try {
 			userService.registerCustomer(

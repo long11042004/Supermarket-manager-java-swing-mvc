@@ -13,12 +13,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.productmanager.controller.support.SessionController;
+import com.example.productmanager.dto.product.ProductFormDTO;
 import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.lifecycle.PrototypeRequestMarker;
 import com.example.productmanager.lifecycle.SessionLifecycleBean;
 import com.example.productmanager.model.Product;
 import com.example.productmanager.model.RoleName;
 import com.example.productmanager.model.User;
+import com.example.productmanager.modelmapper.ProductMapper;
 import com.example.productmanager.service.CartService;
 import com.example.productmanager.service.CartService.CartView;
 import com.example.productmanager.service.ProductService;
@@ -68,7 +70,7 @@ public class ProductController extends SessionController {
 		model.addAttribute("totalPages", productsPage.getTotalPages());
 		model.addAttribute("pageSize", productsPage.getSize());
 		model.addAttribute("totalProducts", productsPage.getTotalElements());
-		model.addAttribute("product", new Product());
+		model.addAttribute("product", new ProductFormDTO());
 		model.addAttribute("keyword", keyword == null ? "" : keyword);
 		model.addAttribute("category", category == null ? "" : category);
 		model.addAttribute("categories", productService.getAllCategories());
@@ -141,11 +143,11 @@ public class ProductController extends SessionController {
 	}
 
 	@PostMapping
-	public String createProduct(@ModelAttribute("product") @Valid Product product, HttpSession session) {
+	public String createProduct(@ModelAttribute("product") @Valid ProductFormDTO product, HttpSession session) {
 		if (!hasPermission(session, RoleName.ADMIN, RoleName.MANAGER)) {
 			return "redirect:/login";
 		}
-		productService.createProduct(product);
+		productService.createProduct(ProductMapper.toEntity(product));
 		return "redirect:/products";
 	}
 
@@ -172,7 +174,7 @@ public class ProductController extends SessionController {
 		}
 		Product product = productService.getProductById(id);
 		Page<Product> productsPage = productService.getFilteredProducts(null, null, 0, 12);
-		model.addAttribute("product", product);
+		model.addAttribute("product", ProductMapper.toForm(product));
 		model.addAttribute("products", productsPage.getContent());
 		model.addAttribute("currentPage", productsPage.getNumber());
 		model.addAttribute("totalPages", productsPage.getTotalPages());
@@ -192,11 +194,11 @@ public class ProductController extends SessionController {
 	}
 
 	@PostMapping("/{id}/update")
-	public String updateProduct(@PathVariable Long id, @ModelAttribute("product") @Valid Product product, HttpSession session) {
+	public String updateProduct(@PathVariable Long id, @ModelAttribute("product") @Valid ProductFormDTO product, HttpSession session) {
 		if (!hasPermission(session, RoleName.ADMIN, RoleName.MANAGER)) {
 			return "redirect:/login";
 		}
-		productService.updateProduct(id, product);
+		productService.updateProduct(id, ProductMapper.toEntity(product));
 		return "redirect:/products";
 	}
 

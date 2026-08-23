@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.productmanager.controller.support.SessionController;
+import com.example.productmanager.dto.user.UserRegistrationDTO;
 import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.lifecycle.PrototypeRequestMarker;
 import com.example.productmanager.lifecycle.SessionLifecycleBean;
@@ -115,7 +116,7 @@ public class UserController extends SessionController {
 		model.addAttribute("restrictedUserIds", restrictedUserIds);
 		model.addAttribute("restrictedReasons", restrictedReasons);
 		model.addAttribute("assignedRoles", assignedRolesByUserId(users));
-		model.addAttribute("newUser", new User());
+		model.addAttribute("newUser", new UserRegistrationDTO());
 		model.addAttribute("lifecycleSessionToken", sessionLifecycleBean.getSessionToken());
 		model.addAttribute("lifecycleVisitCount", visitCount);
 		model.addAttribute("lifecycleRequestMarker", requestMarker.getMarkerId());
@@ -123,7 +124,7 @@ public class UserController extends SessionController {
 	}
 
 	@PostMapping("/register")
-	public String register(@ModelAttribute("newUser") User user,
+	public String register(@ModelAttribute("newUser") UserRegistrationDTO user,
 			@RequestParam(value = "defaultRole", required = false) String defaultRole,
 			HttpSession session,
 			RedirectAttributes redirectAttributes) {
@@ -188,7 +189,7 @@ public class UserController extends SessionController {
 		}
 		model.addAttribute("restrictedReasons", restrictedReasons);
 		model.addAttribute("selectedRoles", user.getRoles().stream().map(role -> role.getName()).collect(Collectors.toSet()));
-		model.addAttribute("newUser", new User());
+		model.addAttribute("newUser", new UserRegistrationDTO());
 		model.addAttribute("lifecycleSessionToken", sessionLifecycleBean.getSessionToken());
 		model.addAttribute("lifecycleVisitCount", visitCount);
 		model.addAttribute("lifecycleRequestMarker", requestMarker.getMarkerId());
