@@ -7,6 +7,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -93,7 +94,7 @@ public class CustomerOrderController extends SessionController {
 	}
 
 	@PostMapping("/{orderId}/cancel")
-	public String cancelOrder(@org.springframework.web.bind.annotation.PathVariable Long orderId,
+	public String cancelOrder(@PathVariable Long orderId,
 			HttpSession session,
 			RedirectAttributes redirectAttributes) {
 		User currentUser = getCustomer(session);

@@ -12,6 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import com.example.productmanager.exception.BadCredentialsException;
+import com.example.productmanager.exception.ConflictException;
+import com.example.productmanager.exception.ForbiddenException;
+import com.example.productmanager.exception.NotFoundException;
 import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.model.Role;
 import com.example.productmanager.model.RoleName;
@@ -61,14 +65,14 @@ public class UserService {
 			String fullName,
 			RoleName defaultRoleName) {
 		if (userRepository.existsByUsername(username)) {
-			throw new IllegalArgumentException(messageResolver.msg("err.user.usernameExists"));
+			throw new ConflictException(messageResolver.msg("err.user.usernameExists"));
 		}
 		if (userRepository.existsByEmail(email)) {
-			throw new IllegalArgumentException(messageResolver.msg("err.user.emailExists"));
+			throw new ConflictException(messageResolver.msg("err.user.emailExists"));
 		}
 
 		Role defaultRole = roleRepository.findByName(defaultRoleName)
-				.orElseThrow(() -> new RuntimeException(messageResolver.msg("err.role.defaultNotFound", defaultRoleName)));
+				.orElseThrow(() -> new NotFoundException(messageResolver.msg("err.role.defaultNotFound", defaultRoleName)));
 
 		User user = User.builder()
 				.username(username)
@@ -98,11 +102,11 @@ public class UserService {
 	@Transactional
 	public User login(String username, String password) {
 		User user = userRepository.findByUsername(username)
-				.orElseThrow(() -> new RuntimeException(messageResolver.msg("err.auth.userNotFound", username)));
+				.orElseThrow(() -> new BadCredentialsException(messageResolver.msg("err.auth.userNotFound", username)));
 
 		boolean passwordMatched = passwordEncoder.matches(password, user.getPassword()) || user.getPassword().equals(password);
 		if (!passwordMatched) {
-			throw new IllegalArgumentException(messageResolver.msg("err.auth.invalidPassword"));
+			throw new BadCredentialsException(messageResolver.msg("err.auth.invalidPassword"));
 		}
 
 		if (!isEncodedPassword(user.getPassword())) {
@@ -111,7 +115,7 @@ public class UserService {
 		}
 
 		if (!user.isEnabled()) {
-			throw new IllegalStateException(messageResolver.msg("err.auth.accountLocked"));
+			throw new ForbiddenException(messageResolver.msg("err.auth.accountLocked"));
 		}
 
 		logActivity(user, "Đăng nhập", "Người dùng đăng nhập vào hệ thống");
@@ -129,7 +133,7 @@ public class UserService {
 	@Transactional(readOnly = true)
 	public User getUserById(Long id) {
 		return userRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException(messageResolver.msg("err.user.notFoundById", id)));
+				.orElseThrow(() -> new NotFoundException(messageResolver.msg("err.user.notFoundById", id)));
 	}
 
 	@Transactional
@@ -138,7 +142,7 @@ public class UserService {
 		Set<Role> roles = new HashSet<>();
 		for (RoleName roleName : roleNames) {
 			Role role = roleRepository.findByName(roleName)
-					.orElseThrow(() -> new RuntimeException(messageResolver.msg("err.role.notFound", roleName)));
+					.orElseThrow(() -> new NotFoundException(messageResolver.msg("err.role.notFound", roleName)));
 			roles.add(role);
 		}
 		user.setRoles(roles);
@@ -179,7 +183,7 @@ public class UserService {
 			throw new IllegalArgumentException(messageResolver.msg("err.user.emailRequired"));
 		}
 		if (userRepository.existsByEmailAndIdNot(normalizedEmail, userId)) {
-			throw new IllegalArgumentException(messageResolver.msg("err.user.emailExists"));
+			throw new ConflictException(messageResolver.msg("err.user.emailExists"));
 		}
 
 		user.setFullName(fullName == null ? null : fullName.trim());
@@ -195,8 +199,10 @@ public class UserService {
 	@Transactional
 	public User changePassword(Long userId, String currentPassword, String newPassword, String confirmPassword) {
 		User user = getUserById(userId);
-		if (!user.getPassword().equals(currentPassword)) {
-			throw new IllegalArgumentException(messageResolver.msg("err.user.currentPasswordInvalid"));
+		boolean currentPasswordMatched = passwordEncoder.matches(currentPassword, user.getPassword())
+				|| user.getPassword().equals(currentPassword);
+		if (!currentPasswordMatched) {
+			throw new BadCredentialsException(messageResolver.msg("err.user.currentPasswordInvalid"));
 		}
 		if (newPassword == null || newPassword.length() < 6) {
 			throw new IllegalArgumentException(messageResolver.msg("err.user.newPasswordMin"));
@@ -204,11 +210,11 @@ public class UserService {
 		if (!newPassword.equals(confirmPassword)) {
 			throw new IllegalArgumentException(messageResolver.msg("err.user.passwordConfirmMismatch"));
 		}
-		if (newPassword.equals(currentPassword)) {
+		if (passwordEncoder.matches(newPassword, user.getPassword()) || newPassword.equals(currentPassword)) {
 			throw new IllegalArgumentException(messageResolver.msg("err.user.passwordMustDiffer"));
 		}
 
-		user.setPassword(newPassword);
+		user.setPassword(passwordEncoder.encode(newPassword));
 		User savedUser = userRepository.save(user);
 		logActivity(savedUser, "Đổi mật khẩu", "Người dùng đã thay đổi mật khẩu");
 		return savedUser;

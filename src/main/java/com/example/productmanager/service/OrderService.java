@@ -9,6 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import com.example.productmanager.exception.ConflictException;
+import com.example.productmanager.exception.ForbiddenException;
+import com.example.productmanager.exception.NotFoundException;
 import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.model.CartItem;
 import com.example.productmanager.model.CustomerOrder;
@@ -78,7 +81,7 @@ public class OrderService {
 		User user = null;
 		if (userId != null) {
 			user = userRepository.findById(userId)
-					.orElseThrow(() -> new IllegalArgumentException(messageResolver.msg("err.order.userNotFoundForOrder")));
+					.orElseThrow(() -> new NotFoundException(messageResolver.msg("err.order.userNotFoundForOrder")));
 		}
 
 		List<CustomerOrderItem> orderItems = new ArrayList<>();
@@ -103,7 +106,7 @@ public class OrderService {
 				throw new IllegalArgumentException(messageResolver.msg("err.order.invalidCartQuantity"));
 			}
 			Product product = productRepository.findById(cartItem.getProductId())
-					.orElseThrow(() -> new IllegalArgumentException(messageResolver.msg("err.order.productNotFoundInCart")));
+					.orElseThrow(() -> new NotFoundException(messageResolver.msg("err.order.productNotFoundInCart")));
 			if (product.getPrice() == null) {
 				throw new IllegalArgumentException(messageResolver.msg("err.order.productPriceInvalid", product.getName()));
 			}
@@ -150,16 +153,16 @@ public class OrderService {
 	@Transactional
 	public void cancelOrderForUser(Long userId, Long orderId) {
 		if (userId == null) {
-			throw new IllegalArgumentException(messageResolver.msg("err.order.userInfoNotFound"));
+			throw new ForbiddenException(messageResolver.msg("err.order.userInfoNotFound"));
 		}
 		CustomerOrder order = customerOrderRepository.findDetailByIdAndUserId(orderId, userId)
-				.orElseThrow(() -> new IllegalArgumentException(messageResolver.msg("err.order.orderNotFoundToCancel")));
+				.orElseThrow(() -> new NotFoundException(messageResolver.msg("err.order.orderNotFoundToCancel")));
 
 		if (order.getStatus() == OrderStatus.CANCELLED) {
-			throw new IllegalArgumentException(messageResolver.msg("err.order.alreadyCancelled"));
+			throw new ConflictException(messageResolver.msg("err.order.alreadyCancelled"));
 		}
 		if (order.getStatus() == OrderStatus.COMPLETED || order.getStatus() == OrderStatus.DELIVERING) {
-			throw new IllegalArgumentException(messageResolver.msg("err.order.cannotCancelDeliveredCompleted"));
+			throw new ConflictException(messageResolver.msg("err.order.cannotCancelDeliveredCompleted"));
 		}
 
 		for (CustomerOrderItem item : order.getItems()) {

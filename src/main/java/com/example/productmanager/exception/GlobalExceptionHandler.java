@@ -30,14 +30,47 @@ public class GlobalExceptionHandler {
 						request.getRequestURI()));
 	}
 
-	@ExceptionHandler(RuntimeException.class)
-	public ResponseEntity<ApiError> handleRuntimeException(RuntimeException ex,
+	@ExceptionHandler(NotFoundException.class)
+	public ResponseEntity<ApiError> handleNotFoundException(NotFoundException ex,
 			HttpServletRequest request) {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND)
 				.body(new ApiError(
 						"NOT_FOUND",
 						ex.getMessage(),
 						HttpStatus.NOT_FOUND.value(),
+						request.getRequestURI()));
+	}
+
+	@ExceptionHandler(ConflictException.class)
+	public ResponseEntity<ApiError> handleConflictException(ConflictException ex,
+			HttpServletRequest request) {
+		return ResponseEntity.status(HttpStatus.CONFLICT)
+				.body(new ApiError(
+						"CONFLICT",
+						ex.getMessage(),
+						HttpStatus.CONFLICT.value(),
+						request.getRequestURI()));
+	}
+
+	@ExceptionHandler(ForbiddenException.class)
+	public ResponseEntity<ApiError> handleForbiddenException(ForbiddenException ex,
+			HttpServletRequest request) {
+		return ResponseEntity.status(HttpStatus.FORBIDDEN)
+				.body(new ApiError(
+						"FORBIDDEN",
+						ex.getMessage(),
+						HttpStatus.FORBIDDEN.value(),
+						request.getRequestURI()));
+	}
+
+	@ExceptionHandler(BadCredentialsException.class)
+	public ResponseEntity<ApiError> handleBadCredentialsException(BadCredentialsException ex,
+			HttpServletRequest request) {
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+				.body(new ApiError(
+						"BAD_CREDENTIALS",
+						ex.getMessage(),
+						HttpStatus.UNAUTHORIZED.value(),
 						request.getRequestURI()));
 	}
 

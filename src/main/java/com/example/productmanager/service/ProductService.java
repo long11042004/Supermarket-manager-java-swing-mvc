@@ -8,6 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import com.example.productmanager.exception.ConflictException;
+import com.example.productmanager.exception.NotFoundException;
 import com.example.productmanager.model.Product;
 import com.example.productmanager.repository.CustomerOrderRepository;
 import com.example.productmanager.repository.ProductRepository;
@@ -43,7 +45,7 @@ public class ProductService {
 
 	public Product getProductById(Long id) {
 		return productRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException(new StringBuilder("Khong tim thay san pham voi id: ")
+				.orElseThrow(() -> new NotFoundException(new StringBuilder("Khong tim thay san pham voi id: ")
 						.append(id)
 						.toString()));
 	}
@@ -65,14 +67,14 @@ public class ProductService {
 
 	public void deleteProduct(Long id) {
 		if (customerOrderRepository.existsOrderItemByProductId(id)) {
-			throw new IllegalArgumentException("Khong the xoa san pham nay vi da phat sinh du lieu lien quan (don hang).");
+			throw new ConflictException("Khong the xoa san pham nay vi da phat sinh du lieu lien quan (don hang).");
 		}
 		Product existing = getProductById(id);
 		try {
 			productRepository.delete(existing);
 			productRepository.flush();
 		} catch (DataIntegrityViolationException ex) {
-			throw new IllegalArgumentException("Khong the xoa san pham nay vi da phat sinh du lieu lien quan (don hang).", ex);
+			throw new ConflictException("Khong the xoa san pham nay vi da phat sinh du lieu lien quan (don hang).", ex);
 		}
 	}
 

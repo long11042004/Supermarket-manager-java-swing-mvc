@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.productmanager.dto.report.ReportResponseDTO;
 import com.example.productmanager.model.OrderStatus;
+import com.example.productmanager.modelmapper.ReportMapper;
 import com.example.productmanager.service.ReportService;
 
 import lombok.AllArgsConstructor;
@@ -16,12 +18,12 @@ import lombok.AllArgsConstructor;
 @RestController
 @RequestMapping("/api/reports")
 @AllArgsConstructor
-public class ReportApiController {
+public class ReportRestController {
 
 	private final ReportService reportService;
 
 	@GetMapping("/sync")
-	public ReportService.ReportData reportSync(
+	public ReportResponseDTO reportSync(
 			@RequestParam(value = "fromDate", required = false) LocalDate fromDate,
 			@RequestParam(value = "toDate", required = false) LocalDate toDate,
 			@RequestParam(value = "status", required = false) String status) {
@@ -33,11 +35,11 @@ public class ReportApiController {
 			effectiveTo = temp;
 		}
 
-		return reportService.generateReport(effectiveFrom, effectiveTo, parseStatus(status));
+		return ReportMapper.toResponse(reportService.generateReport(effectiveFrom, effectiveTo, parseStatus(status)));
 	}
 
 	@GetMapping("/async")
-	public CompletableFuture<ReportService.ReportData> reportAsync(
+	public CompletableFuture<ReportResponseDTO> reportAsync(
 			@RequestParam(value = "fromDate", required = false) LocalDate fromDate,
 			@RequestParam(value = "toDate", required = false) LocalDate toDate,
 			@RequestParam(value = "status", required = false) String status) {
@@ -49,7 +51,8 @@ public class ReportApiController {
 			effectiveTo = temp;
 		}
 
-		return reportService.generateReportAsync(effectiveFrom, effectiveTo, parseStatus(status));
+		return reportService.generateReportAsync(effectiveFrom, effectiveTo, parseStatus(status))
+				.thenApply(ReportMapper::toResponse);
 	}
 
 	private OrderStatus parseStatus(String status) {

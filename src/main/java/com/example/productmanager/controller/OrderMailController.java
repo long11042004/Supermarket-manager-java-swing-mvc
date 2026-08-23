@@ -1,6 +1,6 @@
 package com.example.productmanager.controller;
 
-import java.util.Map;
+import java.math.BigDecimal;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import com.example.productmanager.dto.order.OrderConfirmationEmailResponseDTO;
 import com.example.productmanager.model.CustomerOrder;
 import com.example.productmanager.repository.CustomerOrderRepository;
 import com.example.productmanager.service.emailservice.EmailService;
@@ -28,7 +29,7 @@ public class OrderMailController {
 	private final SpringTemplateEngine templateEngine;
 
 	@PostMapping("/{orderId}/send-confirmation-email")
-	public Map<String, String> sendConfirmationEmail(@PathVariable Long orderId,
+	public OrderConfirmationEmailResponseDTO sendConfirmationEmail(@PathVariable Long orderId,
 			@RequestParam(required = false) String email) {
 		CustomerOrder order = customerOrderRepository.findById(orderId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
@@ -38,10 +39,7 @@ public class OrderMailController {
 		String htmlBody = renderConfirmationHtml(order, recipientName);
 		emailService.sendHtmlEmail(recipient, "Xác nhận đơn hàng #" + order.getId(), htmlBody);
 
-		return Map.of(
-				"status", "sent",
-				"orderId", String.valueOf(order.getId()),
-				"recipient", recipient);
+		return new OrderConfirmationEmailResponseDTO("sent", order.getId(), recipient);
 	}
 
 	private String resolveRecipient(CustomerOrder order, String email) {
@@ -73,7 +71,7 @@ public class OrderMailController {
 		return templateEngine.process("email/order-confirmation", context);
 	}
 
-	private String formatMoney(java.math.BigDecimal amount) {
+	private String formatMoney(BigDecimal amount) {
 		if (amount == null) {
 			return "0";
 		}

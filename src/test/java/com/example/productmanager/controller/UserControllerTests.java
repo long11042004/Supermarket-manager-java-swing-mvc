@@ -16,6 +16,7 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
+import com.example.productmanager.dto.user.UserRegistrationDTO;
 import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.lifecycle.PrototypeRequestMarker;
 import com.example.productmanager.lifecycle.SessionLifecycleBean;
@@ -68,7 +69,7 @@ class UserControllerTests {
 				.build();
 		RedirectAttributesModelMap redirectAttributes = new RedirectAttributesModelMap();
 
-		String view = userController.register(newUser, "MANAGER", session, redirectAttributes);
+		String view = userController.register(new UserRegistrationDTO(), "MANAGER", session, redirectAttributes);
 
 		assertEquals("redirect:/users", view);
 		assertEquals("Bạn không có quyền tạo tài khoản với vai trò này.", redirectAttributes.getFlashAttributes().get("errorMessage"));
