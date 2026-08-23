@@ -59,7 +59,7 @@ public class ProductController extends SessionController {
 				&& !hasPermission(session, RoleName.ADMIN, RoleName.MANAGER, RoleName.STAFF, RoleName.CUSTOMER)) {
 			return "redirect:/login";
 		}
-		if (!canShop(session) && session.getAttribute("loggedInUser") == null) {
+		if (!canShop(session)) {
 			session.setAttribute("guestCheckout", true);
 		}
 		PrototypeRequestMarker requestMarker = prototypeRequestMarkerProvider.getObject();

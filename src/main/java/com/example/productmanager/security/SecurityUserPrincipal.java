@@ -10,14 +10,21 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.example.productmanager.model.User;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 @AllArgsConstructor
+@Getter
 public class SecurityUserPrincipal implements UserDetails {
 
 	private final Long id;
 	private final String username;
 	private final String password;
 	private final boolean enabled;
+	private final String email;
+	private final String fullName;
+	private final String phoneNumber;
+	private final String address;
+	private final String avatarUrl;
 	private final List<GrantedAuthority> authorities;
 
 	public static SecurityUserPrincipal from(User user) {
@@ -33,11 +40,12 @@ public class SecurityUserPrincipal implements UserDetails {
 				user.getUsername(),
 				user.getPassword(),
 				user.isEnabled(),
+				user.getEmail(),
+				user.getFullName(),
+				user.getPhoneNumber(),
+				user.getAddress(),
+				user.getAvatarUrl(),
 				authorities);
-	}
-
-	public Long getId() {
-		return id;
 	}
 
 	@Override

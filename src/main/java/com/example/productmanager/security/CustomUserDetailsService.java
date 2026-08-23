@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 import com.example.productmanager.model.User;
 import com.example.productmanager.repository.UserRepository;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
 	private final UserRepository userRepository;

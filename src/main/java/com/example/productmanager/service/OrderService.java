@@ -4,11 +4,11 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.thymeleaf.context.Context;
-import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import com.example.productmanager.event.OrderCancelledEmailEvent;
 import com.example.productmanager.exception.ConflictException;
 import com.example.productmanager.exception.ForbiddenException;
 import com.example.productmanager.exception.NotFoundException;
@@ -23,7 +23,6 @@ import com.example.productmanager.repository.CustomerOrderRepository;
 import com.example.productmanager.repository.ProductRepository;
 import com.example.productmanager.repository.UserRepository;
 import com.example.productmanager.service.CartService.CartView;
-import com.example.productmanager.service.emailservice.EmailService;
 
 import lombok.AllArgsConstructor;
 
@@ -36,8 +35,7 @@ public class OrderService {
 	private final UserRepository userRepository;
 	private final UserService userService;
 	private final MessageResolver messageResolver;
-	private final EmailService emailService;
-	private final SpringTemplateEngine templateEngine;
+	private final ApplicationEventPublisher applicationEventPublisher;
 
 	@Transactional
 	public CustomerOrder checkout(Long userId, 
@@ -190,14 +188,14 @@ public class OrderService {
 				.toString();
 		userService.recordActivity(userId, "Hủy đơn", details);
 		if (order.getUser() != null && order.getUser().getEmail() != null && !order.getUser().getEmail().isBlank()) {
-			Context context = new Context();
-			context.setVariable("order", order);
-			context.setVariable("recipientName", order.getUser().getFullName());
-			String htmlContent = templateEngine.process("email/order-cancelled", context);
-			emailService.sendHtmlEmail(
+			String recipientName = order.getUser().getFullName() == null || order.getUser().getFullName().isBlank()
+					? order.getUser().getUsername()
+					: order.getUser().getFullName();
+			applicationEventPublisher.publishEvent(new OrderCancelledEmailEvent(
 					order.getUser().getEmail(),
-					"Đơn hàng #" + order.getId() + " đã được hủy",
-					htmlContent);
+					recipientName,
+					order.getId(),
+					order.getStatus().name()));
 		}
 	}
 }

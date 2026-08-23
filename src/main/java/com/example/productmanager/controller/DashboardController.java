@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import com.example.productmanager.controller.support.SessionController;
 import com.example.productmanager.lifecycle.PrototypeRequestMarker;
 import com.example.productmanager.lifecycle.SessionLifecycleBean;
 import com.example.productmanager.model.Product;
@@ -22,7 +23,7 @@ import lombok.AllArgsConstructor;
 
 @Controller
 @AllArgsConstructor
-public class DashboardController {
+public class DashboardController extends SessionController {
 
 	private final ProductService productService;
 	private final UserService userService;
@@ -31,7 +32,7 @@ public class DashboardController {
 
 	@GetMapping("/dashboard")
 	public String dashboard(Model model, HttpSession session) {
-		User currentUser = (User) session.getAttribute("loggedInUser");
+		User currentUser = getCurrentUser(session);
 		if (currentUser == null) {
 			return "redirect:/login";
 		}

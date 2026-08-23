@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.productmanager.controller.support.SessionController;
 import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.lifecycle.PrototypeRequestMarker;
 import com.example.productmanager.lifecycle.SessionLifecycleBean;
@@ -23,7 +24,7 @@ import lombok.AllArgsConstructor;
 @Controller
 @RequestMapping("/profile")
 @AllArgsConstructor
-public class ProfileController {
+public class ProfileController extends SessionController {
 
 	private final UserService userService;
 	private final MessageResolver messageResolver;
@@ -44,7 +45,6 @@ public class ProfileController {
 		PrototypeRequestMarker requestMarker = prototypeRequestMarkerProvider.getObject();
 		int visitCount = sessionLifecycleBean.increaseAndGetVisitCount();
 		Page<UserActivity> activitiesPage = userService.getActivities(freshUser.getId(), page, size);
-		session.setAttribute("loggedInUser", freshUser);
 		model.addAttribute("currentUser", freshUser);
 		model.addAttribute("activities", activitiesPage.getContent());
 		model.addAttribute("currentPage", activitiesPage.getNumber());
@@ -69,8 +69,7 @@ public class ProfileController {
 		}
 
 		try {
-			User updatedUser = userService.updateProfile(currentUser.getId(), fullName, email, phoneNumber, address);
-			session.setAttribute("loggedInUser", updatedUser);
+			userService.updateProfile(currentUser.getId(), fullName, email, phoneNumber, address);
 			redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.profile.updated"));
 		} catch (IllegalArgumentException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
@@ -90,8 +89,7 @@ public class ProfileController {
 		}
 
 		try {
-			User updatedUser = userService.changePassword(currentUser.getId(), currentPassword, newPassword, confirmPassword);
-			session.setAttribute("loggedInUser", updatedUser);
+			userService.changePassword(currentUser.getId(), currentPassword, newPassword, confirmPassword);
 			redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.profile.passwordChanged"));
 		} catch (IllegalArgumentException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
@@ -108,13 +106,12 @@ public class ProfileController {
 			return "redirect:/login";
 		}
 
-		User updatedUser = userService.updateAvatar(currentUser.getId(), avatarUrl);
-		session.setAttribute("loggedInUser", updatedUser);
+		userService.updateAvatar(currentUser.getId(), avatarUrl);
 		redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.profile.avatarUpdated"));
 		return "redirect:/profile";
 	}
 
 	private User getAuthenticatedUser(HttpSession session) {
-		return (User) session.getAttribute("loggedInUser");
+		return getCurrentUser(session);
 	}
 }

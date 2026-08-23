@@ -1,4 +1,4 @@
-package com.example.productmanager.security;
+package com.example.productmanager.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +14,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.example.productmanager.security.CustomUserDetailsService;
+import com.example.productmanager.security.JwtAuthenticationFilter;
 
 import lombok.AllArgsConstructor;
 

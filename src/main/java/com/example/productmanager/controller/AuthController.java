@@ -1,5 +1,8 @@
 package com.example.productmanager.controller;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,8 +14,11 @@ import com.example.productmanager.dto.user.UserLoginDTO;
 import com.example.productmanager.dto.user.UserRegistrationDTO;
 import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.model.User;
+import com.example.productmanager.security.JwtService;
+import com.example.productmanager.security.SecurityUserPrincipal;
 import com.example.productmanager.service.UserService;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 
@@ -22,6 +28,7 @@ public class AuthController {
 
 	private final UserService userService;
 	private final MessageResolver messageResolver;
+	private final JwtService jwtService;
 
 	@GetMapping("/login")
 	public String loginPage(Model model) {
@@ -33,10 +40,13 @@ public class AuthController {
 	@PostMapping("/login")
 	public String login(@ModelAttribute("loginUser") UserLoginDTO loginUser,
 			HttpSession session,
+			HttpServletResponse response,
 			RedirectAttributes redirectAttributes) {
 		try {
 			User authenticatedUser = userService.login(loginUser.getUsername(), loginUser.getPassword());
-			session.setAttribute("loggedInUser", authenticatedUser);
+			String token = jwtService.generateToken(authenticatedUser);
+			response.addHeader(HttpHeaders.SET_COOKIE, jwtService.createAccessTokenCookie(token).toString());
+			session.removeAttribute("guestCheckout");
 			return "redirect:/dashboard";
 		} catch (Exception ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
@@ -61,11 +71,12 @@ public class AuthController {
 	}
 
 	@PostMapping("/logout")
-	public String logout(HttpSession session) {
-		User currentUser = (User) session.getAttribute("loggedInUser");
-		if (currentUser != null) {
-			userService.logLogout(currentUser.getId());
+	public String logout(HttpSession session, HttpServletResponse response) {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (authentication != null && authentication.getPrincipal() instanceof SecurityUserPrincipal principal) {
+			userService.logLogout(principal.getId());
 		}
+		response.addHeader(HttpHeaders.SET_COOKIE, jwtService.clearAccessTokenCookie().toString());
 		session.invalidate();
 		return "redirect:/login";
 	}

@@ -7,6 +7,7 @@ import java.util.List;
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 
 import com.example.productmanager.model.User;
@@ -17,6 +18,8 @@ import io.jsonwebtoken.security.Keys;
 
 @Service
 public class JwtService {
+
+	public static final String ACCESS_TOKEN_COOKIE = "ACCESS_TOKEN";
 
 	private final SecretKey secretKey;
 	private final long expirationMs;
@@ -55,6 +58,26 @@ public class JwtService {
 		} catch (Exception ex) {
 			return false;
 		}
+	}
+
+	public ResponseCookie createAccessTokenCookie(String token) {
+		return ResponseCookie.from(ACCESS_TOKEN_COOKIE, token)
+				.httpOnly(true)
+				.secure(false)
+				.path("/")
+				.maxAge(expirationMs / 1000)
+				.sameSite("Lax")
+				.build();
+	}
+
+	public ResponseCookie clearAccessTokenCookie() {
+		return ResponseCookie.from(ACCESS_TOKEN_COOKIE, "")
+				.httpOnly(true)
+				.secure(false)
+				.path("/")
+				.maxAge(0)
+				.sameSite("Lax")
+				.build();
 	}
 
 	private Claims parseClaims(String token) {

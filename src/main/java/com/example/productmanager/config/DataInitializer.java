@@ -181,7 +181,7 @@ public class DataInitializer {
 
     User.builder()
         .username("customer")
-        .password(passwordEncoder.encode("customer123"))
+        .password(passwordEncoder.encode("customer"))
         .email("customer@demo.com")
         .fullName("Phạm Văn D")
         .enabled(true)
@@ -190,7 +190,7 @@ public class DataInitializer {
 
     User.builder()
         .username("customer2")
-        .password(passwordEncoder.encode("customer2123"))
+        .password(passwordEncoder.encode("customer2"))
         .email("customer2@demo.com")
         .fullName("Vũ Văn E")
         .enabled(true)
@@ -199,7 +199,7 @@ public class DataInitializer {
 
     User.builder()
         .username("customer3")
-        .password(passwordEncoder.encode("customer3123"))
+        .password(passwordEncoder.encode("customer3"))
         .email("customer3@demo.com")
         .fullName("Bùi Văn F")
         .enabled(true)
@@ -208,7 +208,7 @@ public class DataInitializer {
 
     User.builder()
         .username("customer4")
-        .password(passwordEncoder.encode("customer4123"))
+        .password(passwordEncoder.encode("customer4"))
         .email("customer4@demo.com")
         .fullName("Đỗ Văn G")
         .enabled(true)

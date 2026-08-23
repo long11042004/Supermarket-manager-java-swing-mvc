@@ -4,14 +4,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.thymeleaf.context.Context;
-import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import com.example.productmanager.event.UserRegisteredEmailEvent;
 import com.example.productmanager.exception.BadCredentialsException;
 import com.example.productmanager.exception.ConflictException;
 import com.example.productmanager.exception.ForbiddenException;
@@ -24,7 +24,6 @@ import com.example.productmanager.model.UserActivity;
 import com.example.productmanager.repository.RoleRepository;
 import com.example.productmanager.repository.UserActivityRepository;
 import com.example.productmanager.repository.UserRepository;
-import com.example.productmanager.service.emailservice.EmailService;
 
 import lombok.AllArgsConstructor;
 
@@ -37,8 +36,7 @@ public class UserService {
 	private final UserActivityRepository userActivityRepository;
 	private final MessageResolver messageResolver;
 	private final PasswordEncoder passwordEncoder;
-	private final EmailService emailService;
-	private final SpringTemplateEngine templateEngine;
+	private final ApplicationEventPublisher applicationEventPublisher;
 
 	@Transactional
 	public User registerUser(String username, String password, String email, String fullName) {
@@ -87,14 +85,10 @@ public class UserService {
 		logActivity(savedUser, "Tạo tài khoản", "Tài khoản được khởi tạo trong hệ thống");
 		if (savedUser.getEmail() != null && !savedUser.getEmail().isBlank()) {
 			String recipientName = savedUser.getFullName() == null ? savedUser.getUsername() : savedUser.getFullName();
-			Context context = new Context();
-			context.setVariable("recipientName", recipientName);
-			context.setVariable("username", savedUser.getUsername());
-			String htmlContent = templateEngine.process("email/welcome-account", context);
-			emailService.sendHtmlEmail(
+			applicationEventPublisher.publishEvent(new UserRegisteredEmailEvent(
 					savedUser.getEmail(),
-					"Chào mừng bạn đến với hệ thống",
-					htmlContent);
+					recipientName,
+					savedUser.getUsername()));
 		}
 		return savedUser;
 	}
@@ -104,14 +98,9 @@ public class UserService {
 		User user = userRepository.findByUsername(username)
 				.orElseThrow(() -> new BadCredentialsException(messageResolver.msg("err.auth.userNotFound", username)));
 
-		boolean passwordMatched = passwordEncoder.matches(password, user.getPassword()) || user.getPassword().equals(password);
+		boolean passwordMatched = passwordEncoder.matches(password, user.getPassword());
 		if (!passwordMatched) {
 			throw new BadCredentialsException(messageResolver.msg("err.auth.invalidPassword"));
-		}
-
-		if (!isEncodedPassword(user.getPassword())) {
-			user.setPassword(passwordEncoder.encode(password));
-			userRepository.save(user);
 		}
 
 		if (!user.isEnabled()) {
@@ -121,13 +110,6 @@ public class UserService {
 		logActivity(user, "Đăng nhập", "Người dùng đăng nhập vào hệ thống");
 
 		return user;
-	}
-
-	private boolean isEncodedPassword(String password) {
-		if (password == null || password.isBlank()) {
-			return false;
-		}
-		return password.startsWith("{") || password.startsWith("$2a$") || password.startsWith("$2b$") || password.startsWith("$2y$");
 	}
 
 	@Transactional(readOnly = true)
@@ -199,8 +181,7 @@ public class UserService {
 	@Transactional
 	public User changePassword(Long userId, String currentPassword, String newPassword, String confirmPassword) {
 		User user = getUserById(userId);
-		boolean currentPasswordMatched = passwordEncoder.matches(currentPassword, user.getPassword())
-				|| user.getPassword().equals(currentPassword);
+		boolean currentPasswordMatched = passwordEncoder.matches(currentPassword, user.getPassword());
 		if (!currentPasswordMatched) {
 			throw new BadCredentialsException(messageResolver.msg("err.user.currentPasswordInvalid"));
 		}
@@ -210,7 +191,7 @@ public class UserService {
 		if (!newPassword.equals(confirmPassword)) {
 			throw new IllegalArgumentException(messageResolver.msg("err.user.passwordConfirmMismatch"));
 		}
-		if (passwordEncoder.matches(newPassword, user.getPassword()) || newPassword.equals(currentPassword)) {
+		if (passwordEncoder.matches(newPassword, user.getPassword())) {
 			throw new IllegalArgumentException(messageResolver.msg("err.user.passwordMustDiffer"));
 		}
 

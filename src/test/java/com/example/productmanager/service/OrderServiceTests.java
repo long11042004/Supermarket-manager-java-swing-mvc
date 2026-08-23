@@ -10,14 +10,16 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ResourceBundleMessageSource;
-import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import com.example.productmanager.event.OrderCancelledEmailEvent;
+import com.example.productmanager.exception.ConflictException;
+import com.example.productmanager.exception.NotFoundException;
 import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.model.CustomerOrder;
 import com.example.productmanager.model.CustomerOrderItem;
@@ -28,7 +30,6 @@ import com.example.productmanager.repository.CustomerOrderRepository;
 import com.example.productmanager.repository.ProductRepository;
 import com.example.productmanager.repository.UserRepository;
 import com.example.productmanager.service.CartService.CartView;
-import com.example.productmanager.service.emailservice.EmailService;
 
 class OrderServiceTests {
 
@@ -36,8 +37,7 @@ class OrderServiceTests {
 	private final ProductRepository productRepository = org.mockito.Mockito.mock(ProductRepository.class);
 	private final UserRepository userRepository = org.mockito.Mockito.mock(UserRepository.class);
 	private final UserService userService = org.mockito.Mockito.mock(UserService.class);
-	private final EmailService emailService = org.mockito.Mockito.mock(EmailService.class);
-	private final SpringTemplateEngine templateEngine = org.mockito.Mockito.mock(SpringTemplateEngine.class);
+	private final ApplicationEventPublisher applicationEventPublisher = org.mockito.Mockito.mock(ApplicationEventPublisher.class);
 	private final MessageResolver messageResolver = new MessageResolver(createMessageSource());
 	private final OrderService orderService = new OrderService(
 			customerOrderRepository,
@@ -45,8 +45,7 @@ class OrderServiceTests {
 			userRepository,
 			userService,
 			messageResolver,
-			emailService,
-			templateEngine);
+			applicationEventPublisher);
 	private final CartService cartService = new CartService(messageResolver);
 
 	private ResourceBundleMessageSource createMessageSource() {
@@ -125,7 +124,7 @@ class OrderServiceTests {
 		cartService.addItem(cart, product, 1);
 		when(productRepository.findById(23L)).thenReturn(Optional.empty());
 
-		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+		NotFoundException ex = assertThrows(NotFoundException.class,
 				() -> orderService.checkoutAsGuest("Khách", "guest@demo.com", cart, "789 Đường DEF", "0909000000", null));
 
 		assertEquals("Sản phẩm trong giỏ không còn tồn tại. Vui lòng tải lại danh sách.", ex.getMessage());
@@ -167,7 +166,6 @@ class OrderServiceTests {
 
 		when(customerOrderRepository.findDetailByIdAndUserId(101L, 9L)).thenReturn(Optional.of(order));
 		when(productRepository.findById(50L)).thenReturn(Optional.of(product));
-		when(templateEngine.process(eq("email/order-cancelled"), any())).thenReturn("<html>cancelled</html>");
 
 		orderService.cancelOrderForUser(9L, 101L);
 
@@ -175,10 +173,7 @@ class OrderServiceTests {
 		assertEquals(10, product.getQuantity());
 		verify(customerOrderRepository).save(order);
 		verify(userService).recordActivity(9L, "Hủy đơn", "Đơn hàng #101 đã được hủy");
-		verify(emailService).sendHtmlEmail(
-					eq("customer@demo.com"),
-					eq("Đơn hàng #101 đã được hủy"),
-					eq("<html>cancelled</html>"));
+		verify(applicationEventPublisher).publishEvent(any(OrderCancelledEmailEvent.class));
 	}
 
 	@Test
@@ -192,7 +187,7 @@ class OrderServiceTests {
 
 		when(customerOrderRepository.findDetailByIdAndUserId(102L, 9L)).thenReturn(Optional.of(order));
 
-		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+		ConflictException ex = assertThrows(ConflictException.class,
 				() -> orderService.cancelOrderForUser(9L, 102L));
 
 		assertEquals("Đơn hàng đang giao hoặc đã hoàn tất nên không thể hủy.", ex.getMessage());

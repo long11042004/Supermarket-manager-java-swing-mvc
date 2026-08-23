@@ -9,17 +9,19 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.Mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import com.example.productmanager.event.UserRegisteredEmailEvent;
+import com.example.productmanager.exception.BadCredentialsException;
+import com.example.productmanager.exception.ConflictException;
 import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.model.Role;
 import com.example.productmanager.model.RoleName;
@@ -27,7 +29,6 @@ import com.example.productmanager.model.User;
 import com.example.productmanager.repository.RoleRepository;
 import com.example.productmanager.repository.UserActivityRepository;
 import com.example.productmanager.repository.UserRepository;
-import com.example.productmanager.service.emailservice.EmailService;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTests {
@@ -42,13 +43,10 @@ class UserServiceTests {
 	private UserActivityRepository userActivityRepository;
 
 	@Mock
-	private EmailService emailService;
-
-	@Mock
 	private PasswordEncoder passwordEncoder;
 
 	@Mock
-	private SpringTemplateEngine templateEngine;
+	private ApplicationEventPublisher applicationEventPublisher;
 
 	private UserService userService;
 
@@ -68,24 +66,19 @@ class UserServiceTests {
 			roleRepository, 
 			userActivityRepository, 
 			new MessageResolver(createMessageSource()), 
-			passwordEncoder, 
-			emailService, 
-			templateEngine);
+			passwordEncoder,
+			applicationEventPublisher);
 		when(userRepository.existsByUsername("new-customer")).thenReturn(false);
 		when(userRepository.existsByEmail("customer@example.com")).thenReturn(false);
 		when(roleRepository.findByName(RoleName.CUSTOMER)).thenReturn(Optional.of(customerRole));
 		when(passwordEncoder.encode("secret123")).thenReturn("encoded-secret123");
-		when(templateEngine.process(eq("email/welcome-account"), any())).thenReturn("<html>welcome</html>");
 		when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
 		User savedUser = userService.registerCustomer("new-customer", "secret123", "customer@example.com", "Khách mới");
 
 		assertEquals(RoleName.CUSTOMER, savedUser.getRoles().stream().findFirst().orElseThrow().getName());
 		verify(userActivityRepository).save(any());
-		verify(emailService).sendHtmlEmail(
-					eq("customer@example.com"),
-					eq("Chào mừng bạn đến với hệ thống"),
-					eq("<html>welcome</html>"));
+		verify(applicationEventPublisher).publishEvent(any(UserRegisteredEmailEvent.class));
 	}
 
 	@Test
@@ -96,9 +89,8 @@ class UserServiceTests {
 			roleRepository, 
 			userActivityRepository, 
 			new MessageResolver(createMessageSource()), 
-			passwordEncoder, 
-			emailService, 
-			templateEngine);
+			passwordEncoder,
+			applicationEventPublisher);
 		when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
 		when(userRepository.existsByEmailAndIdNot("new@demo.com", 1L)).thenReturn(false);
 		when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -121,13 +113,12 @@ class UserServiceTests {
 			roleRepository, 
 			userActivityRepository, 
 			new MessageResolver(createMessageSource()), 
-			passwordEncoder, 
-			emailService, 
-			templateEngine);
+			passwordEncoder,
+			applicationEventPublisher);
 		when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
 		when(userRepository.existsByEmailAndIdNot("admin@demo.com", 1L)).thenReturn(true);
 
-		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+		ConflictException ex = assertThrows(ConflictException.class,
 				() -> userService.updateProfile(1L, "Tên mới", "admin@demo.com", null, null));
 
 		assertEquals("Email đã tồn tại", ex.getMessage());
@@ -142,15 +133,17 @@ class UserServiceTests {
 			roleRepository, 
 			userActivityRepository, 
 			new MessageResolver(createMessageSource()), 
-			passwordEncoder, 
-			emailService, 
-			templateEngine);
+			passwordEncoder,
+			applicationEventPublisher);
 		when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
+		when(passwordEncoder.matches("old-pass", "old-pass")).thenReturn(true);
+		when(passwordEncoder.matches("new-pass-123", "old-pass")).thenReturn(false);
+		when(passwordEncoder.encode("new-pass-123")).thenReturn("encoded-new-pass-123");
 		when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
 		User updatedUser = userService.changePassword(1L, "old-pass", "new-pass-123", "new-pass-123");
 
-		assertEquals("new-pass-123", updatedUser.getPassword());
+		assertEquals("encoded-new-pass-123", updatedUser.getPassword());
 		verify(userRepository).save(existingUser);
 		verify(userActivityRepository).save(any());
 	}
@@ -163,12 +156,12 @@ class UserServiceTests {
 			roleRepository, 
 			userActivityRepository, 
 			new MessageResolver(createMessageSource()), 
-			passwordEncoder, 
-			emailService, 
-			templateEngine);
+			passwordEncoder,
+			applicationEventPublisher);
 		when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
+		when(passwordEncoder.matches("wrong-pass", "old-pass")).thenReturn(false);
 
-		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+		BadCredentialsException ex = assertThrows(BadCredentialsException.class,
 				() -> userService.changePassword(1L, "wrong-pass", "new-pass-123", "new-pass-123"));
 
 		assertEquals("Mật khẩu hiện tại không đúng", ex.getMessage());
