@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.productmanager.model.Product;
+import com.example.productmanager.model.ProductCategory;
 import com.example.productmanager.repository.CustomerOrderRepository;
 import com.example.productmanager.repository.ProductRepository;
 
@@ -24,7 +25,7 @@ class ProductServiceTests {
         Product featuredOne = Product.builder()
                 .id(1L)
                 .name("Sữa tươi Vinamilk")
-                .category("Sữa")
+                .category(ProductCategory.SUA)
                 .price(new BigDecimal("42000"))
                 .quantity(120)
                 .unit("Hộp")
@@ -33,7 +34,7 @@ class ProductServiceTests {
         Product featuredTwo = Product.builder()
                 .id(2L)
                 .name("Gạo ST25")
-                .category("Thực phẩm")
+                .category(ProductCategory.THUC_PHAM)
                 .price(new BigDecimal("52000"))
                 .quantity(80)
                 .unit("Kg")

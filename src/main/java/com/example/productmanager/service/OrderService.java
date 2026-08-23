@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.productmanager.event.OrderCancelledEmailEvent;
+import com.example.productmanager.event.OrderConfirmedEmailEvent;
 import com.example.productmanager.exception.ConflictException;
 import com.example.productmanager.exception.ForbiddenException;
 import com.example.productmanager.exception.NotFoundException;
@@ -139,6 +140,22 @@ public class OrderService {
 					.append(" đã được tạo")
 					.toString();
 			userService.recordActivity(userId, "Đặt hàng", details);
+			String recipientEmail = user.getEmail();
+			if (recipientEmail != null && !recipientEmail.isBlank()) {
+				applicationEventPublisher.publishEvent(new OrderConfirmedEmailEvent(
+						recipientEmail,
+						user.getFullName() == null || user.getFullName().isBlank() ? user.getUsername() : user.getFullName(),
+						savedOrder.getId(),
+						savedOrder.getStatus().name(),
+						savedOrder.getDeliveryAddress()));
+			}
+		} else if (guestEmail != null && !guestEmail.isBlank()) {
+			applicationEventPublisher.publishEvent(new OrderConfirmedEmailEvent(
+					guestEmail,
+					guestName == null || guestName.isBlank() ? "Khách hàng" : guestName,
+					savedOrder.getId(),
+					savedOrder.getStatus().name(),
+					savedOrder.getDeliveryAddress()));
 		}
 		return savedOrder;
 	}

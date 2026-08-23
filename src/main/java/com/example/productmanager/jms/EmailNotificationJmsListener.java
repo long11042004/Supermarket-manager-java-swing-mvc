@@ -27,6 +27,7 @@ public class EmailNotificationJmsListener {
 		}
 		switch (message.type()) {
 			case USER_REGISTERED -> sendWelcomeEmail(message);
+			case ORDER_CONFIRMED -> sendOrderConfirmedEmail(message);
 			case ORDER_CANCELLED -> sendOrderCancelledEmail(message);
 			default -> {
 			}
@@ -41,14 +42,23 @@ public class EmailNotificationJmsListener {
 		emailService.sendHtmlEmail(message.recipientEmail(), "Chào mừng bạn đến với hệ thống", htmlContent);
 	}
 
+	private void sendOrderConfirmedEmail(EmailNotificationMessage message) {
+		Context context = new Context();
+		context.setVariable("recipientName", message.recipientName());
+		context.setVariable("order", new OrderEmailView(message.orderId(), message.orderStatus(), message.deliveryAddress()));
+		context.setVariable("formattedTotal", "0");
+		String htmlContent = templateEngine.process("email/order-confirmation", context);
+		emailService.sendHtmlEmail(message.recipientEmail(), "Xác nhận đơn hàng #" + message.orderId(), htmlContent);
+	}
+
 	private void sendOrderCancelledEmail(EmailNotificationMessage message) {
 		Context context = new Context();
 		context.setVariable("recipientName", message.recipientName());
-		context.setVariable("order", new OrderEmailView(message.orderId(), message.orderStatus()));
+		context.setVariable("order", new OrderEmailView(message.orderId(), message.orderStatus(), message.deliveryAddress()));
 		String htmlContent = templateEngine.process("email/order-cancelled", context);
 		emailService.sendHtmlEmail(message.recipientEmail(), "Đơn hàng #" + message.orderId() + " đã được hủy", htmlContent);
 	}
 
-	private record OrderEmailView(Long id, String status) {
-	}
+	private record OrderEmailView(Long id, String status, String deliveryAddress) {
+}
 }

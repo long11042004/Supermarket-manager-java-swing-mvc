@@ -5,6 +5,8 @@ import java.time.LocalDate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -42,10 +44,10 @@ public class Product {
 	@Column(nullable = false, length = 120)
 	private String name;
 
-	@NotBlank(message = "Danh muc khong duoc de trong")
-	@Size(max = 80, message = "Danh muc toi da 80 ky tu")
-	@Column(nullable = false, length = 80)
-	private String category;
+	@NotNull(message = "Danh muc khong duoc de trong")
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false, length = 40)
+	private ProductCategory category;
 
 	@NotNull(message = "Gia khong duoc de trong")
 	@DecimalMin(value = "0.0", inclusive = false, message = "Gia phai lon hon 0")

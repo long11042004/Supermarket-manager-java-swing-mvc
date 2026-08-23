@@ -30,7 +30,20 @@ public class EmailNotificationEventListener {
 				event.recipientName(),
 				event.username(),
 				null,
+				null,
 				null));
+	}
+
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	public void handleOrderConfirmedEmailEvent(OrderConfirmedEmailEvent event) {
+		sendToQueue(new EmailNotificationMessage(
+				EmailNotificationType.ORDER_CONFIRMED,
+				event.recipientEmail(),
+				event.recipientName(),
+				null,
+				event.orderId(),
+				event.orderStatus(),
+				event.deliveryAddress()));
 	}
 
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -41,7 +54,8 @@ public class EmailNotificationEventListener {
 				event.recipientName(),
 				null,
 				event.orderId(),
-				event.orderStatus()));
+				event.orderStatus(),
+				null));
 	}
 
 	private void sendToQueue(EmailNotificationMessage payload) {

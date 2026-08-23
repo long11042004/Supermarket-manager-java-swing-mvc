@@ -86,9 +86,9 @@
           <select id="categoryFilter" class="form-select" name="category">
             <option value="" th:text="#{app.allCategories}">Tất cả</option>
             <option th:each="item : ${categories}"
-                    th:value="${item}"
-                    th:text="${item}"
-                    th:selected="${item == category}">Danh mục</option>
+                    th:value="${item.name()}"
+                    th:text="${item.label}"
+                    th:selected="${item.name() == category}">Danh mục</option>
           </select>
         </div>
         <div class="col-md-3 d-flex align-items-end gap-2">
@@ -193,7 +193,13 @@
 
             <div class="mb-3">
               <label class="form-label" th:text="#{app.category}">Danh mục</label>
-              <input type="text" class="form-control" th:field="*{category}" required />
+              <select class="form-select" th:field="*{category}" required>
+                <option value="" th:text="#{app.allCategories}">Chọn danh mục</option>
+                <option th:each="categoryOption : ${T(com.example.productmanager.model.ProductCategory).values()}"
+                        th:value="${categoryOption.name()}"
+                        th:text="${categoryOption.label}"
+                        th:selected="${categoryOption == product.category}">Danh mục</option>
+              </select>
             </div>
 
             <div class="row">
@@ -255,7 +261,7 @@
           <div class="product-grid">
             <article class="product-card" th:each="item, state : ${products}">
               <div class="product-card-media">
-                <span class="category-chip" th:text="${item.category}">Danh mục</span>
+                <span class="category-chip" th:text="${item.category.label}">Danh mục</span>
                 <span class="stock-badge" th:classappend="${item.quantity <= 10} ? 'low' : 'good'"
                       th:text="${item.quantity <= 10 ? (isCustomer or isGuest ? 'Sắp hết' : 'Thiếu hàng') : (isCustomer or isGuest ? 'Còn hàng' : 'Đủ hàng')}">Còn hàng</span>
               </div>

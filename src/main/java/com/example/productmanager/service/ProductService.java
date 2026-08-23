@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.example.productmanager.exception.ConflictException;
 import com.example.productmanager.exception.NotFoundException;
 import com.example.productmanager.model.Product;
+import com.example.productmanager.model.ProductCategory;
 import com.example.productmanager.repository.CustomerOrderRepository;
 import com.example.productmanager.repository.ProductRepository;
 
@@ -35,7 +36,7 @@ public class ProductService {
 
 	public Page<Product> getFilteredProducts(String keyword, String category, int page, int size) {
 		String normalizedKeyword = keyword == null ? "" : keyword.trim();
-		String normalizedCategory = category == null ? "" : category.trim();
+		ProductCategory normalizedCategory = parseCategoryInput(category);
 		int normalizedPage = Math.max(page, 0);
 		int normalizedSize = (size == 8 || size == 12 || size == 20) ? size : 12;
 		return productRepository.findByKeywordAndCategory(
@@ -44,7 +45,7 @@ public class ProductService {
 				PageRequest.of(normalizedPage, normalizedSize));
 	}
 
-	public List<String> getAllCategories() {
+	public List<ProductCategory> getAllCategories() {
 		return productRepository.findDistinctCategories();
 	}
 
@@ -84,7 +85,15 @@ public class ProductService {
 	}
 
 	public List<Product> filterByCategory(String category) {
-		return productRepository.filterByCategory(category);
+		ProductCategory normalizedCategory = parseCategoryInput(category);
+		return productRepository.filterByCategory(normalizedCategory);
+	}
+
+	private ProductCategory parseCategoryInput(String category) {
+		if (category == null || category.isBlank()) {
+			return null;
+		}
+		return ProductCategory.fromValue(category);
 	}
 
 	public List<Product> getLowStockProducts(Integer threshold) {

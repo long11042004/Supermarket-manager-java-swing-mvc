@@ -47,6 +47,7 @@ public class AuthController {
 			User authenticatedUser = userService.login(loginUser.getUsername(), loginUser.getPassword());
 			String token = jwtService.generateToken(authenticatedUser);
 			response.addHeader(HttpHeaders.SET_COOKIE, jwtService.createAccessTokenCookie(token).toString());
+			session.setAttribute("loggedInUser", authenticatedUser);
 			session.removeAttribute("guestCheckout");
 			return "redirect:/dashboard";
 		} catch (Exception ex) {
@@ -80,6 +81,8 @@ public class AuthController {
 		SecurityContextHolder.clearContext();
 		response.addHeader(HttpHeaders.SET_COOKIE, jwtService.clearAccessTokenCookie().toString());
 		if (session != null) {
+			session.removeAttribute("loggedInUser");
+			session.removeAttribute("guestCheckout");
 			session.invalidate();
 		}
 		return "redirect:/login";

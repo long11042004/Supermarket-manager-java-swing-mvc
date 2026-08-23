@@ -10,28 +10,23 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.example.productmanager.model.Product;
+import com.example.productmanager.model.ProductCategory;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
 	@Query("""
 			SELECT p FROM Product p
 			WHERE (:keyword = '' OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')))
-			  AND (:category = '' OR LOWER(p.category) = LOWER(:category))
+			  AND (:category IS NULL OR p.category = :category)
 			ORDER BY LOWER(p.name) ASC
 			""")
 	Page<Product> findByKeywordAndCategory(
 			@Param("keyword") String keyword,
-			@Param("category") String category,
+			@Param("category") ProductCategory category,
 			Pageable pageable);
 
-	@Query(value = """
-			SELECT DISTINCT p.category
-			FROM products p
-			WHERE p.category IS NOT NULL
-			  AND TRIM(p.category) <> ''
-			ORDER BY LOWER(p.category) ASC
-			""", nativeQuery = true)
-	List<String> findDistinctCategories();
+	@Query("SELECT DISTINCT p.category FROM Product p WHERE p.category IS NOT NULL ORDER BY p.category ASC")
+	List<ProductCategory> findDistinctCategories();
 
 	@Query("""
 			SELECT p FROM Product p
@@ -40,8 +35,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 			""")
 	List<Product> getProducts(@Param("keyword") String keyword);
 
-	@Query("SELECT p FROM Product p WHERE LOWER(p.category) LIKE LOWER(CONCAT('%', :category, '%'))")
-	List<Product> filterByCategory(@Param("category") String category);
+	@Query("SELECT p FROM Product p WHERE (:category IS NULL OR p.category = :category)")
+	List<Product> filterByCategory(@Param("category") ProductCategory category);
 
 	@Query(value = """
 			SELECT *

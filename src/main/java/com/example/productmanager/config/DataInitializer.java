@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.example.productmanager.model.Product;
+import com.example.productmanager.model.ProductCategory;
 import com.example.productmanager.model.Role;
 import com.example.productmanager.model.RoleName;
 import com.example.productmanager.model.User;
@@ -47,94 +48,94 @@ public class DataInitializer {
 			if (productRepository.count() == 0) {
 				List<Product> products = List.of(
 
-    Product.builder().name("Sữa tươi Vinamilk").category("Sữa")
+    Product.builder().name("Sữa tươi Vinamilk").category(ProductCategory.SUA)
         .price(new BigDecimal("42000")).quantity(120).unit("Hộp").build(),
 
-    Product.builder().name("Gạo ST25").category("Thực phẩm")
+    Product.builder().name("Gạo ST25").category(ProductCategory.THUC_PHAM)
         .price(new BigDecimal("52000")).quantity(80).unit("Kg").build(),
 
-    Product.builder().name("Trứng gà ta").category("Thực phẩm")
+    Product.builder().name("Trứng gà ta").category(ProductCategory.THUC_PHAM)
         .price(new BigDecimal("35000")).quantity(200).unit("Hộp").build(),
 
-    Product.builder().name("Nước ngọt Coca Cola").category("Đồ uống")
+    Product.builder().name("Nước ngọt Coca Cola").category(ProductCategory.DO_UONG)
         .price(new BigDecimal("18000")).quantity(300).unit("Chai").build(),
 
-    Product.builder().name("Bánh quy Oreo").category("Bánh kẹo")
+    Product.builder().name("Bánh quy Oreo").category(ProductCategory.BANH_KEO)
         .price(new BigDecimal("25000")).quantity(150).unit("Gói").build(),
 
-    Product.builder().name("Rau cải ngọt").category("Rau củ")
+    Product.builder().name("Rau cải ngọt").category(ProductCategory.RAU_CU)
         .price(new BigDecimal("15000")).quantity(70).unit("Kg").build(),
 
-    Product.builder().name("Mì Hảo Hảo tôm chua cay").category("Thực phẩm")
+    Product.builder().name("Mì Hảo Hảo tôm chua cay").category(ProductCategory.THUC_PHAM)
         .price(new BigDecimal("5000")).quantity(500).unit("Gói").build(),
 
-    Product.builder().name("Dầu ăn Neptune").category("Gia vị")
+    Product.builder().name("Dầu ăn Neptune").category(ProductCategory.GIA_VI)
         .price(new BigDecimal("48000")).quantity(100).unit("Chai").build(),
 
-    Product.builder().name("Nước mắm Nam Ngư").category("Gia vị")
+    Product.builder().name("Nước mắm Nam Ngư").category(ProductCategory.GIA_VI)
         .price(new BigDecimal("35000")).quantity(120).unit("Chai").build(),
 
-    Product.builder().name("Đường trắng Biên Hòa").category("Gia vị")
+    Product.builder().name("Đường trắng Biên Hòa").category(ProductCategory.GIA_VI)
         .price(new BigDecimal("28000")).quantity(90).unit("Kg").build(),
 
-    Product.builder().name("Muối i-ốt").category("Gia vị")
+    Product.builder().name("Muối i-ốt").category(ProductCategory.GIA_VI)
         .price(new BigDecimal("10000")).quantity(150).unit("Gói").build(),
 
-    Product.builder().name("Cà phê hòa tan G7").category("Đồ uống")
+    Product.builder().name("Cà phê hòa tan G7").category(ProductCategory.DO_UONG)
         .price(new BigDecimal("65000")).quantity(100).unit("Hộp").build(),
 
-    Product.builder().name("Trà xanh 0 độ").category("Đồ uống")
+    Product.builder().name("Trà xanh 0 độ").category(ProductCategory.DO_UONG)
         .price(new BigDecimal("12000")).quantity(250).unit("Chai").build(),
 
-    Product.builder().name("Nước suối Lavie").category("Đồ uống")
+    Product.builder().name("Nước suối Lavie").category(ProductCategory.DO_UONG)
         .price(new BigDecimal("7000")).quantity(400).unit("Chai").build(),
 
-    Product.builder().name("Bánh mì sandwich").category("Bánh")
+    Product.builder().name("Bánh mì sandwich").category(ProductCategory.BANH)
         .price(new BigDecimal("28000")).quantity(80).unit("Ổ").build(),
 
-    Product.builder().name("Xúc xích tiệt trùng").category("Thực phẩm")
+    Product.builder().name("Xúc xích tiệt trùng").category(ProductCategory.THUC_PHAM)
         .price(new BigDecimal("45000")).quantity(120).unit("Gói").build(),
 
-    Product.builder().name("Thịt heo ba chỉ").category("Thịt")
+    Product.builder().name("Thịt heo ba chỉ").category(ProductCategory.THIT)
         .price(new BigDecimal("145000")).quantity(50).unit("Kg").build(),
 
-    Product.builder().name("Thịt gà").category("Thịt")
+    Product.builder().name("Thịt gà").category(ProductCategory.THIT)
         .price(new BigDecimal("85000")).quantity(60).unit("Kg").build(),
 
-    Product.builder().name("Cá basa phi lê").category("Thủy sản")
+    Product.builder().name("Cá basa phi lê").category(ProductCategory.THUY_SAN)
         .price(new BigDecimal("75000")).quantity(45).unit("Kg").build(),
 
-    Product.builder().name("Cà chua").category("Rau củ")
+    Product.builder().name("Cà chua").category(ProductCategory.RAU_CU)
         .price(new BigDecimal("25000")).quantity(80).unit("Kg").build(),
 
-    Product.builder().name("Khoai tây").category("Rau củ")
+    Product.builder().name("Khoai tây").category(ProductCategory.RAU_CU)
         .price(new BigDecimal("30000")).quantity(70).unit("Kg").build(),
 
-    Product.builder().name("Cà rốt").category("Rau củ")
+    Product.builder().name("Cà rốt").category(ProductCategory.RAU_CU)
         .price(new BigDecimal("22000")).quantity(75).unit("Kg").build(),
 
-    Product.builder().name("Táo Fuji").category("Trái cây")
+    Product.builder().name("Táo Fuji").category(ProductCategory.TRAI_CAY)
         .price(new BigDecimal("55000")).quantity(60).unit("Kg").build(),
 
-    Product.builder().name("Chuối").category("Trái cây")
+    Product.builder().name("Chuối").category(ProductCategory.TRAI_CAY)
         .price(new BigDecimal("25000")).quantity(80).unit("Kg").build(),
 
-    Product.builder().name("Cam sành").category("Trái cây")
+    Product.builder().name("Cam sành").category(ProductCategory.TRAI_CAY)
         .price(new BigDecimal("35000")).quantity(70).unit("Kg").build(),
 
-    Product.builder().name("Dầu gội Clear").category("Chăm sóc cá nhân")
+    Product.builder().name("Dầu gội Clear").category(ProductCategory.CHAM_SOC_CA_NHAN)
         .price(new BigDecimal("85000")).quantity(60).unit("Chai").build(),
 
-    Product.builder().name("Kem đánh răng P/S").category("Chăm sóc cá nhân")
+    Product.builder().name("Kem đánh răng P/S").category(ProductCategory.CHAM_SOC_CA_NHAN)
         .price(new BigDecimal("32000")).quantity(100).unit("Tuýp").build(),
 
-    Product.builder().name("Nước rửa chén Sunlight").category("Đồ gia dụng")
+    Product.builder().name("Nước rửa chén Sunlight").category(ProductCategory.DO_GIA_DUNG)
         .price(new BigDecimal("42000")).quantity(90).unit("Chai").build(),
 
-    Product.builder().name("Bột giặt OMO").category("Đồ gia dụng")
+    Product.builder().name("Bột giặt OMO").category(ProductCategory.DO_GIA_DUNG)
         .price(new BigDecimal("125000")).quantity(70).unit("Túi").build(),
 
-    Product.builder().name("Khăn giấy ăn Pulppy").category("Đồ gia dụng")
+    Product.builder().name("Khăn giấy ăn Pulppy").category(ProductCategory.DO_GIA_DUNG)
         .price(new BigDecimal("30000")).quantity(100).unit("Gói").build()
 
 );

@@ -3,6 +3,8 @@ package com.example.productmanager.dto.product;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import com.example.productmanager.model.ProductCategory;
+
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -23,9 +25,8 @@ public class ProductFormDTO {
 	@Size(max = 120, message = "Ten san pham toi da 120 ky tu")
 	private String name;
 
-	@NotBlank(message = "Danh muc khong duoc de trong")
-	@Size(max = 80, message = "Danh muc toi da 80 ky tu")
-	private String category;
+	@NotNull(message = "Danh muc khong duoc de trong")
+	private ProductCategory category;
 
 	@NotNull(message = "Gia khong duoc de trong")
 	@DecimalMin(value = "0.0", inclusive = false, message = "Gia phai lon hon 0")

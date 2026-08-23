@@ -8,5 +8,6 @@ public record EmailNotificationMessage(
 		String recipientName,
 		String username,
 		Long orderId,
-		String orderStatus) implements Serializable {
+		String orderStatus,
+		String deliveryAddress) implements Serializable {
 }
