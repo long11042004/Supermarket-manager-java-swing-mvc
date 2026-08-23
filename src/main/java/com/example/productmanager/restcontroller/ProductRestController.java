@@ -1,8 +1,9 @@
-package com.example.productmanager.controller;
+package com.example.productmanager.restcontroller;
 
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +27,7 @@ import lombok.AllArgsConstructor;
 @RestController
 @RequestMapping("/api/products")
 @AllArgsConstructor
+@PreAuthorize("hasAnyRole('STAFF', 'MANAGER', 'ADMIN')")
 public class ProductRestController {
 
 	private final ProductService productService;
@@ -38,12 +40,14 @@ public class ProductRestController {
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
+	@PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
 	public ProductResponseDTO createProduct(@Valid @RequestBody ProductRequestDTO request) {
 		Product created = productService.createProduct(ProductMapper.toEntity(request));
 		return ProductMapper.toResponse(created);
 	}
 
 	@PutMapping("/{id}")
+	@PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
 	public ProductResponseDTO updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequestDTO request) {
 		Product updated = productService.updateProduct(id, ProductMapper.toEntity(request));
 		return ProductMapper.toResponse(updated);
@@ -51,6 +55,7 @@ public class ProductRestController {
 
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
 	public void deleteProduct(@PathVariable Long id) {
 		productService.deleteProduct(id);
 	}

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -81,6 +82,9 @@ public class CustomerOrderController extends SessionController {
 			session.setAttribute("shoppingCart", cartService.clear(getOrCreateCart(session)));
 			redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.order.created"));
 			redirectAttributes.addFlashAttribute("previewUrl", "/mail-preview/order-confirmation/" + createdOrder.getId());
+		} catch (OptimisticLockingFailureException ex) {
+			log.warn("Checkout failed due to concurrent product update", ex);
+			redirectAttributes.addFlashAttribute("errorMessage", messageResolver.msg("msg.order.checkoutConcurrentUpdate"));
 		} catch (IllegalArgumentException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 		} catch (DataIntegrityViolationException ex) {
@@ -106,6 +110,9 @@ public class CustomerOrderController extends SessionController {
 			orderService.cancelOrderForUser(currentUser.getId(), orderId);
 			redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.order.cancelled"));
 			redirectAttributes.addFlashAttribute("previewUrl", "/mail-preview/order-cancelled/" + orderId);
+		} catch (OptimisticLockingFailureException ex) {
+			log.warn("Cancel order failed due to concurrent product update", ex);
+			redirectAttributes.addFlashAttribute("errorMessage", messageResolver.msg("msg.order.checkoutConcurrentUpdate"));
 		} catch (IllegalArgumentException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 		} catch (RuntimeException ex) {

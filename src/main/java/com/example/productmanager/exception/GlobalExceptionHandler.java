@@ -3,6 +3,7 @@ package com.example.productmanager.exception;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -71,6 +72,17 @@ public class GlobalExceptionHandler {
 						"BAD_CREDENTIALS",
 						ex.getMessage(),
 						HttpStatus.UNAUTHORIZED.value(),
+						request.getRequestURI()));
+	}
+
+	@ExceptionHandler(OptimisticLockingFailureException.class)
+	public ResponseEntity<ApiError> handleOptimisticLockingFailureException(OptimisticLockingFailureException ex,
+			HttpServletRequest request) {
+		return ResponseEntity.status(HttpStatus.CONFLICT)
+				.body(new ApiError(
+						"CONFLICT",
+						messageResolver.msg("msg.order.checkoutConcurrentUpdate"),
+						HttpStatus.CONFLICT.value(),
 						request.getRequestURI()));
 	}
 

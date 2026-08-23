@@ -3,6 +3,7 @@ package com.example.productmanager.controller;
 import java.math.BigDecimal;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +23,7 @@ import lombok.AllArgsConstructor;
 @RestController
 @RequestMapping("/api/orders")
 @AllArgsConstructor
+@PreAuthorize("hasAnyRole('STAFF', 'MANAGER', 'ADMIN')")
 public class OrderMailController {
 
 	private final CustomerOrderRepository customerOrderRepository;

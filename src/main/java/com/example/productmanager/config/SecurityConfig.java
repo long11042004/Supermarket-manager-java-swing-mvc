@@ -35,7 +35,7 @@ public class SecurityConfig {
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/", "/login", "/logout", "/register", "/css/**", "/js/**", "/h2-console/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-						.requestMatchers("/api/**").authenticated()
+						.requestMatchers("/api/**").hasAnyRole("STAFF", "MANAGER", "ADMIN")
 						.anyRequest().permitAll())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
 				.authenticationProvider(authenticationProvider())

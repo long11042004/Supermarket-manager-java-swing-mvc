@@ -1,8 +1,9 @@
-package com.example.productmanager.controller;
+package com.example.productmanager.restcontroller;
 
 import java.time.LocalDate;
 import java.util.concurrent.CompletableFuture;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,7 +19,8 @@ import lombok.AllArgsConstructor;
 @RestController
 @RequestMapping("/api/reports")
 @AllArgsConstructor
-public class ReportRestController {
+@PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+public class ReportApiController {
 
 	private final ReportService reportService;
 

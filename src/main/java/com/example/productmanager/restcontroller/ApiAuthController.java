@@ -1,4 +1,4 @@
-package com.example.productmanager.controller;
+package com.example.productmanager.restcontroller;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
