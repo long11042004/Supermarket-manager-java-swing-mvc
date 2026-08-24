@@ -23,7 +23,7 @@ public final class CurrencyFormatter {
 	public static String formatMoney(BigDecimal amount, Locale locale) {
 		BigDecimal displayAmount = normalizeAmount(amount, locale);
 		String symbol = isEnglish(locale) ? "$" : "₫";
-		String formatted = formatNumber(displayAmount);
+		String formatted = formatNumber(displayAmount, locale);
 		return symbol + " " + formatted;
 	}
 
@@ -32,7 +32,7 @@ public final class CurrencyFormatter {
 			return BigDecimal.ZERO;
 		}
 		if (isEnglish(locale)) {
-			return amount.divide(USD_RATE, 0, RoundingMode.HALF_UP);
+			return amount.divide(USD_RATE, 2, RoundingMode.HALF_UP);
 		}
 		return amount;
 	}
@@ -41,9 +41,10 @@ public final class CurrencyFormatter {
 		return locale != null && "en".equalsIgnoreCase(locale.getLanguage());
 	}
 
-	private static String formatNumber(BigDecimal value) {
-		DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
-		DecimalFormat formatter = new DecimalFormat("#,##0", symbols);
+	private static String formatNumber(BigDecimal value, Locale locale) {
+		DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale != null ? locale : Locale.getDefault());
+		String pattern = isEnglish(locale) ? "#,##0.00" : "#,##0";
+		DecimalFormat formatter = new DecimalFormat(pattern, symbols);
 		return formatter.format(value);
 	}
 }
