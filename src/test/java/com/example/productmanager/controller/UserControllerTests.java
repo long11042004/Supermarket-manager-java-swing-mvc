@@ -61,12 +61,6 @@ class UserControllerTests {
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute("loggedInUser", buildUser(10L, "manager", Set.of(RoleName.MANAGER)));
 
-		User newUser = User.builder()
-				.username("new-manager")
-				.password("secret123")
-				.email("new-manager@demo.com")
-				.fullName("Manager mới")
-				.build();
 		RedirectAttributesModelMap redirectAttributes = new RedirectAttributesModelMap();
 
 		String view = userController.register(new UserRegistrationDTO(), "MANAGER", session, redirectAttributes);

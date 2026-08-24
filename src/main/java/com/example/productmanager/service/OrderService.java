@@ -135,11 +135,11 @@ public class OrderService {
 		order.setTotalAmount(totalAmount);
 		CustomerOrder savedOrder = customerOrderRepository.save(order);
 		if (userId != null) {
-			String details = new StringBuilder("Đơn hàng #")
+			String details = new StringBuilder(messageResolver.msg("activity.order.createdPrefix"))
 					.append(savedOrder.getId())
-					.append(" đã được tạo")
+					.append(messageResolver.msg("activity.order.createdSuffix"))
 					.toString();
-			userService.recordActivity(userId, "Đặt hàng", details);
+			userService.recordActivity(userId, messageResolver.msg("activity.order.place"), details);
 			String recipientEmail = user.getEmail();
 			if (recipientEmail != null && !recipientEmail.isBlank()) {
 				applicationEventPublisher.publishEvent(new OrderConfirmedEmailEvent(
@@ -199,11 +199,11 @@ public class OrderService {
 
 		order.setStatus(OrderStatus.CANCELLED);
 		customerOrderRepository.save(order);
-		String details = new StringBuffer("Đơn hàng #")
+		String details = new StringBuffer(messageResolver.msg("activity.order.cancelledPrefix"))
 				.append(order.getId())
-				.append(" đã được hủy")
+				.append(messageResolver.msg("activity.order.cancelledSuffix"))
 				.toString();
-		userService.recordActivity(userId, "Hủy đơn", details);
+		userService.recordActivity(userId, messageResolver.msg("activity.order.cancel"), details);
 		if (order.getUser() != null && order.getUser().getEmail() != null && !order.getUser().getEmail().isBlank()) {
 			String recipientName = order.getUser().getFullName() == null || order.getUser().getFullName().isBlank()
 					? order.getUser().getUsername()

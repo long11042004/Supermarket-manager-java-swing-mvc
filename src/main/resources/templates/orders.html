@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -55,7 +55,7 @@
         </div>
         <div class="text-end">
           <div><span class="status-pill" th:text="#{orderStatus.__${order.status.name()}__}">PENDING</span></div>
-          <strong th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</strong>
+          <strong th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(order.totalAmount)}">0 ₫</strong>
           <form th:if="${order.status.name() == 'PENDING' or order.status.name() == 'CONFIRMED'}"
                 th:action="@{/orders/{orderId}/cancel(orderId=${order.id})}"
                 method="post"
@@ -84,9 +84,9 @@
           <tbody>
             <tr th:each="item : ${order.items}">
               <td th:text="${item.product.name}">Tên sản phẩm</td>
-              <td th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
+              <td th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(item.unitPrice)}">0 ₫</td>
               <td th:text="${item.quantity}">1</td>
-              <td th:text="${#numbers.formatDecimal(item.lineTotal, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
+              <td th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(item.lineTotal)}">0 ₫</td>
             </tr>
           </tbody>
         </table>

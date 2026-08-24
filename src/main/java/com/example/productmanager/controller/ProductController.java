@@ -161,7 +161,7 @@ public class ProductController extends SessionController {
 		}
 		try {
 			productService.deleteProduct(id);
-			redirectAttributes.addFlashAttribute("successMessage", "Xoa san pham thanh cong.");
+			redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.product.deleted"));
 		} catch (IllegalArgumentException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 		}

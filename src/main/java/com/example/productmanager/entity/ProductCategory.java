@@ -4,6 +4,9 @@ import java.util.Locale;
 
 import org.springframework.context.i18n.LocaleContextHolder;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 public enum ProductCategory {
 	SUA("Sữa", "Milk"),
 	THUC_PHAM("Thực phẩm", "Food"),
@@ -20,11 +23,6 @@ public enum ProductCategory {
 
 	private final String labelVi;
 	private final String labelEn;
-
-	ProductCategory(String labelVi, String labelEn) {
-		this.labelVi = labelVi;
-		this.labelEn = labelEn;
-	}
 
 	public String getLabel() {
 		return getLabel(LocaleContextHolder.getLocale());

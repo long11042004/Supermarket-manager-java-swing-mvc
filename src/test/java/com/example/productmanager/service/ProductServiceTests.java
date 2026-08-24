@@ -68,4 +68,23 @@ class ProductServiceTests {
         assertThrows(IllegalArgumentException.class, () -> productService.createProduct(invalidProduct));
         verify(productRepository, never()).save(invalidProduct);
     }
+
+    @Test
+    void createProductShouldRejectUnexpectedUnitAndPastExpiryDate() {
+        ProductRepository productRepository = mock(ProductRepository.class);
+        CustomerOrderRepository customerOrderRepository = mock(CustomerOrderRepository.class);
+        ProductService productService = new ProductService(productRepository, customerOrderRepository);
+
+        Product invalidProduct = Product.builder()
+                .name("Sữa tươi")
+                .category(ProductCategory.SUA)
+                .price(new BigDecimal("49000"))
+                .quantity(12)
+                .unit("Kg@#$")
+                .expiryDate(java.time.LocalDate.now().minusDays(1))
+                .build();
+
+        assertThrows(IllegalArgumentException.class, () -> productService.createProduct(invalidProduct));
+        verify(productRepository, never()).save(invalidProduct);
+    }
 }

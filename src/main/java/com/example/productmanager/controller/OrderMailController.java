@@ -39,7 +39,7 @@ public class OrderMailController {
 		String recipient = resolveRecipient(order, email);
 		String recipientName = resolveRecipientName(order);
 		String htmlBody = renderConfirmationHtml(order, recipientName);
-		emailService.sendHtmlEmail(recipient, "Xác nhận đơn hàng #" + order.getId(), htmlBody);
+		emailService.sendHtmlEmail(recipient, "Order confirmation #" + order.getId(), htmlBody);
 
 		return new OrderConfirmationEmailResponseDTO("sent", order.getId(), recipient);
 	}
@@ -62,7 +62,7 @@ public class OrderMailController {
 		if (order.getUser() != null && order.getUser().getFullName() != null && !order.getUser().getFullName().isBlank()) {
 			return order.getUser().getFullName();
 		}
-		return order.getGuestName() != null ? order.getGuestName() : "Khách hàng";
+		return order.getGuestName() != null ? order.getGuestName() : "Customer";
 	}
 
 	private String renderConfirmationHtml(CustomerOrder order, String recipientName) {

@@ -36,10 +36,10 @@ public class DataInitializer {
 					Role role = Role.builder()
 						.name(roleName)
 						.description(switch (roleName) {
-							case ADMIN -> "Quản trị hệ thống";
-							case MANAGER -> "Quản lý cửa hàng";
-							case STAFF -> "Nhân viên bán hàng";
-							case CUSTOMER -> "Khách hàng";
+							case ADMIN -> "System administrator";
+							case MANAGER -> "Store manager";
+							case STAFF -> "Sales staff";
+							case CUSTOMER -> "Customer";
 						})
 						.build();
 					roleRepository.save(role);

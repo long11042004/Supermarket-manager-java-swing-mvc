@@ -62,14 +62,14 @@ public class UserService {
 			String email,
 			String fullName,
 			RoleName defaultRoleName) {
-		String normalizedUsername = normalizeRequiredText(username, "Tên đăng nhập không được để trống");
-		String normalizedEmail = normalizeRequiredText(email, "Email không được để trống");
-		String normalizedPassword = normalizeRequiredText(password, "Mật khẩu không được để trống");
+		String normalizedUsername = normalizeRequiredText(username, messageResolver.msg("err.user.usernameRequired"));
+		String normalizedEmail = normalizeRequiredText(email, messageResolver.msg("err.user.emailRequired"));
+		String normalizedPassword = normalizeRequiredText(password, messageResolver.msg("err.user.passwordRequired"));
 		if (normalizedPassword.length() < 6) {
-			throw new IllegalArgumentException("Mật khẩu phải có ít nhất 6 ký tự");
+			throw new IllegalArgumentException(messageResolver.msg("err.user.newPasswordMin"));
 		}
 		if (!normalizedEmail.contains("@")) {
-			throw new IllegalArgumentException("Email không hợp lệ");
+			throw new IllegalArgumentException(messageResolver.msg("err.user.emailInvalid"));
 		}
 		if (userRepository.existsByUsername(normalizedUsername)) {
 			throw new ConflictException(messageResolver.msg("err.user.usernameExists"));
@@ -91,7 +91,7 @@ public class UserService {
 				.build();
 
 		User savedUser = userRepository.save(user);
-		logActivity(savedUser, "Tạo tài khoản", "Tài khoản được khởi tạo trong hệ thống");
+		logActivity(savedUser, messageResolver.msg("activity.account.created"), messageResolver.msg("activity.account.createdDetail"));
 		if (savedUser.getEmail() != null && !savedUser.getEmail().isBlank()) {
 			String recipientName = savedUser.getFullName() == null ? savedUser.getUsername() : savedUser.getFullName();
 			applicationEventPublisher.publishEvent(new UserRegisteredEmailEvent(
@@ -116,7 +116,7 @@ public class UserService {
 			throw new ForbiddenException(messageResolver.msg("err.auth.accountLocked"));
 		}
 
-		logActivity(user, "Đăng nhập", "Người dùng đăng nhập vào hệ thống");
+		logActivity(user, messageResolver.msg("activity.auth.login"), messageResolver.msg("activity.auth.loginDetail"));
 
 		return user;
 	}
@@ -138,10 +138,11 @@ public class UserService {
 		}
 		user.setRoles(roles);
 		User savedUser = userRepository.save(user);
-		String details = new StringBuffer("Vai trò hiện tại: ")
+		String details = new StringBuffer(messageResolver.msg("activity.role.currentRoles"))
+				.append(": ")
 				.append(roleNames)
 				.toString();
-		logActivity(savedUser, "Cập nhật phân quyền", details);
+		logActivity(savedUser, messageResolver.msg("activity.role.updated"), details);
 		return savedUser;
 	}
 
@@ -174,7 +175,7 @@ public class UserService {
 			throw new IllegalArgumentException(messageResolver.msg("err.user.emailRequired"));
 		}
 		if (!normalizedEmail.contains("@")) {
-			throw new IllegalArgumentException("Email không hợp lệ");
+			throw new IllegalArgumentException(messageResolver.msg("err.user.emailInvalid"));
 		}
 		if (userRepository.existsByEmailAndIdNot(normalizedEmail, userId)) {
 			throw new ConflictException(messageResolver.msg("err.user.emailExists"));
@@ -186,7 +187,7 @@ public class UserService {
 		user.setAddress(address == null ? null : address.trim());
 
 		User savedUser = userRepository.save(user);
-		logActivity(savedUser, "Cập nhật hồ sơ", "Người dùng đã cập nhật thông tin cá nhân");
+		logActivity(savedUser, messageResolver.msg("activity.profile.updated"), messageResolver.msg("activity.profile.updatedDetail"));
 		return savedUser;
 	}
 
@@ -209,7 +210,7 @@ public class UserService {
 
 		user.setPassword(passwordEncoder.encode(newPassword));
 		User savedUser = userRepository.save(user);
-		logActivity(savedUser, "Đổi mật khẩu", "Người dùng đã thay đổi mật khẩu");
+		logActivity(savedUser, messageResolver.msg("activity.password.changed"), messageResolver.msg("activity.password.changedDetail"));
 		return savedUser;
 	}
 
@@ -219,14 +220,14 @@ public class UserService {
 		String normalizedAvatarUrl = avatarUrl == null ? null : avatarUrl.trim();
 		user.setAvatarUrl((normalizedAvatarUrl == null || normalizedAvatarUrl.isEmpty()) ? null : normalizedAvatarUrl);
 		User savedUser = userRepository.save(user);
-		logActivity(savedUser, "Cập nhật avatar", "Người dùng đã cập nhật ảnh đại diện");
+		logActivity(savedUser, messageResolver.msg("activity.avatar.updated"), messageResolver.msg("activity.avatar.updatedDetail"));
 		return savedUser;
 	}
 
 	@Transactional
 	public void logLogout(Long userId) {
 		User user = getUserById(userId);
-		logActivity(user, "Đăng xuất", "Người dùng đăng xuất khỏi hệ thống");
+		logActivity(user, messageResolver.msg("activity.auth.logout"), messageResolver.msg("activity.auth.logoutDetail"));
 	}
 
 	@Transactional

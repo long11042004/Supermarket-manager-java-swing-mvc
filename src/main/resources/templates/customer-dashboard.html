@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -135,7 +135,7 @@
             <tr th:each="item : ${products}">
               <td th:text="${item.name}">Tên</td>
               <td th:text="${item.category}">Danh mục</td>
-              <td th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
+              <td th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(item.price)}">0 ₫</td>
               <td><span class="badge bg-light text-dark" th:text="${item.quantity}">0</span></td>
             </tr>
             <tr th:if="${#lists.isEmpty(products)}">

@@ -77,4 +77,23 @@ class CartServiceTests {
 		assertEquals(0, cart.getItemCount());
 		assertEquals(BigDecimal.ZERO, cart.getGrandTotal());
 	}
+
+	@Test
+	void addItemShouldSupportOverloadedConvenienceMethods() {
+		Product product = Product.builder()
+				.id(13L)
+				.name("Cam sành")
+				.price(new BigDecimal("20000"))
+				.quantity(10)
+				.unit("kg")
+				.build();
+
+		CartView firstCart = cartService.addItem(new CartView(), product, 2);
+		CartView secondCart = cartService.addItem(product);
+
+		assertEquals(1, secondCart.getItemCount());
+		assertEquals(new BigDecimal("20000"), secondCart.getGrandTotal());
+		assertEquals(3, firstCart.getItemCount());
+		assertEquals(new BigDecimal("40000"), firstCart.getGrandTotal());
+	}
 }

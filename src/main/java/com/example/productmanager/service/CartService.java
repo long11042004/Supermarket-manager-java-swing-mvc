@@ -20,66 +20,86 @@ import lombok.AllArgsConstructor;
 public class CartService {
 	private final MessageResolver messageResolver;
 
-	public CartView addItem(CartView cart, Product product, int quantity) {
+	public CartView addItem(CartView cart, Product product) {
+		return addItem(cart, product, 1);
+	}
+
+	public CartView addItem(Product product) {
+		return addItem(new CartView(), product, 1);
+	}
+
+	public CartView addItem(Product product, int quantity) {
+		return addItem(new CartView(), product, quantity);
+	}
+
+	public synchronized CartView addItem(CartView cart, Product product, int quantity) {
 		if (quantity <= 0) {
 			throw new IllegalArgumentException(messageResolver.msg("err.cart.quantityPositive"));
 		}
 		CartView workingCart = cart == null ? new CartView() : cart;
-		Map<Long, CartItem> indexedItems = new LinkedHashMap<>();
-		for (CartItem item : workingCart.getItems()) {
-			indexedItems.put(item.getProductId(), item);
-		}
-
-		CartItem existingItem = indexedItems.get(product.getId());
-		int newQuantity = quantity;
-		if (existingItem != null) {
-			newQuantity += existingItem.getQuantity();
-		}
-		if (newQuantity > product.getQuantity()) {
-			throw new IllegalArgumentException(messageResolver.msg("err.cart.quantityExceedsStock"));
-		}
-
-		indexedItems.put(product.getId(), new CartItem(
-				product.getId(),
-				product.getName(),
-				product.getPrice(),
-				quantityLabel(product),
-				newQuantity));
-
-		workingCart.setItems(toSortedItems(indexedItems));
-		return workingCart;
-	}
-
-	public CartView updateItemQuantity(CartView cart, Long productId, int quantity, int availableQuantity) {
-		CartView workingCart = cart == null ? new CartView() : cart;
-		if (quantity <= 0) {
-			return removeItem(workingCart, productId);
-		}
-		if (quantity > availableQuantity) {
-			throw new IllegalArgumentException(messageResolver.msg("err.cart.updateExceedsStock"));
-		}
-
-		for (CartItem item : workingCart.getItems()) {
-			if (item.getProductId().equals(productId)) {
-				item.setQuantity(quantity);
-				break;
+		synchronized (workingCart) {
+			Map<Long, CartItem> indexedItems = new LinkedHashMap<>();
+			for (CartItem item : workingCart.getItems()) {
+				indexedItems.put(item.getProductId(), item);
 			}
+
+			CartItem existingItem = indexedItems.get(product.getId());
+			int newQuantity = quantity;
+			if (existingItem != null) {
+				newQuantity += existingItem.getQuantity();
+			}
+			if (newQuantity > product.getQuantity()) {
+				throw new IllegalArgumentException(messageResolver.msg("err.cart.quantityExceedsStock"));
+			}
+
+			indexedItems.put(product.getId(), new CartItem(
+					product.getId(),
+					product.getName(),
+					product.getPrice(),
+					quantityLabel(product),
+					newQuantity));
+
+			workingCart.setItems(toSortedItems(indexedItems));
+			return workingCart;
 		}
-		return workingCart;
 	}
 
-	public CartView removeItem(CartView cart, Long productId) {
+	public synchronized CartView updateItemQuantity(CartView cart, Long productId, int quantity, int availableQuantity) {
 		CartView workingCart = cart == null ? new CartView() : cart;
-		workingCart.setItems(workingCart.getItems().stream()
-				.filter(item -> !item.getProductId().equals(productId))
-				.toList());
-		return workingCart;
+		synchronized (workingCart) {
+			if (quantity <= 0) {
+				return removeItem(workingCart, productId);
+			}
+			if (quantity > availableQuantity) {
+				throw new IllegalArgumentException(messageResolver.msg("err.cart.updateExceedsStock"));
+			}
+
+			for (CartItem item : workingCart.getItems()) {
+				if (item.getProductId().equals(productId)) {
+					item.setQuantity(quantity);
+					break;
+				}
+			}
+			return workingCart;
+		}
 	}
 
-	public CartView clear(CartView cart) {
+	public synchronized CartView removeItem(CartView cart, Long productId) {
 		CartView workingCart = cart == null ? new CartView() : cart;
-		workingCart.setItems(new ArrayList<>());
-		return workingCart;
+		synchronized (workingCart) {
+			workingCart.setItems(workingCart.getItems().stream()
+					.filter(item -> !item.getProductId().equals(productId))
+					.toList());
+			return workingCart;
+		}
+	}
+
+	public synchronized CartView clear(CartView cart) {
+		CartView workingCart = cart == null ? new CartView() : cart;
+		synchronized (workingCart) {
+			workingCart.setItems(new ArrayList<>());
+			return workingCart;
+		}
 	}
 
 	private List<CartItem> toSortedItems(Map<Long, CartItem> items) {

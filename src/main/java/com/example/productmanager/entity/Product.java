@@ -39,27 +39,27 @@ public class Product {
 	@Version
 	private Long version;
 
-	@NotBlank(message = "Ten san pham khong duoc de trong")
-	@Size(max = 120, message = "Ten san pham toi da 120 ky tu")
+	@NotBlank(message = "{err.product.nameRequired}")
+	@Size(max = 120, message = "{err.product.nameTooLong}")
 	@Column(nullable = false, length = 120)
 	private String name;
 
-	@NotNull(message = "Danh muc khong duoc de trong")
+	@NotNull(message = "{err.product.categoryRequired}")
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 40)
 	private ProductCategory category;
 
-	@NotNull(message = "Gia khong duoc de trong")
-	@DecimalMin(value = "0.0", inclusive = false, message = "Gia phai lon hon 0")
+	@NotNull(message = "{err.product.pricePositive}")
+	@DecimalMin(value = "0.0", inclusive = false, message = "{err.product.pricePositive}")
 	@Column(nullable = false, precision = 12, scale = 2)
 	private BigDecimal price;
 
-	@NotNull(message = "So luong khong duoc de trong")
-	@Min(value = 0, message = "So luong khong duoc am")
+	@NotNull(message = "{err.product.quantityInvalid}")
+	@Min(value = 0, message = "{err.product.quantityInvalid}")
 	@Column(nullable = false)
 	private Integer quantity;
 
-	@Size(max = 30, message = "Don vi toi da 30 ky tu")
+	@Size(max = 30, message = "{err.product.unitTooLong}")
 	@Column(length = 30)
 	private String unit;
 
