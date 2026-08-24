@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.example.productmanager.model.RoleName;
-import com.example.productmanager.model.User;
+import com.example.productmanager.entity.RoleName;
+import com.example.productmanager.entity.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 

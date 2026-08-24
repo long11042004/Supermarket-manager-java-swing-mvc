@@ -10,11 +10,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import com.example.productmanager.controller.support.SessionController;
+import com.example.productmanager.entity.Product;
+import com.example.productmanager.entity.RoleName;
+import com.example.productmanager.entity.User;
 import com.example.productmanager.lifecycle.PrototypeRequestMarker;
 import com.example.productmanager.lifecycle.SessionLifecycleBean;
-import com.example.productmanager.model.Product;
-import com.example.productmanager.model.RoleName;
-import com.example.productmanager.model.User;
 import com.example.productmanager.service.ProductService;
 import com.example.productmanager.service.UserService;
 

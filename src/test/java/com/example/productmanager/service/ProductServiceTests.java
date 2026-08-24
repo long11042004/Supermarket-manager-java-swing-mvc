@@ -11,8 +11,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.example.productmanager.model.Product;
-import com.example.productmanager.model.ProductCategory;
+import com.example.productmanager.entity.Product;
+import com.example.productmanager.entity.ProductCategory;
 import com.example.productmanager.repository.CustomerOrderRepository;
 import com.example.productmanager.repository.ProductRepository;
 

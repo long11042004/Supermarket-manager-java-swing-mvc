@@ -14,12 +14,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.productmanager.controller.support.SessionController;
 import com.example.productmanager.dto.product.ProductFormDTO;
+import com.example.productmanager.entity.Product;
+import com.example.productmanager.entity.RoleName;
+import com.example.productmanager.entity.User;
 import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.lifecycle.PrototypeRequestMarker;
 import com.example.productmanager.lifecycle.SessionLifecycleBean;
-import com.example.productmanager.model.Product;
-import com.example.productmanager.model.RoleName;
-import com.example.productmanager.model.User;
 import com.example.productmanager.modelmapper.ProductMapper;
 import com.example.productmanager.service.CartService;
 import com.example.productmanager.service.CartService.CartView;

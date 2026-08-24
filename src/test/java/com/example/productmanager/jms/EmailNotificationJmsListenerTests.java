@@ -9,7 +9,10 @@ import static org.mockito.Mockito.when;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
-import com.example.productmanager.service.emailservice.EmailService;
+import com.example.productmanager.email.jms.EmailNotificationJmsListener;
+import com.example.productmanager.email.jms.EmailNotificationMessage;
+import com.example.productmanager.email.jms.EmailNotificationType;
+import com.example.productmanager.email.service.EmailService;
 
 class EmailNotificationJmsListenerTests {
 

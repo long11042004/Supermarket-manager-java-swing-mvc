@@ -12,10 +12,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.example.productmanager.model.Product;
-import com.example.productmanager.model.User;
+import com.example.productmanager.email.service.EmailService;
+import com.example.productmanager.entity.Product;
+import com.example.productmanager.entity.User;
 import com.example.productmanager.repository.CustomerOrderRepository;
-import com.example.productmanager.service.emailservice.EmailService;
 
 @Service
 @ConditionalOnProperty(name = "app.scheduling.enabled", havingValue = "true", matchIfMissing = true)

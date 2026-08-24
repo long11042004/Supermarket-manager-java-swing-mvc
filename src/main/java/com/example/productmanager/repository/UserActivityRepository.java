@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.example.productmanager.model.UserActivity;
+import com.example.productmanager.entity.UserActivity;
 
 public interface UserActivityRepository extends JpaRepository<UserActivity, Long> {
 

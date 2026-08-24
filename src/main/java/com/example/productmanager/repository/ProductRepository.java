@@ -9,8 +9,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.example.productmanager.model.Product;
-import com.example.productmanager.model.ProductCategory;
+import com.example.productmanager.entity.Product;
+import com.example.productmanager.entity.ProductCategory;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 

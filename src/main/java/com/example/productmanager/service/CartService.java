@@ -9,9 +9,9 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.example.productmanager.entity.CartItem;
+import com.example.productmanager.entity.Product;
 import com.example.productmanager.i18n.MessageResolver;
-import com.example.productmanager.model.CartItem;
-import com.example.productmanager.model.Product;
 
 import lombok.AllArgsConstructor;
 

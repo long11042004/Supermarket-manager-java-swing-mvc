@@ -1,4 +1,4 @@
-package com.example.productmanager.jms;
+package com.example.productmanager.email.jms;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jms.annotation.JmsListener;
@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
-import com.example.productmanager.service.emailservice.EmailService;
+import com.example.productmanager.email.service.EmailService;
 
 import lombok.RequiredArgsConstructor;
 

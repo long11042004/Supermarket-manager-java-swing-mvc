@@ -19,13 +19,13 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.example.productmanager.event.UserRegisteredEmailEvent;
+import com.example.productmanager.email.event.UserRegisteredEmailEvent;
+import com.example.productmanager.entity.Role;
+import com.example.productmanager.entity.RoleName;
+import com.example.productmanager.entity.User;
 import com.example.productmanager.exception.BadCredentialsException;
 import com.example.productmanager.exception.ConflictException;
 import com.example.productmanager.i18n.MessageResolver;
-import com.example.productmanager.model.Role;
-import com.example.productmanager.model.RoleName;
-import com.example.productmanager.model.User;
 import com.example.productmanager.repository.RoleRepository;
 import com.example.productmanager.repository.UserActivityRepository;
 import com.example.productmanager.repository.UserRepository;

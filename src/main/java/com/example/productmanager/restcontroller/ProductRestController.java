@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.productmanager.dto.product.ProductRequestDTO;
 import com.example.productmanager.dto.product.ProductResponseDTO;
-import com.example.productmanager.model.Product;
+import com.example.productmanager.entity.Product;
 import com.example.productmanager.modelmapper.ProductMapper;
 import com.example.productmanager.service.ProductService;
 

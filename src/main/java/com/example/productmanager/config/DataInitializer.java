@@ -11,11 +11,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.example.productmanager.model.Product;
-import com.example.productmanager.model.ProductCategory;
-import com.example.productmanager.model.Role;
-import com.example.productmanager.model.RoleName;
-import com.example.productmanager.model.User;
+import com.example.productmanager.entity.Product;
+import com.example.productmanager.entity.ProductCategory;
+import com.example.productmanager.entity.Role;
+import com.example.productmanager.entity.RoleName;
+import com.example.productmanager.entity.User;
 import com.example.productmanager.repository.ProductRepository;
 import com.example.productmanager.repository.RoleRepository;
 import com.example.productmanager.repository.UserRepository;
@@ -24,6 +24,7 @@ import com.example.productmanager.repository.UserRepository;
 public class DataInitializer {
 
 	@Bean
+    @SuppressWarnings("unused")
     CommandLineRunner initData(RoleRepository roleRepository,
             ProductRepository productRepository,
             UserRepository userRepository,

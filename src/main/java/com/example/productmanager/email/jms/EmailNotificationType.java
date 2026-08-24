@@ -1,4 +1,4 @@
-package com.example.productmanager.jms;
+package com.example.productmanager.email.jms;
 
 public enum EmailNotificationType {
 	USER_REGISTERED,

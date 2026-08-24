@@ -1,6 +1,6 @@
-package com.example.productmanager.model;
+package com.example.productmanager.entity;
 
-import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,32 +19,35 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "customer_order_items")
+@Table(name = "user_activities")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CustomerOrderItem {
+public class UserActivity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "order_id", nullable = false)
-	private CustomerOrder order;
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
 
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "product_id", nullable = false)
-	private Product product;
+	@Column(nullable = false, length = 100)
+	private String action;
 
-	@Column(nullable = false)
-	private Integer quantity;
+	@Column(nullable = false, length = 255)
+	private String details;
 
-	@Column(nullable = false, precision = 12, scale = 2)
-	private BigDecimal unitPrice;
+	@Column(nullable = false, updatable = false)
+	private LocalDateTime createdAt;
 
-	@Column(nullable = false, precision = 12, scale = 2)
-	private BigDecimal lineTotal;
+	@PrePersist
+	protected void onCreate() {
+		if (createdAt == null) {
+			createdAt = LocalDateTime.now();
+		}
+	}
 }

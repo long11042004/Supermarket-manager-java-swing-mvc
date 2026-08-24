@@ -7,9 +7,9 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.example.productmanager.model.Role;
-import com.example.productmanager.model.RoleName;
-import com.example.productmanager.model.User;
+import com.example.productmanager.entity.Role;
+import com.example.productmanager.entity.RoleName;
+import com.example.productmanager.entity.User;
 import com.example.productmanager.security.SecurityUserPrincipal;
 
 import jakarta.servlet.http.HttpSession;

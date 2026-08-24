@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.productmanager.controller.support.SessionController;
-import com.example.productmanager.model.OrderStatus;
-import com.example.productmanager.model.RoleName;
+import com.example.productmanager.entity.OrderStatus;
+import com.example.productmanager.entity.RoleName;
 import com.example.productmanager.service.ReportService;
 
 import jakarta.servlet.http.HttpSession;

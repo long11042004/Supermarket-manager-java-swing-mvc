@@ -12,8 +12,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.productmanager.dto.user.UserLoginDTO;
 import com.example.productmanager.dto.user.UserRegistrationDTO;
+import com.example.productmanager.entity.User;
 import com.example.productmanager.i18n.MessageResolver;
-import com.example.productmanager.model.User;
 import com.example.productmanager.security.JwtService;
 import com.example.productmanager.security.SecurityUserPrincipal;
 import com.example.productmanager.service.UserService;

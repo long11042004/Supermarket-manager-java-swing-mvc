@@ -4,7 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import com.example.productmanager.dto.report.ReportResponseDTO;
-import com.example.productmanager.model.OrderStatus;
+import com.example.productmanager.entity.OrderStatus;
 import com.example.productmanager.service.ReportService.ReportData;
 import com.example.productmanager.service.ReportService.StatusStat;
 import com.example.productmanager.service.ReportService.TopProductStat;

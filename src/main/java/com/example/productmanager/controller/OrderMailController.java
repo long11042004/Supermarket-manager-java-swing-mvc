@@ -14,9 +14,9 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import com.example.productmanager.dto.order.OrderConfirmationEmailResponseDTO;
-import com.example.productmanager.model.CustomerOrder;
+import com.example.productmanager.email.service.EmailService;
+import com.example.productmanager.entity.CustomerOrder;
 import com.example.productmanager.repository.CustomerOrderRepository;
-import com.example.productmanager.service.emailservice.EmailService;
 
 import lombok.AllArgsConstructor;
 

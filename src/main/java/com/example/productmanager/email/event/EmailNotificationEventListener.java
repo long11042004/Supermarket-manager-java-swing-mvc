@@ -1,4 +1,4 @@
-package com.example.productmanager.event;
+package com.example.productmanager.email.event;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import com.example.productmanager.jms.EmailNotificationMessage;
-import com.example.productmanager.jms.EmailNotificationType;
+import com.example.productmanager.email.jms.EmailNotificationMessage;
+import com.example.productmanager.email.jms.EmailNotificationType;
 
 import lombok.RequiredArgsConstructor;
 

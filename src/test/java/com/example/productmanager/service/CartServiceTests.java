@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ResourceBundleMessageSource;
 
+import com.example.productmanager.entity.Product;
 import com.example.productmanager.i18n.MessageResolver;
-import com.example.productmanager.model.Product;
 import com.example.productmanager.service.CartService.CartView;
 
 class CartServiceTests {

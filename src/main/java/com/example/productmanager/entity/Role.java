@@ -1,4 +1,4 @@
-package com.example.productmanager.model;
+package com.example.productmanager.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

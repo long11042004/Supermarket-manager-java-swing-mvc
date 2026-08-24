@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.productmanager.controller.support.SessionController;
+import com.example.productmanager.entity.User;
+import com.example.productmanager.entity.UserActivity;
 import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.lifecycle.PrototypeRequestMarker;
 import com.example.productmanager.lifecycle.SessionLifecycleBean;
-import com.example.productmanager.model.User;
-import com.example.productmanager.model.UserActivity;
 import com.example.productmanager.service.UserService;
 
 import jakarta.servlet.http.HttpSession;

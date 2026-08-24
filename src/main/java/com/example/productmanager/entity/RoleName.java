@@ -1,4 +1,4 @@
-package com.example.productmanager.model;
+package com.example.productmanager.entity;
 
 public enum RoleName {
 	ADMIN,

@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.productmanager.model.User;
+import com.example.productmanager.entity.User;
 import com.example.productmanager.security.JwtService;
 import com.example.productmanager.service.UserService;
 

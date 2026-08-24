@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.productmanager.dto.report.ReportResponseDTO;
-import com.example.productmanager.model.OrderStatus;
+import com.example.productmanager.entity.OrderStatus;
 import com.example.productmanager.modelmapper.ReportMapper;
 import com.example.productmanager.service.ReportService;
 

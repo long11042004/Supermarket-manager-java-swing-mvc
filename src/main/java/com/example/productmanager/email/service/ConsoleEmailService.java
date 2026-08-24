@@ -1,4 +1,4 @@
-package com.example.productmanager.service.emailservice;
+package com.example.productmanager.email.service;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;

@@ -6,7 +6,7 @@ import org.mapstruct.Mapping;
 import com.example.productmanager.dto.product.ProductFormDTO;
 import com.example.productmanager.dto.product.ProductRequestDTO;
 import com.example.productmanager.dto.product.ProductResponseDTO;
-import com.example.productmanager.model.Product;
+import com.example.productmanager.entity.Product;
 
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
