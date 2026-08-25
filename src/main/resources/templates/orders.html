@@ -11,10 +11,10 @@
   <div class="shell">
     <div th:if="${specialNoticeMessage}" class="alert" role="alert"
          th:classappend="${specialNoticeLevel == 'warning'} ? ' alert-warning' : (${specialNoticeLevel == 'success'} ? ' alert-success' : ' alert-info')">
-      <strong>Thông báo:</strong>
+      <strong th:text="#{app.notice}">Thông báo</strong>
       <span th:text="${specialNoticeMessage}">Thong bao</span>
       <small class="d-block mt-1 text-muted" th:if="${specialNoticeUpdatedAt != null}"
-             th:text="'Cap nhat: ' + ${#temporals.format(specialNoticeUpdatedAt, 'dd/MM/yyyy HH:mm')}">Cap nhat</small>
+             th:text="${#messages.msg('app.updatedAt')} + ' ' + ${#temporals.format(specialNoticeUpdatedAt, 'dd/MM/yyyy HH:mm')}">Updated at</small>
     </div>
 
     <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}">Thành công</div>

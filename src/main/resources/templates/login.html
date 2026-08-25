@@ -23,7 +23,7 @@
 
       <div th:if="${specialNoticeMessage}" class="alert" role="alert"
            th:classappend="${specialNoticeLevel == 'warning'} ? ' alert-warning' : (${specialNoticeLevel == 'success'} ? ' alert-success' : ' alert-info')">
-        <strong>Thông báo:</strong>
+        <strong th:text="#{app.notice}">Thông báo</strong>
         <span th:text="${specialNoticeMessage}">Thong bao</span>
       </div>
 
