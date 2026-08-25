@@ -48,11 +48,6 @@
       <small class="d-block mt-1 text-muted" th:if="${specialNoticeUpdatedAt != null}"
              th:text="'Cap nhat: ' + ${#temporals.format(specialNoticeUpdatedAt, 'dd/MM/yyyy HH:mm')}">Cap nhat</small>
     </div>
-    <div class="alert alert-light border small py-2" th:if="${lifecycleSessionToken != null and lifecycleRequestMarker != null}">
-      Session token: <strong th:text="${lifecycleSessionToken}">token</strong>
-      | Session visits: <strong th:text="${lifecycleVisitCount}">1</strong>
-      | Request marker: <strong th:text="${lifecycleRequestMarker}">marker</strong>
-    </div>
 
     <div class="topbar d-flex justify-content-between align-items-center flex-wrap gap-3">
       <div>
@@ -64,7 +59,7 @@
         <a th:href="@{/profile}" class="btn btn-outline-dark" th:text="#{common.profile}">Tài khoản</a>
         <a th:href="@{/products}" class="btn btn-primary" th:text="#{dashboard.viewProducts}">Xem sản phẩm</a>
         <a th:href="@{/orders}" class="btn btn-outline-warning" th:text="#{app.myOrders}">Đơn hàng của tôi</a>
-        <form method="get" th:action="@{/customer-dashboard}" class="d-inline-flex align-items-center gap-2">
+        <form method="get" th:action="@{/dashboard}" class="d-inline-flex align-items-center gap-2">
           <label class="visually-hidden" for="customer-language-select" th:text="#{app.language}">Language</label>
           <select id="customer-language-select" class="form-select form-select-sm" name="lang" onchange="this.form.submit()">
             <option value="vi" th:selected="${#locale.language == 'vi'}" th:text="#{common.language.vi}">Tiếng Việt</option>

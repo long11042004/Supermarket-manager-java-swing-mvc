@@ -200,7 +200,6 @@
             <div class="mb-3">
               <label class="form-label" th:text="#{app.category}">Danh mục</label>
               <select class="form-select" th:field="*{category}" required>
-                <option value="" th:text="#{app.allCategories}">Chọn danh mục</option>
                 <option th:each="categoryOption : ${T(com.example.productmanager.entity.ProductCategory).values()}"
                         th:value="${categoryOption.name()}"
                         th:text="${categoryOption.label}"

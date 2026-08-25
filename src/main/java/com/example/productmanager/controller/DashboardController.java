@@ -30,7 +30,7 @@ public class DashboardController extends SessionController {
 	private final SessionLifecycleBean sessionLifecycleBean;
 	private final ObjectProvider<PrototypeRequestMarker> prototypeRequestMarkerProvider;
 
-	@GetMapping("/dashboard")
+	@GetMapping({"/dashboard", "/customer-dashboard"})
 	public String dashboard(Model model, HttpSession session) {
 		User currentUser = getCurrentUser(session);
 		if (currentUser == null) {
