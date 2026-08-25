@@ -25,7 +25,7 @@ import com.example.productmanager.entity.Product;
 import com.example.productmanager.entity.User;
 import com.example.productmanager.exception.ConflictException;
 import com.example.productmanager.exception.NotFoundException;
-import com.example.productmanager.i18n.MessageResolver;
+import com.example.productmanager.multilanguage.MessageResolver;
 import com.example.productmanager.repository.CustomerOrderRepository;
 import com.example.productmanager.repository.ProductRepository;
 import com.example.productmanager.repository.UserRepository;
@@ -61,10 +61,12 @@ class OrderServiceTests {
 		CartView cart = new CartView();
 		Product product = Product.builder()
 				.id(21L)
-				.name("Cam vàng")
+				.nameVi("Cam vàng")
+				.nameEn("Yellow orange")
 				.price(new BigDecimal("50000"))
 				.quantity(10)
-				.unit("kg")
+				.unitVi("kg")
+				.unitEn("kg")
 				.build();
 		cartService.addItem(cart, product, 2);
 
@@ -98,7 +100,8 @@ class OrderServiceTests {
 		CartView cart = new CartView();
 		Product product = Product.builder()
 				.id(22L)
-				.name("Nho Mỹ")
+				.nameVi("Nho Mỹ")
+				.nameEn("American grapes")
 				.price(new BigDecimal("80000"))
 				.quantity(6)
 				.build();
@@ -117,7 +120,8 @@ class OrderServiceTests {
 		CartView cart = new CartView();
 		Product product = Product.builder()
 				.id(23L)
-				.name("Bánh gạo")
+				.nameVi("Bánh gạo")
+				.nameEn("Rice cake")
 				.price(new BigDecimal("35000"))
 				.quantity(5)
 				.build();
@@ -136,7 +140,8 @@ class OrderServiceTests {
 		CartView cart = new CartView();
 		Product product = Product.builder()
 				.id(24L)
-				.name("Sua hop")
+				.nameVi("Sua hop")
+				.nameEn("Milk box")
 				.quantity(5)
 				.build();
 		cartService.addItem(cart, product, 1);
@@ -153,7 +158,8 @@ class OrderServiceTests {
 	void cancelOrderForUserShouldSetCancelledAndRollbackStock() {
 		Product product = Product.builder()
 				.id(50L)
-				.name("Nuoc suoi")
+				.nameVi("Nuoc suoi")
+				.nameEn("Mineral water")
 				.quantity(7)
 				.build();
 

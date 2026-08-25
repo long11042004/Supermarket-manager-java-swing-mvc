@@ -10,7 +10,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ResourceBundleMessageSource;
 
 import com.example.productmanager.entity.Product;
-import com.example.productmanager.i18n.MessageResolver;
+import com.example.productmanager.multilanguage.MessageResolver;
 import com.example.productmanager.service.CartService.CartView;
 
 class CartServiceTests {
@@ -31,10 +31,12 @@ class CartServiceTests {
 		CartView cart = new CartView();
 		Product product = Product.builder()
 				.id(10L)
-				.name("Táo Gala")
+				.nameVi("Táo Gala")
+				.nameEn("Apple Gala")
 				.price(new BigDecimal("25000"))
 				.quantity(20)
-				.unit("kg")
+				.unitVi("kg")
+				.unitEn("kg")
 				.build();
 
 		cartService.addItem(cart, product, 2);
@@ -49,10 +51,12 @@ class CartServiceTests {
 		CartView cart = new CartView();
 		Product product = Product.builder()
 				.id(11L)
-				.name("Sữa tươi")
+				.nameVi("Sữa tươi")
+				.nameEn("Fresh milk")
 				.price(new BigDecimal("42000"))
 				.quantity(4)
-				.unit("hộp")
+				.unitVi("hộp")
+				.unitEn("box")
 				.build();
 
 		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
@@ -66,7 +70,8 @@ class CartServiceTests {
 		CartView cart = new CartView();
 		Product product = Product.builder()
 				.id(12L)
-				.name("Bánh quy")
+				.nameVi("Bánh quy")
+				.nameEn("Cookies")
 				.price(new BigDecimal("30000"))
 				.quantity(8)
 				.build();
@@ -82,10 +87,12 @@ class CartServiceTests {
 	void addItemShouldSupportOverloadedConvenienceMethods() {
 		Product product = Product.builder()
 				.id(13L)
-				.name("Cam sành")
+				.nameVi("Cam sành")
+				.nameEn("Orange")
 				.price(new BigDecimal("20000"))
 				.quantity(10)
-				.unit("kg")
+				.unitVi("kg")
+				.unitEn("kg")
 				.build();
 
 		CartView firstCart = cartService.addItem(new CartView(), product, 2);
@@ -93,7 +100,7 @@ class CartServiceTests {
 
 		assertEquals(1, secondCart.getItemCount());
 		assertEquals(new BigDecimal("20000"), secondCart.getGrandTotal());
-		assertEquals(3, firstCart.getItemCount());
+		assertEquals(2, firstCart.getItemCount());
 		assertEquals(new BigDecimal("40000"), firstCart.getGrandTotal());
 	}
 }

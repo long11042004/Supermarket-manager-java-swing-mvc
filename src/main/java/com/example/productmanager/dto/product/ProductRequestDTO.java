@@ -14,7 +14,10 @@ import jakarta.validation.constraints.Size;
 public record ProductRequestDTO(
 		@NotBlank(message = "{err.product.nameRequired}")
 		@Size(max = 120, message = "{err.product.nameTooLong}")
-		String name,
+		String nameVi,
+
+		@Size(max = 120, message = "{err.product.nameTooLong}")
+		String nameEn,
 
 		@NotNull(message = "{err.product.categoryRequired}")
 		ProductCategory category,
@@ -28,7 +31,10 @@ public record ProductRequestDTO(
 		Integer quantity,
 
 		@Size(max = 30, message = "{err.product.unitTooLong}")
-		String unit,
+		String unitVi,
+
+		@Size(max = 30, message = "{err.product.unitTooLong}")
+		String unitEn,
 
 		LocalDate expiryDate) {
 }

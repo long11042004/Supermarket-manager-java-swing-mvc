@@ -126,10 +126,10 @@
           <div class="history-header">
             <h3 class="section-title mb-0" th:text="#{profile.activityHistory}">Lịch sử hoạt động</h3>
             <div class="d-flex align-items-center gap-2 flex-wrap">
-              <span class="history-caption" th:text="'Trang ' + (${currentPage} + 1) + ' / ' + (${totalPages == 0 ? 1 : totalPages})">Trang 1 / 1</span>
+              <span class="history-caption" th:text="#{app.pageLabel(${currentPage} + 1, ${totalPages == 0 ? 1 : totalPages})}">Page 1 / 1</span>
               <form method="get" th:action="@{/profile}" class="d-inline-flex align-items-center gap-2">
                 <input type="hidden" name="page" value="0" />
-                <label for="activity-page-size" class="small text-muted">Mỗi trang</label>
+                <label for="activity-page-size" class="small text-muted" th:text="#{app.perPage}">Per page</label>
                 <select id="activity-page-size" name="size" class="form-select form-select-sm" onchange="this.form.submit()">
                   <option value="5" th:selected="${pageSize == 5}">5</option>
                   <option value="10" th:selected="${pageSize == 10}">10</option>
@@ -161,7 +161,8 @@
             <a class="btn btn-outline-secondary btn-sm"
                th:href="@{/profile(page=${currentPage - 1},size=${pageSize})}"
                th:classappend="${currentPage == 0} ? ' disabled' : ''"
-               aria-label="Trang trước">Trước</a>
+               th:attr="aria-label=#{app.pagePrevious}"
+               th:text="#{app.pagePrevious}">Previous</a>
 
             <div class="d-flex align-items-center gap-2">
               <a th:each="pageIndex : ${#numbers.sequence(0, totalPages - 1)}"
@@ -174,7 +175,8 @@
             <a class="btn btn-outline-secondary btn-sm"
                th:href="@{/profile(page=${currentPage + 1},size=${pageSize})}"
                th:classappend="${currentPage + 1 >= totalPages} ? ' disabled' : ''"
-               aria-label="Trang sau">Sau</a>
+               th:attr="aria-label=#{app.pageNext}"
+               th:text="#{app.pageNext}">Next</a>
           </div>
         </div>
       </div>

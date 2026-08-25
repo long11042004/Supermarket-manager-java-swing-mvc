@@ -14,7 +14,7 @@ import com.example.productmanager.entity.Product;
 import com.example.productmanager.entity.ProductCategory;
 import com.example.productmanager.exception.ConflictException;
 import com.example.productmanager.exception.NotFoundException;
-import com.example.productmanager.i18n.MessageResolver;
+import com.example.productmanager.multilanguage.MessageResolver;
 import com.example.productmanager.repository.CustomerOrderRepository;
 import com.example.productmanager.repository.ProductRepository;
 
@@ -78,11 +78,13 @@ public class ProductService {
 		Product existing = getProductById(id);
 		Product sanitizedRequest = normalizeProduct(request);
 		validateProduct(sanitizedRequest);
-		existing.setName(sanitizedRequest.getName());
+		existing.setNameVi(sanitizedRequest.getNameVi());
+		existing.setNameEn(sanitizedRequest.getNameEn());
 		existing.setCategory(sanitizedRequest.getCategory());
 		existing.setPrice(sanitizedRequest.getPrice());
 		existing.setQuantity(sanitizedRequest.getQuantity());
-		existing.setUnit(sanitizedRequest.getUnit());
+		existing.setUnitVi(sanitizedRequest.getUnitVi());
+		existing.setUnitEn(sanitizedRequest.getUnitEn());
 		existing.setExpiryDate(sanitizedRequest.getExpiryDate());
 		return productRepository.save(existing);
 	}
@@ -116,13 +118,10 @@ public class ProductService {
 		if (product == null) {
 			return null;
 		}
-		if (product.getName() != null) {
-			product.setName(product.getName().trim());
-		}
-		if (product.getUnit() != null) {
-			String normalizedUnit = product.getUnit().trim();
-			product.setUnit(normalizedUnit.isEmpty() ? null : normalizedUnit);
-		}
+		product.setNameVi(normalizeText(product.getNameVi()));
+		product.setNameEn(normalizeText(product.getNameEn()));
+		product.setUnitVi(normalizeText(product.getUnitVi()));
+		product.setUnitEn(normalizeText(product.getUnitEn()));
 		if (product.getExpiryDate() != null && product.getExpiryDate().isBefore(LocalDate.now().minusYears(20))) {
 			throw new IllegalArgumentException(msg("err.product.expiryTooOld"));
 		}
@@ -133,10 +132,15 @@ public class ProductService {
 		if (product == null) {
 			throw new IllegalArgumentException(msg("err.product.empty"));
 		}
-		if (product.getName() == null || product.getName().trim().isEmpty()) {
+		String viName = product.getNameVi() == null ? "" : product.getNameVi().trim();
+		String enName = product.getNameEn() == null ? "" : product.getNameEn().trim();
+		if (viName.isEmpty() && enName.isEmpty()) {
 			throw new IllegalArgumentException(msg("err.product.nameRequired"));
 		}
-		if (product.getName().trim().length() > 120) {
+		if (!viName.isEmpty() && viName.length() > 120) {
+			throw new IllegalArgumentException(msg("err.product.nameTooLong"));
+		}
+		if (!enName.isEmpty() && enName.length() > 120) {
 			throw new IllegalArgumentException(msg("err.product.nameTooLong"));
 		}
 		if (product.getCategory() == null) {
@@ -157,20 +161,34 @@ public class ProductService {
 		if (product.getQuantity() > 1000000) {
 			throw new IllegalArgumentException(msg("err.product.quantityTooLarge"));
 		}
-		if (product.getUnit() != null) {
-			String unit = product.getUnit().trim();
-			if (unit.isEmpty()) {
-				throw new IllegalArgumentException(msg("err.product.unitBlank"));
-			}
-			if (unit.length() > 30) {
-				throw new IllegalArgumentException(msg("err.product.unitTooLong"));
-			}
-			if (!unit.matches("[A-Za-zÀ-ỹ0-9/().% -]{1,30}")) {
-				throw new IllegalArgumentException(msg("err.product.unitInvalid"));
-			}
-		}
+		validateUnit(product.getUnitVi());
+		validateUnit(product.getUnitEn());
 		if (product.getExpiryDate() != null && product.getExpiryDate().isBefore(LocalDate.now())) {
 			throw new IllegalArgumentException(msg("err.product.expiryPast"));
+		}
+	}
+
+	private String normalizeText(String value) {
+		if (value == null) {
+			return null;
+		}
+		String trimmed = value.trim();
+		return trimmed.isEmpty() ? null : trimmed;
+	}
+
+	private void validateUnit(String unit) {
+		if (unit == null) {
+			return;
+		}
+		String normalized = unit.trim();
+		if (normalized.isEmpty()) {
+			throw new IllegalArgumentException(msg("err.product.unitBlank"));
+		}
+		if (normalized.length() > 30) {
+			throw new IllegalArgumentException(msg("err.product.unitTooLong"));
+		}
+		if (!normalized.matches("[A-Za-zÀ-ỹ0-9/().% -]{1,30}")) {
+			throw new IllegalArgumentException(msg("err.product.unitInvalid"));
 		}
 	}
 

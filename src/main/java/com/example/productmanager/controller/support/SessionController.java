@@ -76,7 +76,7 @@ public abstract class SessionController {
 		Object sessionUser = session != null ? session.getAttribute("loggedInUser") : null;
 		if (sessionUser instanceof User user && user.getRoles() != null) {
 			return user.getRoles().stream()
-					.map(Role::getName)
+					.map(role -> role.getName())
 					.collect(Collectors.toSet());
 		}
 		return Set.of();

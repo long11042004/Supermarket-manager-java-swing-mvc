@@ -10,7 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.example.productmanager.i18n.MessageResolver;
+import com.example.productmanager.multilanguage.MessageResolver;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;

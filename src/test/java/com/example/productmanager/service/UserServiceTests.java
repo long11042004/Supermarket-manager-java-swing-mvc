@@ -25,7 +25,7 @@ import com.example.productmanager.entity.RoleName;
 import com.example.productmanager.entity.User;
 import com.example.productmanager.exception.BadCredentialsException;
 import com.example.productmanager.exception.ConflictException;
-import com.example.productmanager.i18n.MessageResolver;
+import com.example.productmanager.multilanguage.MessageResolver;
 import com.example.productmanager.repository.RoleRepository;
 import com.example.productmanager.repository.UserActivityRepository;
 import com.example.productmanager.repository.UserRepository;

@@ -1,4 +1,4 @@
-package com.example.productmanager.config;
+package com.example.productmanager.multilanguage;
 
 import java.util.Locale;
 

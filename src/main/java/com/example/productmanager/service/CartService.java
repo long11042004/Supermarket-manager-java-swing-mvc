@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.productmanager.entity.CartItem;
 import com.example.productmanager.entity.Product;
-import com.example.productmanager.i18n.MessageResolver;
+import com.example.productmanager.multilanguage.MessageResolver;
 
 import lombok.AllArgsConstructor;
 
@@ -54,7 +54,7 @@ public class CartService {
 
 			indexedItems.put(product.getId(), new CartItem(
 					product.getId(),
-					product.getName(),
+					product.getDisplayName(),
 					product.getPrice(),
 					quantityLabel(product),
 					newQuantity));
@@ -109,7 +109,8 @@ public class CartService {
 	}
 
 	private String quantityLabel(Product product) {
-		return product.getUnit() == null || product.getUnit().isBlank() ? "sp" : product.getUnit();
+		String unit = product.getDisplayUnit();
+		return unit == null || unit.isBlank() ? "sp" : unit;
 	}
 
 	public static class CartView {

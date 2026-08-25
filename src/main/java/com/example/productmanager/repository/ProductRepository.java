@@ -16,9 +16,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
 	@Query("""
 			SELECT p FROM Product p
-			WHERE (:keyword = '' OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')))
+			WHERE (:keyword = ''
+			    OR LOWER(COALESCE(p.nameVi, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+			    OR LOWER(COALESCE(p.nameEn, '')) LIKE LOWER(CONCAT('%', :keyword, '%')))
 			  AND (:category IS NULL OR p.category = :category)
-			ORDER BY LOWER(p.name) ASC
+			ORDER BY LOWER(COALESCE(p.nameVi, p.nameEn, '')) ASC
 			""")
 	Page<Product> findByKeywordAndCategory(
 			@Param("keyword") String keyword,
@@ -30,8 +32,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
 	@Query("""
 			SELECT p FROM Product p
-			WHERE (:keyword = '' OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')))
-			ORDER BY LOWER(p.name) ASC
+			WHERE (:keyword = ''
+			    OR LOWER(COALESCE(p.nameVi, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+			    OR LOWER(COALESCE(p.nameEn, '')) LIKE LOWER(CONCAT('%', :keyword, '%')))
+			ORDER BY LOWER(COALESCE(p.nameVi, p.nameEn, '')) ASC
 			""")
 	List<Product> getProducts(@Param("keyword") String keyword);
 

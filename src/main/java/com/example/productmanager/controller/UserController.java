@@ -23,9 +23,9 @@ import com.example.productmanager.controller.support.SessionController;
 import com.example.productmanager.dto.user.UserRegistrationDTO;
 import com.example.productmanager.entity.RoleName;
 import com.example.productmanager.entity.User;
-import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.lifecycle.PrototypeRequestMarker;
 import com.example.productmanager.lifecycle.SessionLifecycleBean;
+import com.example.productmanager.multilanguage.MessageResolver;
 import com.example.productmanager.service.UserService;
 
 import jakarta.servlet.http.HttpSession;
@@ -65,6 +65,13 @@ public class UserController extends SessionController {
 			return Arrays.asList(RoleName.values());
 		}
 		return List.of(RoleName.STAFF, RoleName.CUSTOMER);
+	}
+
+	private List<RoleName> registerableRoles(HttpSession session) {
+		if (isAdmin(session)) {
+			return List.of(RoleName.MANAGER, RoleName.STAFF);
+		}
+		return List.of(RoleName.STAFF);
 	}
 
 	private String restrictedReason(HttpSession session) {
@@ -111,7 +118,7 @@ public class UserController extends SessionController {
 		model.addAttribute("keyword", keyword);
 		model.addAttribute("manageableOnly", manageableOnly);
 		model.addAttribute("roles", editableRoles(session));
-		model.addAttribute("registerRoles", editableRoles(session));
+		model.addAttribute("registerRoles", registerableRoles(session));
 		model.addAttribute("isAdmin", isAdmin(session));
 		model.addAttribute("restrictedUserIds", restrictedUserIds);
 		model.addAttribute("restrictedReasons", restrictedReasons);
@@ -138,8 +145,8 @@ public class UserController extends SessionController {
 		}
 
 		Set<RoleName> allowedCreateRoles = isAdmin(session)
-				? EnumSet.of(RoleName.MANAGER, RoleName.STAFF, RoleName.CUSTOMER)
-				: EnumSet.of(RoleName.STAFF, RoleName.CUSTOMER);
+				? EnumSet.of(RoleName.MANAGER, RoleName.STAFF)
+				: EnumSet.of(RoleName.STAFF);
 		if (!allowedCreateRoles.contains(selectedRole)) {
 			redirectAttributes.addFlashAttribute("errorMessage", messageResolver.msg("msg.user.noPermissionCreateRole"));
 			return "redirect:/users";
@@ -177,7 +184,7 @@ public class UserController extends SessionController {
 		model.addAttribute("users", users);
 		model.addAttribute("manageableOnly", false);
 		model.addAttribute("roles", editableRoles(session));
-		model.addAttribute("registerRoles", editableRoles(session));
+		model.addAttribute("registerRoles", registerableRoles(session));
 		model.addAttribute("isAdmin", isAdmin(session));
 		model.addAttribute("restrictedUserIds", restrictedUserIds);
 		model.addAttribute("assignedRoles", assignedRolesByUserId(users));

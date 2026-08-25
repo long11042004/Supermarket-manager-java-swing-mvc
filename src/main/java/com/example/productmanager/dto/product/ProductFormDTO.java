@@ -23,7 +23,10 @@ public class ProductFormDTO {
 
 	@NotBlank(message = "{err.product.nameRequired}")
 	@Size(max = 120, message = "{err.product.nameTooLong}")
-	private String name;
+	private String nameVi;
+
+	@Size(max = 120, message = "{err.product.nameTooLong}")
+	private String nameEn;
 
 	@NotNull(message = "{err.product.categoryRequired}")
 	private ProductCategory category;
@@ -37,7 +40,10 @@ public class ProductFormDTO {
 	private Integer quantity;
 
 	@Size(max = 30, message = "{err.product.unitTooLong}")
-	private String unit;
+	private String unitVi;
+
+	@Size(max = 30, message = "{err.product.unitTooLong}")
+	private String unitEn;
 
 	private LocalDate expiryDate;
 }

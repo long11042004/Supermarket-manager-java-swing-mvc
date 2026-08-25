@@ -7,10 +7,12 @@ import com.example.productmanager.entity.ProductCategory;
 
 public record ProductResponseDTO(
 		Long id,
-		String name,
+		String nameVi,
+		String nameEn,
 		ProductCategory category,
 		BigDecimal price,
 		Integer quantity,
-		String unit,
+		String unitVi,
+		String unitEn,
 		LocalDate expiryDate) {
 }

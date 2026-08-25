@@ -83,7 +83,7 @@
           </thead>
           <tbody>
             <tr th:each="item : ${order.items}">
-              <td th:text="${item.product.name}">Tên sản phẩm</td>
+              <td th:text="${item.product.displayName}">Tên sản phẩm</td>
               <td th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(item.unitPrice)}">0 ₫</td>
               <td th:text="${item.quantity}">1</td>
               <td th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(item.lineTotal)}">0 ₫</td>

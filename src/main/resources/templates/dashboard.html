@@ -104,7 +104,7 @@
           </thead>
           <tbody>
             <tr th:each="item : ${lowStockProducts}">
-              <td th:text="${item.name}">Tên</td>
+              <td th:text="${item.displayName}">Tên</td>
               <td th:text="${item.category}">Danh mục</td>
               <td><span class="badge bg-warning text-dark" th:text="${item.quantity}">0</span></td>
             </tr>
@@ -127,7 +127,7 @@
           </thead>
           <tbody>
             <tr th:each="item : ${expiringSoonProducts}">
-              <td th:text="${item.name}">Tên</td>
+              <td th:text="${item.displayName}">Tên</td>
               <td th:text="${item.category}">Danh mục</td>
               <td>
                 <span class="badge bg-danger-subtle text-danger-emphasis"

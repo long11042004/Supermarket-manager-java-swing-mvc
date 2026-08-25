@@ -19,7 +19,7 @@ import com.example.productmanager.entity.User;
 import com.example.productmanager.exception.ConflictException;
 import com.example.productmanager.exception.ForbiddenException;
 import com.example.productmanager.exception.NotFoundException;
-import com.example.productmanager.i18n.MessageResolver;
+import com.example.productmanager.multilanguage.MessageResolver;
 import com.example.productmanager.repository.CustomerOrderRepository;
 import com.example.productmanager.repository.ProductRepository;
 import com.example.productmanager.repository.UserRepository;
@@ -107,13 +107,13 @@ public class OrderService {
 			Product product = productRepository.findById(cartItem.getProductId())
 					.orElseThrow(() -> new NotFoundException(messageResolver.msg("err.order.productNotFoundInCart")));
 			if (product.getPrice() == null) {
-				throw new IllegalArgumentException(messageResolver.msg("err.order.productPriceInvalid", product.getName()));
+				throw new IllegalArgumentException(messageResolver.msg("err.order.productPriceInvalid", product.getDisplayName()));
 			}
 			if (product.getQuantity() == null) {
-				throw new IllegalArgumentException(messageResolver.msg("err.order.productStockInvalid", product.getName()));
+				throw new IllegalArgumentException(messageResolver.msg("err.order.productStockInvalid", product.getDisplayName()));
 			}
 			if (product.getQuantity() < cartItem.getQuantity()) {
-				throw new IllegalArgumentException(messageResolver.msg("err.order.productNotEnoughStock", product.getName()));
+				throw new IllegalArgumentException(messageResolver.msg("err.order.productNotEnoughStock", product.getDisplayName()));
 			}
 
 			BigDecimal lineTotal = product.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()));
@@ -134,11 +134,11 @@ public class OrderService {
 		order.setItems(orderItems);
 		order.setTotalAmount(totalAmount);
 		CustomerOrder savedOrder = customerOrderRepository.save(order);
-		if (userId != null) {
-			String details = new StringBuilder(messageResolver.msg("activity.order.createdPrefix"))
-					.append(savedOrder.getId())
-					.append(messageResolver.msg("activity.order.createdSuffix"))
-					.toString();
+		if (userId != null && user != null) {
+			String details = messageResolver.msg("activity.order.createdPrefix")
+					+ savedOrder.getId()
+					+ " "
+					+ messageResolver.msg("activity.order.createdSuffix").trim();
 			userService.recordActivity(userId, messageResolver.msg("activity.order.place"), details);
 			String recipientEmail = user.getEmail();
 			if (recipientEmail != null && !recipientEmail.isBlank()) {
@@ -199,10 +199,10 @@ public class OrderService {
 
 		order.setStatus(OrderStatus.CANCELLED);
 		customerOrderRepository.save(order);
-		String details = new StringBuffer(messageResolver.msg("activity.order.cancelledPrefix"))
-				.append(order.getId())
-				.append(messageResolver.msg("activity.order.cancelledSuffix"))
-				.toString();
+		String details = messageResolver.msg("activity.order.cancelledPrefix")
+				+ order.getId()
+				+ " "
+				+ messageResolver.msg("activity.order.cancelledSuffix").trim();
 		userService.recordActivity(userId, messageResolver.msg("activity.order.cancel"), details);
 		if (order.getUser() != null && order.getUser().getEmail() != null && !order.getUser().getEmail().isBlank()) {
 			String recipientName = order.getUser().getFullName() == null || order.getUser().getFullName().isBlank()

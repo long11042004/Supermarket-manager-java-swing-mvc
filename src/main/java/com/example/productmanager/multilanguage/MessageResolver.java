@@ -1,4 +1,4 @@
-package com.example.productmanager.i18n;
+package com.example.productmanager.multilanguage;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;

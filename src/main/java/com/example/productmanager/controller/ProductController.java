@@ -17,10 +17,10 @@ import com.example.productmanager.dto.product.ProductFormDTO;
 import com.example.productmanager.entity.Product;
 import com.example.productmanager.entity.RoleName;
 import com.example.productmanager.entity.User;
-import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.lifecycle.PrototypeRequestMarker;
 import com.example.productmanager.lifecycle.SessionLifecycleBean;
 import com.example.productmanager.modelmapper.ProductMapper;
+import com.example.productmanager.multilanguage.MessageResolver;
 import com.example.productmanager.service.CartService;
 import com.example.productmanager.service.CartService.CartView;
 import com.example.productmanager.service.ProductService;
@@ -103,7 +103,7 @@ public class ProductController extends SessionController {
 			User currentUser = getCurrentUser(session);
 			if (currentUser != null) {
 				String details = new StringBuilder("Đã thêm ")
-						.append(product.getName())
+						.append(product.getDisplayName())
 						.append(" vào giỏ hàng")
 						.toString();
 				userService.recordActivity(currentUser.getId(), "Thêm vào giỏ", details);

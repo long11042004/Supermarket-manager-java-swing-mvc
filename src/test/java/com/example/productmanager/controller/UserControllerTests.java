@@ -20,9 +20,9 @@ import com.example.productmanager.dto.user.UserRegistrationDTO;
 import com.example.productmanager.entity.Role;
 import com.example.productmanager.entity.RoleName;
 import com.example.productmanager.entity.User;
-import com.example.productmanager.i18n.MessageResolver;
 import com.example.productmanager.lifecycle.PrototypeRequestMarker;
 import com.example.productmanager.lifecycle.SessionLifecycleBean;
+import com.example.productmanager.multilanguage.MessageResolver;
 import com.example.productmanager.service.UserService;
 
 class UserControllerTests {
