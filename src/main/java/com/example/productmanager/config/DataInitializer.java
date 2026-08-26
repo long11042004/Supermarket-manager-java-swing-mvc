@@ -24,7 +24,7 @@ import com.example.productmanager.repository.UserRepository;
 public class DataInitializer {
 
 	@Bean
-        @SuppressWarnings("unused")
+    @SuppressWarnings("unused")
     CommandLineRunner initData(RoleRepository roleRepository,
             ProductRepository productRepository,
             UserRepository userRepository,

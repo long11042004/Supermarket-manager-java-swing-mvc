@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.productmanager.dto.report.ReportResponseDTO;
 import com.example.productmanager.entity.OrderStatus;
-import com.example.productmanager.modelmapper.ReportMapper;
+import com.example.productmanager.mapper.ReportMapper;
 import com.example.productmanager.service.ReportService;
 
 import lombok.AllArgsConstructor;

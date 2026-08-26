@@ -1,4 +1,4 @@
-package com.example.productmanager.modelmapper;
+package com.example.productmanager.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
