@@ -31,7 +31,6 @@ public class SchedulerService {
 	private final int lowStockThreshold;
 	private final int expiringDaysAhead;
 	private final String summaryRecipient;
-	private final String profileReminderTemplate;
 	private final int profileReminderMaxMissingFields;
 
 	public SchedulerService(ProductService productService,
@@ -42,7 +41,7 @@ public class SchedulerService {
 			@Value("${app.scheduling.low-stock-threshold:10}") int lowStockThreshold,
 			@Value("${app.scheduling.expiring-days-ahead:7}") int expiringDaysAhead,
 			@Value("${app.scheduling.daily-summary.recipient:}") String summaryRecipient,
-			@Value("${app.scheduling.profile-reminder.template:Ban chua bo sung day du thong tin: %s. Vui long cap nhat trong trang ho so.}") String profileReminderTemplate,
+			@Value("${app.scheduling.profile-reminder.template:Your profile is incomplete: %s. Please update it on the profile page.}") String profileReminderTemplate,
 			@Value("${app.scheduling.profile-reminder.max-missing-fields:3}") int profileReminderMaxMissingFields) {
 		this.productService = productService;
 		this.userService = userService;
@@ -52,7 +51,6 @@ public class SchedulerService {
 		this.lowStockThreshold = lowStockThreshold;
 		this.expiringDaysAhead = expiringDaysAhead;
 		this.summaryRecipient = summaryRecipient;
-		this.profileReminderTemplate = profileReminderTemplate;
 		this.profileReminderMaxMissingFields = profileReminderMaxMissingFields;
 	}
 
@@ -115,8 +113,7 @@ public class SchedulerService {
 			}
 
 			String missingText = String.join(", ", missingFields);
-			String reminder = String.format(profileReminderTemplate, missingText);
-			appSpecialNoticeService.publishUserWarning(user.getId(), reminder);
+			appSpecialNoticeService.publishUserWarningKey(user.getId(), "notice.profile.incomplete", missingText);
 			warnedUsers++;
 		}
 
@@ -126,16 +123,16 @@ public class SchedulerService {
 	private List<String> collectMissingProfileFields(User user) {
 		List<String> missing = new ArrayList<>();
 		if (isBlank(user.getPhoneNumber())) {
-			missing.add("so dien thoai");
+			missing.add("phone number");
 		}
 		if (isBlank(user.getAddress())) {
-			missing.add("dia chi");
+			missing.add("address");
 		}
 		if (isBlank(user.getEmail())) {
 			missing.add("email");
 		}
 		if (isBlank(user.getFullName())) {
-			missing.add("ho ten");
+			missing.add("full name");
 		}
 
 		if (missing.size() <= profileReminderMaxMissingFields) {

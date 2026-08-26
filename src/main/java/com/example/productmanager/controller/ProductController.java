@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.productmanager.controller.support.SessionController;
 import com.example.productmanager.dto.product.ProductFormDTO;
@@ -22,9 +23,9 @@ import com.example.productmanager.lifecycle.SessionLifecycleBean;
 import com.example.productmanager.modelmapper.ProductMapper;
 import com.example.productmanager.multilanguage.MessageResolver;
 import com.example.productmanager.service.CartService;
-import com.example.productmanager.service.CartService.CartView;
 import com.example.productmanager.service.ProductService;
 import com.example.productmanager.service.UserService;
+import com.example.productmanager.view.CartView;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -92,7 +93,7 @@ public class ProductController extends SessionController {
 	public String addToCart(@PathVariable Long id,
 			@RequestParam(defaultValue = "1") int quantity,
 			HttpSession session,
-			org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+			RedirectAttributes redirectAttributes) {
 		if (!hasPermission(session, RoleName.CUSTOMER) && !isGuestSession(session)) {
 			return "redirect:/login";
 		}
@@ -117,7 +118,7 @@ public class ProductController extends SessionController {
 	public String updateCartItemQuantity(@PathVariable Long productId,
 			@RequestParam int quantity,
 			HttpSession session,
-			org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+			RedirectAttributes redirectAttributes) {
 		if (!hasPermission(session, RoleName.CUSTOMER) && !isGuestSession(session)) {
 			return "redirect:/login";
 		}
@@ -153,7 +154,7 @@ public class ProductController extends SessionController {
 	@PostMapping("/{id}/delete")
 	public String deleteProduct(@PathVariable Long id,
 			HttpSession session,
-			org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+			RedirectAttributes redirectAttributes) {
 		if (!hasPermission(session, RoleName.ADMIN, RoleName.MANAGER)) {
 			return "redirect:/login";
 		}

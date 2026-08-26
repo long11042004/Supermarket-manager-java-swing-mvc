@@ -22,8 +22,8 @@ import com.example.productmanager.lifecycle.PrototypeRequestMarker;
 import com.example.productmanager.lifecycle.SessionLifecycleBean;
 import com.example.productmanager.multilanguage.MessageResolver;
 import com.example.productmanager.service.CartService;
-import com.example.productmanager.service.CartService.CartView;
 import com.example.productmanager.service.OrderService;
+import com.example.productmanager.view.CartView;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;

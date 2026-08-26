@@ -1,6 +1,5 @@
 package com.example.productmanager.service;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -12,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.example.productmanager.entity.CartItem;
 import com.example.productmanager.entity.Product;
 import com.example.productmanager.multilanguage.MessageResolver;
+import com.example.productmanager.view.CartView;
 
 import lombok.AllArgsConstructor;
 
@@ -113,26 +113,5 @@ public class CartService {
 		return unit == null || unit.isBlank() ? "sp" : unit;
 	}
 
-	public static class CartView {
-
-		private List<CartItem> items = new ArrayList<>();
-
-		public List<CartItem> getItems() {
-			return items;
-		}
-
-		public void setItems(List<CartItem> items) {
-			this.items = new ArrayList<>(items);
-		}
-
-		public int getItemCount() {
-			return items.stream().mapToInt(item -> item.getQuantity()).sum();
-		}
-
-		public BigDecimal getGrandTotal() {
-			return items.stream()
-					.map(item -> item.getLineTotal())
-					.reduce(BigDecimal.ZERO, (left, right) -> left.add(right));
-		}
-	}
+	
 }

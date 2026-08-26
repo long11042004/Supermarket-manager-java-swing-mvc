@@ -11,7 +11,7 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 
 import com.example.productmanager.entity.Product;
 import com.example.productmanager.multilanguage.MessageResolver;
-import com.example.productmanager.service.CartService.CartView;
+import com.example.productmanager.view.CartView;
 
 class CartServiceTests {
 
