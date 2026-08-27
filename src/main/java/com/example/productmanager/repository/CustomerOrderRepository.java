@@ -7,19 +7,43 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.example.productmanager.entity.CustomerOrder;
+import com.example.productmanager.entity.CustomerOrderItem;
 import com.example.productmanager.entity.OrderStatus;
 
 public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Long> {
+
+	@Query("""
+			SELECT DISTINCT o
+			FROM CustomerOrder o
+			LEFT JOIN FETCH o.items i
+			LEFT JOIN FETCH i.product p
+			WHERE p.id = :productId
+			""")
+	List<CustomerOrder> findOrdersByProductId(@Param("productId") Long productId);
+
+	@Query("""
+			SELECT i
+			FROM CustomerOrderItem i
+			LEFT JOIN FETCH i.order o
+			LEFT JOIN FETCH i.product p
+			WHERE p.id = :productId
+			""")
+	List<CustomerOrderItem> findItemsByProductId(@Param("productId") Long productId);
 
 	@Query("SELECT DISTINCT o FROM CustomerOrder o LEFT JOIN FETCH o.items i LEFT JOIN FETCH i.product WHERE o.user.id = :userId ORDER BY o.createdAt DESC")
 	List<CustomerOrder> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
 
 	@Query("SELECT o FROM CustomerOrder o LEFT JOIN FETCH o.items i LEFT JOIN FETCH i.product WHERE o.id = :orderId AND o.user.id = :userId")
 	Optional<CustomerOrder> findDetailByIdAndUserId(@Param("orderId") Long orderId, @Param("userId") Long userId);
+
+	@Modifying
+	@Query("DELETE FROM CustomerOrderItem i WHERE i.product.id = :productId")
+	void deleteOrderItemsByProductId(@Param("productId") Long productId);
 
 	@Query("SELECT COUNT(i) > 0 FROM CustomerOrderItem i WHERE i.product.id = :productId")
 	boolean existsOrderItemByProductId(@Param("productId") Long productId);

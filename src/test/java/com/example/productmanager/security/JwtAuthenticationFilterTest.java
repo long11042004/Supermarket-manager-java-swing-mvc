@@ -3,8 +3,6 @@ package com.example.productmanager.security;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -21,16 +19,6 @@ class JwtAuthenticationFilterTest {
     private final JwtService jwtService = mock(JwtService.class);
     private final CustomUserDetailsService userDetailsService = mock(CustomUserDetailsService.class);
     private final JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtService, userDetailsService);
-
-    @BeforeEach
-    void setUp() {
-        SecurityContextHolder.clearContext();
-    }
-
-    @AfterEach
-    void tearDown() {
-        SecurityContextHolder.clearContext();
-    }
 
     @Test
     void shouldReplaceExistingAuthenticationWhenJwtBelongsToDifferentUser() throws Exception {

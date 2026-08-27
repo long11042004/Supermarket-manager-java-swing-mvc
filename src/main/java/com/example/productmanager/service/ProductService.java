@@ -3,13 +3,18 @@ package com.example.productmanager.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.example.productmanager.entity.CustomerOrder;
+import com.example.productmanager.entity.CustomerOrderItem;
+import com.example.productmanager.entity.OrderStatus;
 import com.example.productmanager.entity.Product;
 import com.example.productmanager.entity.ProductCategory;
 import com.example.productmanager.exception.ConflictException;
@@ -74,6 +79,7 @@ public class ProductService {
 		return productRepository.save(sanitizedProduct);
 	}
 
+	@Transactional
 	public Product updateProduct(Long id, Product request) {
 		Product existing = getProductById(id);
 		Product sanitizedRequest = normalizeProduct(request);
@@ -86,14 +92,55 @@ public class ProductService {
 		existing.setUnitVi(sanitizedRequest.getUnitVi());
 		existing.setUnitEn(sanitizedRequest.getUnitEn());
 		existing.setExpiryDate(sanitizedRequest.getExpiryDate());
-		return productRepository.save(existing);
+		productRepository.save(existing);
+
+		List<CustomerOrderItem> affectedItems = customerOrderRepository.findItemsByProductId(id);
+		for (CustomerOrderItem item : affectedItems) {
+			if (item == null || item.getQuantity() == null) {
+				continue;
+			}
+			item.setUnitPrice(sanitizedRequest.getPrice());
+			BigDecimal newLineTotal = sanitizedRequest.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+			item.setLineTotal(newLineTotal);
+
+			CustomerOrder order = item.getOrder();
+			if (order != null) {
+				BigDecimal total = order.getItems() == null ? BigDecimal.ZERO
+						: order.getItems().stream()
+								.filter(Objects::nonNull)
+								.map(itemValue -> itemValue.getLineTotal() == null ? BigDecimal.ZERO : itemValue.getLineTotal())
+								.reduce(BigDecimal.ZERO, (left, right) -> left.add(right));
+				order.setTotalAmount(total);
+				customerOrderRepository.save(order);
+			}
+		}
+
+		return existing;
 	}
 
+	@Transactional
 	public void deleteProduct(Long id) {
-		if (customerOrderRepository.existsOrderItemByProductId(id)) {
-			throw new ConflictException(msg("err.product.deleteConflict"));
-		}
 		Product existing = getProductById(id);
+		List<CustomerOrder> relatedOrders = customerOrderRepository.findOrdersByProductId(id);
+		for (CustomerOrder order : relatedOrders) {
+			if (order == null) {
+				continue;
+			}
+			if (order.getStatus() != OrderStatus.CANCELLED) {
+				order.setStatus(OrderStatus.CANCELLED);
+			}
+			if (order.getItems() != null) {
+				order.getItems().removeIf(item -> item != null && item.getProduct() != null && id.equals(item.getProduct().getId()));
+				BigDecimal total = order.getItems().stream()
+						.filter(Objects::nonNull)
+						.map(itemValue -> itemValue.getLineTotal() == null ? BigDecimal.ZERO : itemValue.getLineTotal())
+						.reduce(BigDecimal.ZERO, (left, right) -> left.add(right));
+				order.setTotalAmount(total);
+				customerOrderRepository.save(order);
+			}
+		}
+		customerOrderRepository.deleteOrderItemsByProductId(id);
+
 		try {
 			productRepository.delete(existing);
 			productRepository.flush();

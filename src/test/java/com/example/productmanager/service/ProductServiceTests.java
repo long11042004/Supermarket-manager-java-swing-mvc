@@ -1,8 +1,10 @@
 package com.example.productmanager.service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -13,6 +15,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.springframework.context.i18n.LocaleContextHolder;
 
+import com.example.productmanager.entity.CustomerOrder;
+import com.example.productmanager.entity.CustomerOrderItem;
+import com.example.productmanager.entity.OrderStatus;
 import com.example.productmanager.entity.Product;
 import com.example.productmanager.entity.ProductCategory;
 import com.example.productmanager.repository.CustomerOrderRepository;
@@ -126,5 +131,103 @@ class ProductServiceTests {
         } finally {
             LocaleContextHolder.setLocale(originalLocale);
         }
+    }
+
+    @Test
+    void deleteProductShouldCancelRelatedOrdersAndRemoveItemReferences() {
+        ProductRepository productRepository = mock(ProductRepository.class);
+        CustomerOrderRepository customerOrderRepository = mock(CustomerOrderRepository.class);
+        ProductService productService = new ProductService(productRepository, customerOrderRepository);
+
+        Product product = Product.builder()
+                .id(10L)
+                .nameVi("Sữa tươi")
+                .category(ProductCategory.SUA)
+                .price(new BigDecimal("42000"))
+                .quantity(10)
+                .unitVi("Hộp")
+                .build();
+
+        CustomerOrderItem item = CustomerOrderItem.builder()
+                .product(product)
+                .quantity(2)
+                .unitPrice(new BigDecimal("42000"))
+                .lineTotal(new BigDecimal("84000"))
+                .build();
+
+        CustomerOrder order = CustomerOrder.builder()
+                .id(100L)
+                .status(OrderStatus.PENDING)
+                .items(new ArrayList<>(List.of(item)))
+                .totalAmount(new BigDecimal("84000"))
+                .build();
+        item.setOrder(order);
+
+        when(productRepository.findById(10L)).thenReturn(Optional.of(product));
+        when(customerOrderRepository.findOrdersByProductId(10L)).thenReturn(List.of(order));
+
+        productService.deleteProduct(10L);
+
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+        assertThat(order.getItems()).isEmpty();
+        verify(customerOrderRepository).save(order);
+        verify(productRepository).delete(product);
+    }
+
+    @Test
+    void updateProductShouldSyncOrderItemPriceAndTotal() {
+        ProductRepository productRepository = mock(ProductRepository.class);
+        CustomerOrderRepository customerOrderRepository = mock(CustomerOrderRepository.class);
+        ProductService productService = new ProductService(productRepository, customerOrderRepository);
+
+        Product existing = Product.builder()
+                .id(11L)
+                .nameVi("Sữa tươi")
+                .nameEn("Milk")
+                .category(ProductCategory.SUA)
+                .price(new BigDecimal("42000"))
+                .quantity(10)
+                .unitVi("Hộp")
+                .unitEn("Box")
+                .build();
+
+        Product updated = Product.builder()
+                .id(11L)
+                .nameVi("Sữa tươi Vinamilk")
+                .nameEn("Vinamilk Milk")
+                .category(ProductCategory.SUA)
+                .price(new BigDecimal("50000"))
+                .quantity(10)
+                .unitVi("Hộp")
+                .unitEn("Box")
+                .build();
+
+        CustomerOrderItem item = CustomerOrderItem.builder()
+                .product(existing)
+                .quantity(3)
+                .unitPrice(new BigDecimal("42000"))
+                .lineTotal(new BigDecimal("126000"))
+                .build();
+
+        CustomerOrder order = CustomerOrder.builder()
+                .id(200L)
+                .status(OrderStatus.PENDING)
+                .items(new ArrayList<>(List.of(item)))
+                .totalAmount(new BigDecimal("126000"))
+                .build();
+        item.setOrder(order);
+
+        when(productRepository.findById(11L)).thenReturn(Optional.of(existing));
+        when(customerOrderRepository.findItemsByProductId(11L)).thenReturn(List.of(item));
+        when(productRepository.save(existing)).thenReturn(existing);
+
+        Product result = productService.updateProduct(11L, updated);
+
+        assertThat(result.getPrice()).isEqualByComparingTo("50000");
+        assertThat(item.getUnitPrice()).isEqualByComparingTo("50000");
+        assertThat(item.getLineTotal()).isEqualByComparingTo("150000");
+        assertThat(order.getTotalAmount()).isEqualByComparingTo("150000");
+        verify(productRepository).save(existing);
+        verify(customerOrderRepository).save(order);
     }
 }
