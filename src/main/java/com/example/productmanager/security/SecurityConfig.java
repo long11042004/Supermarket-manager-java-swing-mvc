@@ -28,10 +28,7 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
-				.csrf(csrf -> csrf
-						.ignoringRequestMatchers("/h2-console/**"))
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/h2-console/**").permitAll()
 						.requestMatchers("/", "/login", "/logout", "/register", "/css/**", "/js/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
 						.requestMatchers("/api/**").hasAnyRole("STAFF", "MANAGER", "ADMIN")
@@ -44,8 +41,7 @@ public class SecurityConfig {
 						.clearAuthentication(true)
 						.invalidateHttpSession(true)
 						.deleteCookies(JwtService.ACCESS_TOKEN_COOKIE)
-						.logoutSuccessUrl("/login"))
-				.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
+						.logoutSuccessUrl("/login"));
 
 		return http.build();
 	}

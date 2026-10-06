@@ -56,10 +56,15 @@
 
         <div class="profile-card mt-4">
           <h3 class="section-title" th:text="#{profile.avatar}">Avatar</h3>
-          <form th:action="@{/profile/avatar}" method="post">
+          <form th:action="@{/profile/avatar}" method="post" enctype="multipart/form-data">
             <div class="mb-3">
               <label class="form-label" th:text="#{profile.avatarUrl}">Đường dẫn ảnh đại diện</label>
               <input type="url" name="avatarUrl" class="form-control" th:value="${currentUser.avatarUrl}" placeholder="https://example.com/avatar.jpg" />
+            </div>
+            <div class="mb-3">
+              <label for="avatar-file" class="form-label" th:text="#{profile.avatarFile}">Chọn ảnh từ máy</label>
+              <input id="avatar-file" type="file" name="avatarFile" class="form-control" accept="image/png,image/jpeg,image/gif" />
+              <div class="form-text" th:text="#{profile.avatarFileHelp}">Hỗ trợ JPG, PNG hoặc GIF; tối đa 5 MB.</div>
             </div>
             <button type="submit" class="btn btn-primary w-100" th:text="#{profile.updateAvatar}">Cập nhật avatar</button>
           </form>

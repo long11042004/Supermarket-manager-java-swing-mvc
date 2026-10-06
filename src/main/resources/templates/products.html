@@ -150,11 +150,11 @@
                 </div>
                 <div class="col-12">
                   <label class="form-label" th:text="#{app.deliveryAddress}">Địa chỉ giao hàng</label>
-                  <textarea name="deliveryAddress" class="form-control" rows="2" required th:text="${session.loggedInUser != null ? session.loggedInUser.address : ''}"></textarea>
+                  <textarea name="deliveryAddress" class="form-control" rows="2" required th:text="${checkoutDeliveryAddress}"></textarea>
                 </div>
                 <div class="col-md-6">
                   <label class="form-label" th:text="#{common.phone}">Số điện thoại</label>
-                  <input type="text" name="contactPhone" class="form-control" th:value="${session.loggedInUser != null ? session.loggedInUser.phoneNumber : ''}" />
+                  <input type="text" name="contactPhone" class="form-control" th:value="${checkoutContactPhone}" />
                 </div>
                 <div class="col-md-6">
                   <label class="form-label" th:text="#{common.note}">Ghi chú</label>

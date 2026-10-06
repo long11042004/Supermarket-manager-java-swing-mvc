@@ -1,9 +1,12 @@
 package com.example.productmanager.controller;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +19,7 @@ import com.example.productmanager.entity.UserActivity;
 import com.example.productmanager.lifecycle.PrototypeRequestMarker;
 import com.example.productmanager.lifecycle.SessionLifecycleBean;
 import com.example.productmanager.multilanguage.MessageResolver;
+import com.example.productmanager.service.AvatarStorageService;
 import com.example.productmanager.service.UserService;
 
 import jakarta.servlet.http.HttpSession;
@@ -27,6 +31,7 @@ import lombok.AllArgsConstructor;
 public class ProfileController extends SessionController {
 
 	private final UserService userService;
+	private final AvatarStorageService avatarStorageService;
 	private final MessageResolver messageResolver;
 	private final SessionLifecycleBean sessionLifecycleBean;
 	private final ObjectProvider<PrototypeRequestMarker> prototypeRequestMarkerProvider;
@@ -99,6 +104,7 @@ public class ProfileController extends SessionController {
 
 	@PostMapping("/avatar")
 	public String updateAvatar(@RequestParam(required = false) String avatarUrl,
+			@RequestParam(required = false) MultipartFile avatarFile,
 			HttpSession session,
 			RedirectAttributes redirectAttributes) {
 		User currentUser = getAuthenticatedUser(session);
@@ -106,8 +112,17 @@ public class ProfileController extends SessionController {
 			return "redirect:/login";
 		}
 
-		userService.updateAvatar(currentUser.getId(), avatarUrl);
-		redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.profile.avatarUpdated"));
+		try {
+			String updatedAvatarUrl = avatarFile != null && !avatarFile.isEmpty()
+					? avatarStorageService.store(avatarFile)
+					: avatarUrl;
+			userService.updateAvatar(currentUser.getId(), updatedAvatarUrl);
+			redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.profile.avatarUpdated"));
+		} catch (IllegalArgumentException ex) {
+			redirectAttributes.addFlashAttribute("errorMessage", messageResolver.msg(ex.getMessage()));
+		} catch (IOException ex) {
+			redirectAttributes.addFlashAttribute("errorMessage", messageResolver.msg("err.profile.avatarUploadFailed"));
+		}
 		return "redirect:/profile";
 	}
 

@@ -82,6 +82,14 @@ public class ProductController extends SessionController {
 		model.addAttribute("isStaff", hasPermission(session, RoleName.STAFF));
 		model.addAttribute("isCustomer", hasPermission(session, RoleName.CUSTOMER));
 		model.addAttribute("isGuest", !isAuthenticated(session));
+		User checkoutCustomer = hasPermission(session, RoleName.CUSTOMER) ? getCurrentUser(session) : null;
+		if (checkoutCustomer != null) {
+			checkoutCustomer = userService.getUserById(checkoutCustomer.getId());
+		}
+		model.addAttribute("checkoutDeliveryAddress",
+				checkoutCustomer != null && checkoutCustomer.getAddress() != null ? checkoutCustomer.getAddress() : "");
+		model.addAttribute("checkoutContactPhone",
+				checkoutCustomer != null && checkoutCustomer.getPhoneNumber() != null ? checkoutCustomer.getPhoneNumber() : "");
 		model.addAttribute("cart", getOrCreateCart(session));
 		model.addAttribute("lifecycleSessionToken", sessionLifecycleBean.getSessionToken());
 		model.addAttribute("lifecycleVisitCount", visitCount);
@@ -211,4 +219,3 @@ public class ProductController extends SessionController {
 		return cart;
 	}
 }
-
