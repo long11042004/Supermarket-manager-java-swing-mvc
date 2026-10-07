@@ -230,6 +230,12 @@
             </div>
 
             <div class="mb-3">
+              <label class="form-label" for="imageUrl" th:text="#{app.imageUrl}">URL ảnh sản phẩm</label>
+              <input id="imageUrl" type="text" class="form-control" th:field="*{imageUrl}"
+                     maxlength="255" th:placeholder="#{app.imageUrlPlaceholder}" />
+            </div>
+
+            <div class="mb-3">
               <label class="form-label" th:text="#{app.expiryDate}">Hạn sử dụng</label>
               <input type="date" class="form-control" th:field="*{expiryDate}" />
             </div>
@@ -271,16 +277,22 @@
 
           <div class="product-grid">
             <article class="product-card" th:each="item, state : ${products}">
-              <div class="product-card-media">
-                <span class="category-chip" th:text="${item.category.label}">Danh mục</span>
-                <span class="stock-badge" th:classappend="${item.quantity <= 10} ? 'low' : 'good'"
-                      th:text="${item.quantity <= 10 ? (isCustomer or isGuest ? #messages.msg('app.stockLow') : #messages.msg('app.stockInsufficient')) : (isCustomer or isGuest ? #messages.msg('app.stockAvailable') : #messages.msg('app.stockEnough'))}">In stock</span>
+              <div class="product-card-media" th:classappend="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)} ? 'has-image'">
+                <img th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
+                     class="product-card-image" th:src="${item.imageUrl}"
+                     th:alt="${@productDisplayService.displayName(item)}"
+                     loading="lazy" decoding="async" />
+                <div class="product-card-badges">
+                  <span class="category-chip" th:text="${item.category.label}">Danh mục</span>
+                  <span class="stock-badge" th:classappend="${item.quantity <= 10} ? 'low' : 'good'"
+                        th:text="${item.quantity <= 10 ? (isCustomer or isGuest ? #messages.msg('app.stockLow') : #messages.msg('app.stockInsufficient')) : (isCustomer or isGuest ? #messages.msg('app.stockAvailable') : #messages.msg('app.stockEnough'))}">In stock</span>
+                </div>
               </div>
 
               <div class="product-card-body">
-                <div class="product-name" th:text="${item.displayName}">Tên sản phẩm</div>
+                <div class="product-name" th:text="${@productDisplayService.displayName(item)}">Tên sản phẩm</div>
                 <div class="product-meta">
-                  <span th:text="${item.displayUnit != null ? item.displayUnit : #messages.msg('app.unitDefault')}">Unit</span>
+                  <span th:text="${@productDisplayService.displayUnit(item) != null ? @productDisplayService.displayUnit(item) : #messages.msg('app.unitDefault')}">Unit</span>
                   <span th:text="${item.expiryDate != null ? #temporals.format(item.expiryDate, 'dd/MM/yyyy') : '—'}">—</span>
                 </div>
                 <div class="product-price" th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(item.price)}">0 ₫</div>

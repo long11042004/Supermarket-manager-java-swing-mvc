@@ -14,5 +14,6 @@ public record ProductResponseDTO(
 		Integer quantity,
 		String unitVi,
 		String unitEn,
+		String imageUrl,
 		LocalDate expiryDate) {
 }

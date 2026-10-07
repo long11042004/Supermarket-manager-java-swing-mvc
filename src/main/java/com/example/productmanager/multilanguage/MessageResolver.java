@@ -1,5 +1,7 @@
 package com.example.productmanager.multilanguage;
 
+import java.util.Locale;
+
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
@@ -13,6 +15,11 @@ public final class MessageResolver {
 	private final MessageSource messageSource;
 
 	public final String msg(String key, Object... args) {
-		return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
+		Locale locale = LocaleContextHolder.getLocaleContext() == null
+				? Locale.forLanguageTag("vi-VN")
+				: LocaleContextHolder.getLocale();
+		return messageSource.getMessage(key, args, locale);
+
+		//return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
 	}
 }

@@ -91,6 +91,7 @@ public class ProductService {
 		existing.setQuantity(sanitizedRequest.getQuantity());
 		existing.setUnitVi(sanitizedRequest.getUnitVi());
 		existing.setUnitEn(sanitizedRequest.getUnitEn());
+		existing.setImageUrl(sanitizedRequest.getImageUrl());
 		existing.setExpiryDate(sanitizedRequest.getExpiryDate());
 		productRepository.save(existing);
 
@@ -169,6 +170,7 @@ public class ProductService {
 		product.setNameEn(normalizeText(product.getNameEn()));
 		product.setUnitVi(normalizeText(product.getUnitVi()));
 		product.setUnitEn(normalizeText(product.getUnitEn()));
+		product.setImageUrl(normalizeText(product.getImageUrl()));
 		if (product.getExpiryDate() != null && product.getExpiryDate().isBefore(LocalDate.now().minusYears(20))) {
 			throw new IllegalArgumentException(msg("err.product.expiryTooOld"));
 		}
@@ -189,6 +191,9 @@ public class ProductService {
 		}
 		if (!enName.isEmpty() && enName.length() > 120) {
 			throw new IllegalArgumentException(msg("err.product.nameTooLong"));
+		}
+		if (product.getImageUrl() != null && product.getImageUrl().length() > 255) {
+			throw new IllegalArgumentException(msg("err.product.imageUrlTooLong"));
 		}
 		if (product.getCategory() == null) {
 			throw new IllegalArgumentException(msg("err.product.categoryRequired"));
@@ -245,6 +250,7 @@ public class ProductService {
 				case "err.product.empty" -> "Product data must not be empty";
 				case "err.product.nameRequired" -> "Product name is required";
 				case "err.product.nameTooLong" -> "Product name must not exceed 120 characters";
+				case "err.product.imageUrlTooLong" -> "Product image URL must not exceed 255 characters";
 				case "err.product.categoryRequired" -> "Product category is required";
 				case "err.product.pricePositive" -> "Product price must be greater than 0";
 				case "err.product.priceInvalidScale" -> "Product price can have at most 2 decimal places";

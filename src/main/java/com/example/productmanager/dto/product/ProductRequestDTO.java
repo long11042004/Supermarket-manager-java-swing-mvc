@@ -36,5 +36,8 @@ public record ProductRequestDTO(
 		@Size(max = 30, message = "{err.product.unitTooLong}")
 		String unitEn,
 
+		@Size(max = 255, message = "{err.product.imageUrlTooLong}")
+		String imageUrl,
+
 		LocalDate expiryDate) {
 }

@@ -72,6 +72,10 @@ public class Product {
 	@Column(length = 30)
 	private String unitEn;
 
+	@Size(max = 255, message = "{err.product.imageUrlTooLong}")
+	@Column(name = "image_url", length = 255)
+	private String imageUrl;
+
 	private LocalDate expiryDate;
 
 	@Transient

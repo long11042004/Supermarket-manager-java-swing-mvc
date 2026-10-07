@@ -45,5 +45,8 @@ public class ProductFormDTO {
 	@Size(max = 30, message = "{err.product.unitTooLong}")
 	private String unitEn;
 
+	@Size(max = 255, message = "{err.product.imageUrlTooLong}")
+	private String imageUrl;
+
 	private LocalDate expiryDate;
 }

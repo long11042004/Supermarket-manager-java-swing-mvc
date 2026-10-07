@@ -19,6 +19,7 @@ import com.example.productmanager.dto.product.ProductRequestDTO;
 import com.example.productmanager.dto.product.ProductResponseDTO;
 import com.example.productmanager.entity.Product;
 import com.example.productmanager.mapper.ProductMapper;
+import com.example.productmanager.service.ProductDisplayService;
 import com.example.productmanager.service.ProductService;
 
 import jakarta.validation.Valid;
@@ -32,11 +33,12 @@ public class ProductRestController {
 
 	private final ProductService productService;
 	private final ProductMapper productMapper;
+	private final ProductDisplayService productDisplayService;
 
 	@GetMapping("/{id}")
 	public ProductResponseDTO getProductById(@PathVariable Long id) {
 		Product product = productService.getProductById(id);
-		return productMapper.toResponse(product);
+		return toResponse(product);
 	}
 
 	@PostMapping
@@ -44,14 +46,14 @@ public class ProductRestController {
 	@PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
 	public ProductResponseDTO createProduct(@Valid @RequestBody ProductRequestDTO request) {
 		Product created = productService.createProduct(productMapper.toEntity(request));
-		return productMapper.toResponse(created);
+		return toResponse(created);
 	}
 
 	@PutMapping("/{id}")
 	@PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
 	public ProductResponseDTO updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequestDTO request) {
 		Product updated = productService.updateProduct(id, productMapper.toEntity(request));
-		return productMapper.toResponse(updated);
+		return toResponse(updated);
 	}
 
 	@DeleteMapping("/{id}")
@@ -65,7 +67,7 @@ public class ProductRestController {
 	public List<ProductResponseDTO> filterByCategory(@RequestParam String value) {
 		return productService.filterByCategory(value)
 				.stream()
-				.map(productMapper::toResponse)
+				.map(this::toResponse)
 				.toList();
 	}
 
@@ -73,7 +75,22 @@ public class ProductRestController {
 	public List<ProductResponseDTO> getLowStock(@RequestParam(defaultValue = "10") Integer threshold) {
 		return productService.getLowStockProducts(threshold)
 				.stream()
-				.map(productMapper::toResponse)
+				.map(this::toResponse)
 				.toList();
+	}
+
+	private ProductResponseDTO toResponse(Product product) {
+		ProductResponseDTO response = productMapper.toResponse(product);
+		return new ProductResponseDTO(
+				response.id(),
+				response.nameVi(),
+				productDisplayService.englishName(product),
+				response.category(),
+				response.price(),
+				response.quantity(),
+				response.unitVi(),
+				productDisplayService.englishUnit(product),
+				response.imageUrl(),
+				response.expiryDate());
 	}
 }

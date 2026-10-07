@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.productmanager.entity.CartItem;
@@ -13,12 +14,20 @@ import com.example.productmanager.entity.Product;
 import com.example.productmanager.multilanguage.MessageResolver;
 import com.example.productmanager.view.CartView;
 
-import lombok.AllArgsConstructor;
-
 @Service
-@AllArgsConstructor
 public class CartService {
 	private final MessageResolver messageResolver;
+	private final ProductDisplayService productDisplayService;
+
+	@Autowired
+	public CartService(MessageResolver messageResolver, ProductDisplayService productDisplayService) {
+		this.messageResolver = messageResolver;
+		this.productDisplayService = productDisplayService;
+	}
+
+	public CartService(MessageResolver messageResolver) {
+		this(messageResolver, new ProductDisplayService(new GoogleTranslateService()));
+	}
 
 	public CartView addItem(CartView cart, Product product) {
 		return addItem(cart, product, 1);
@@ -54,7 +63,7 @@ public class CartService {
 
 			indexedItems.put(product.getId(), new CartItem(
 					product.getId(),
-					product.getDisplayName(),
+					productDisplayService.displayName(product),
 					product.getPrice(),
 					quantityLabel(product),
 					newQuantity));
@@ -109,9 +118,8 @@ public class CartService {
 	}
 
 	private String quantityLabel(Product product) {
-		String unit = product.getDisplayUnit();
+		String unit = productDisplayService.displayUnit(product);
 		return unit == null || unit.isBlank() ? "sp" : unit;
 	}
 
-	
 }

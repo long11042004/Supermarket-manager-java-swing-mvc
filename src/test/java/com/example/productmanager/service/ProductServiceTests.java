@@ -40,6 +40,7 @@ class ProductServiceTests {
                 .quantity(120)
                 .unitVi("Hộp")
                 .unitEn("Box")
+                .imageUrl(" /images/milk.jpg ")
                 .build();
 
         Product featuredTwo = Product.builder()
@@ -126,10 +127,28 @@ class ProductServiceTests {
 
             assertThat(saved).isSameAs(localizedProduct);
             assertThat(saved.getNameVi()).isEqualTo("Sữa tươi Vinamilk");
+            assertThat(saved.getImageUrl()).isEqualTo("/images/milk.jpg");
             assertThat(saved.getDisplayName()).isEqualTo("Vinamilk fresh milk");
             verify(productRepository).save(localizedProduct);
         } finally {
             LocaleContextHolder.setLocale(originalLocale);
+        }
+
+        @Test
+        void createProductShouldRejectImageUrlLongerThan255Characters() {
+            ProductRepository productRepository = mock(ProductRepository.class);
+            CustomerOrderRepository customerOrderRepository = mock(CustomerOrderRepository.class);
+            ProductService productService = new ProductService(productRepository, customerOrderRepository);
+            Product product = Product.builder()
+                    .nameVi("Sữa tươi")
+                    .category(ProductCategory.SUA)
+                    .price(new BigDecimal("42000"))
+                    .quantity(10)
+                    .imageUrl("x".repeat(256))
+                    .build();
+
+            assertThrows(IllegalArgumentException.class, () -> productService.createProduct(product));
+            verify(productRepository, never()).save(product);
         }
     }
 
@@ -189,6 +208,7 @@ class ProductServiceTests {
                 .quantity(10)
                 .unitVi("Hộp")
                 .unitEn("Box")
+                .imageUrl("/images/old-milk.jpg")
                 .build();
 
         Product updated = Product.builder()
@@ -200,6 +220,7 @@ class ProductServiceTests {
                 .quantity(10)
                 .unitVi("Hộp")
                 .unitEn("Box")
+                .imageUrl("/images/new-milk.jpg")
                 .build();
 
         CustomerOrderItem item = CustomerOrderItem.builder()
@@ -224,6 +245,7 @@ class ProductServiceTests {
         Product result = productService.updateProduct(11L, updated);
 
         assertThat(result.getPrice()).isEqualByComparingTo("50000");
+        assertThat(result.getImageUrl()).isEqualTo("/images/new-milk.jpg");
         assertThat(item.getUnitPrice()).isEqualByComparingTo("50000");
         assertThat(item.getLineTotal()).isEqualByComparingTo("150000");
         assertThat(order.getTotalAmount()).isEqualByComparingTo("150000");
