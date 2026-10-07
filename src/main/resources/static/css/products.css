@@ -249,9 +249,9 @@ body {
 }
 
 .stock-badge.good {
-  background: rgba(16, 185, 129, 0.12);
+  background: #d1fae5;
   color: #047857;
-  border-color: rgba(16, 185, 129, 0.18);
+  border-color: #a7f3d0;
 }
 
 .stock-badge.low {

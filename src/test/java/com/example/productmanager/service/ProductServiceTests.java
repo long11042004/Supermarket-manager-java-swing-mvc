@@ -40,7 +40,6 @@ class ProductServiceTests {
                 .quantity(120)
                 .unitVi("Hộp")
                 .unitEn("Box")
-                .imageUrl(" /images/milk.jpg ")
                 .build();
 
         Product featuredTwo = Product.builder()
@@ -119,6 +118,7 @@ class ProductServiceTests {
                     .quantity(120)
                     .unitVi("Hộp")
                     .unitEn("Box")
+                    .imageUrl(" /images/milk.jpg ")
                     .build();
 
             when(productRepository.save(localizedProduct)).thenReturn(localizedProduct);
@@ -133,23 +133,23 @@ class ProductServiceTests {
         } finally {
             LocaleContextHolder.setLocale(originalLocale);
         }
+    }
 
-        @Test
-        void createProductShouldRejectImageUrlLongerThan255Characters() {
-            ProductRepository productRepository = mock(ProductRepository.class);
-            CustomerOrderRepository customerOrderRepository = mock(CustomerOrderRepository.class);
-            ProductService productService = new ProductService(productRepository, customerOrderRepository);
-            Product product = Product.builder()
-                    .nameVi("Sữa tươi")
-                    .category(ProductCategory.SUA)
-                    .price(new BigDecimal("42000"))
-                    .quantity(10)
-                    .imageUrl("x".repeat(256))
-                    .build();
+    @Test
+    void createProductShouldRejectImageUrlLongerThan255Characters() {
+        ProductRepository productRepository = mock(ProductRepository.class);
+        CustomerOrderRepository customerOrderRepository = mock(CustomerOrderRepository.class);
+        ProductService productService = new ProductService(productRepository, customerOrderRepository);
+        Product product = Product.builder()
+                .nameVi("Sữa tươi")
+                .category(ProductCategory.SUA)
+                .price(new BigDecimal("42000"))
+                .quantity(10)
+                .imageUrl("x".repeat(256))
+                .build();
 
-            assertThrows(IllegalArgumentException.class, () -> productService.createProduct(product));
-            verify(productRepository, never()).save(product);
-        }
+        assertThrows(IllegalArgumentException.class, () -> productService.createProduct(product));
+        verify(productRepository, never()).save(product);
     }
 
     @Test

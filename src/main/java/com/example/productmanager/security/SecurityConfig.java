@@ -29,10 +29,51 @@ public class SecurityConfig {
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/", "/login", "/logout", "/register", "/css/**", "/js/**").permitAll()
+						.requestMatchers(
+								"/",
+								"/login",
+								"/logout",
+								"/register",
+								"/error",
+								"/favicon.ico",
+								"/css/**",
+								"/js/**",
+								"/images/**",
+								"/webjars/**",
+								"/uploads/avatars/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-						.requestMatchers("/api/**").hasAnyRole("STAFF", "MANAGER", "ADMIN")
-						.anyRequest().permitAll())
+						.requestMatchers(HttpMethod.GET, "/products", "/products/").permitAll()
+						.requestMatchers(HttpMethod.HEAD, "/products", "/products/").permitAll()
+						.requestMatchers(HttpMethod.POST,
+								"/products/*/cart",
+								"/products/cart/**",
+								"/orders/checkout").permitAll()
+						.requestMatchers(HttpMethod.GET, "/products/*/edit").hasAnyRole("MANAGER", "ADMIN")
+						.requestMatchers(HttpMethod.HEAD, "/products/*/edit").hasAnyRole("MANAGER", "ADMIN")
+						.requestMatchers(HttpMethod.POST,
+								"/products",
+								"/products/*/update",
+								"/products/*/delete").hasAnyRole("MANAGER", "ADMIN")
+						.requestMatchers("/products/**").denyAll()
+						.requestMatchers("/dashboard", "/customer-dashboard", "/profile", "/profile/**")
+						.hasAnyRole("ADMIN", "MANAGER", "STAFF", "CUSTOMER")
+						.requestMatchers("/users", "/users/**", "/reports", "/reports/**")
+						.hasAnyRole("MANAGER", "ADMIN")
+						.requestMatchers(HttpMethod.POST, "/api/products", "/api/products/**")
+						.hasAnyRole("MANAGER", "ADMIN")
+						.requestMatchers(HttpMethod.PUT, "/api/products", "/api/products/**")
+						.hasAnyRole("MANAGER", "ADMIN")
+						.requestMatchers(HttpMethod.DELETE, "/api/products", "/api/products/**")
+						.hasAnyRole("MANAGER", "ADMIN")
+						.requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**")
+						.hasAnyRole("STAFF", "MANAGER", "ADMIN")
+						.requestMatchers(HttpMethod.HEAD, "/api/products", "/api/products/**")
+						.hasAnyRole("STAFF", "MANAGER", "ADMIN")
+						.requestMatchers("/api/reports", "/api/reports/**").hasAnyRole("MANAGER", "ADMIN")
+						.requestMatchers(HttpMethod.POST, "/api/orders/**").hasAnyRole("STAFF", "MANAGER", "ADMIN")
+						.requestMatchers("/api/**").denyAll()
+						.requestMatchers("/orders", "/orders/**").hasRole("CUSTOMER")
+						.anyRequest().denyAll())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
 				.authenticationProvider(authenticationProvider())
 				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
