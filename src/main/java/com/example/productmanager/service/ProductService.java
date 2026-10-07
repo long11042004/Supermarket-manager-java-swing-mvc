@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.validation.Validator;
 import com.example.productmanager.entity.CustomerOrder;
 import com.example.productmanager.entity.CustomerOrderItem;
 import com.example.productmanager.entity.OrderStatus;
@@ -29,18 +30,17 @@ public class ProductService {
 	private final ProductRepository productRepository;
 	private final CustomerOrderRepository customerOrderRepository;
 	private final MessageResolver messageResolver;
+	private final Validator validator;
 
 	@Autowired
 	public ProductService(ProductRepository productRepository,
 			CustomerOrderRepository customerOrderRepository,
-			MessageResolver messageResolver) {
+			MessageResolver messageResolver,
+			Validator validator) {
 		this.productRepository = productRepository;
 		this.customerOrderRepository = customerOrderRepository;
 		this.messageResolver = messageResolver;
-	}
-
-	public ProductService(ProductRepository productRepository, CustomerOrderRepository customerOrderRepository) {
-		this(productRepository, customerOrderRepository, null);
+		this.validator = validator;
 	}
 
 	public List<Product> getProducts(String keyword) {
@@ -181,43 +181,15 @@ public class ProductService {
 		if (product == null) {
 			throw new IllegalArgumentException(msg("err.product.empty"));
 		}
-		String viName = product.getNameVi() == null ? "" : product.getNameVi().trim();
-		String enName = product.getNameEn() == null ? "" : product.getNameEn().trim();
-		if (viName.isEmpty() && enName.isEmpty()) {
-			throw new IllegalArgumentException(msg("err.product.nameRequired"));
-		}
-		if (!viName.isEmpty() && viName.length() > 120) {
-			throw new IllegalArgumentException(msg("err.product.nameTooLong"));
-		}
-		if (!enName.isEmpty() && enName.length() > 120) {
-			throw new IllegalArgumentException(msg("err.product.nameTooLong"));
-		}
-		if (product.getImageUrl() != null && product.getImageUrl().length() > 255) {
-			throw new IllegalArgumentException(msg("err.product.imageUrlTooLong"));
-		}
-		if (product.getCategory() == null) {
-			throw new IllegalArgumentException(msg("err.product.categoryRequired"));
-		}
-		if (product.getPrice() == null || product.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
-			throw new IllegalArgumentException(msg("err.product.pricePositive"));
-		}
-		if (product.getPrice().scale() > 2) {
-			throw new IllegalArgumentException(msg("err.product.priceInvalidScale"));
-		}
-		if (product.getPrice().compareTo(new BigDecimal("1000000000000")) > 0) {
-			throw new IllegalArgumentException(msg("err.product.priceTooLarge"));
-		}
-		if (product.getQuantity() == null || product.getQuantity() < 0) {
-			throw new IllegalArgumentException(msg("err.product.quantityInvalid"));
-		}
-		if (product.getQuantity() > 1000000) {
-			throw new IllegalArgumentException(msg("err.product.quantityTooLarge"));
-		}
-		validateUnit(product.getUnitVi());
-		validateUnit(product.getUnitEn());
-		if (product.getExpiryDate() != null && product.getExpiryDate().isBefore(LocalDate.now())) {
-			throw new IllegalArgumentException(msg("err.product.expiryPast"));
-		}
+		validator.validate(product).stream()
+				.findFirst()
+				.ifPresent(violation -> {
+					String messageTemplate = violation.getMessageTemplate();
+					String messageKey = messageTemplate.startsWith("{") && messageTemplate.endsWith("}")
+							? messageTemplate.substring(1, messageTemplate.length() - 1)
+							: messageTemplate;
+					throw new IllegalArgumentException(msg(messageKey));
+				});
 	}
 
 	private String normalizeText(String value) {
@@ -226,22 +198,6 @@ public class ProductService {
 		}
 		String trimmed = value.trim();
 		return trimmed.isEmpty() ? null : trimmed;
-	}
-
-	private void validateUnit(String unit) {
-		if (unit == null) {
-			return;
-		}
-		String normalized = unit.trim();
-		if (normalized.isEmpty()) {
-			throw new IllegalArgumentException(msg("err.product.unitBlank"));
-		}
-		if (normalized.length() > 30) {
-			throw new IllegalArgumentException(msg("err.product.unitTooLong"));
-		}
-		if (!normalized.matches("[A-Za-zÀ-ỹ0-9/().% -]{1,30}")) {
-			throw new IllegalArgumentException(msg("err.product.unitInvalid"));
-		}
 	}
 
 	private String msg(String key, Object... args) {

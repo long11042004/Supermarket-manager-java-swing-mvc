@@ -15,10 +15,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -47,6 +52,7 @@ public class Product {
 	@Column(length = 120)
 	private String nameVi;
 
+	@Size(max = 120, message = "{err.product.nameTooLong}")
 	@Column(length = 120)
 	private String nameEn;
 
@@ -57,18 +63,24 @@ public class Product {
 
 	@NotNull(message = "{err.product.pricePositive}")
 	@DecimalMin(value = "0.0", inclusive = false, message = "{err.product.pricePositive}")
+	@DecimalMax(value = "1000000000000", message = "{err.product.priceTooLarge}")
+	@Digits(integer = Integer.MAX_VALUE, fraction = 2, message = "{err.product.priceInvalidScale}")
 	@Column(nullable = false, precision = 12, scale = 2)
 	private BigDecimal price;
 
 	@NotNull(message = "{err.product.quantityInvalid}")
 	@Min(value = 0, message = "{err.product.quantityInvalid}")
+	@Max(value = 1000000, message = "{err.product.quantityTooLarge}")
 	@Column(nullable = false)
 	private Integer quantity;
 
 	@Size(max = 30, message = "{err.product.unitTooLong}")
+	@Pattern(regexp = "[A-Za-zÀ-ỹ0-9/().% -]{1,30}", message = "{err.product.unitInvalid}")
 	@Column(length = 30)
 	private String unitVi;
 
+	@Size(max = 30, message = "{err.product.unitTooLong}")
+	@Pattern(regexp = "[A-Za-zÀ-ỹ0-9/().% -]{1,30}", message = "{err.product.unitInvalid}")
 	@Column(length = 30)
 	private String unitEn;
 
@@ -76,6 +88,7 @@ public class Product {
 	@Column(name = "image_url", length = 255)
 	private String imageUrl;
 
+	@FutureOrPresent(message = "{err.product.expiryPast}")
 	private LocalDate expiryDate;
 
 	@Transient

@@ -1,5 +1,7 @@
 package com.example.productmanager.lifecycle;
 
+import lombok.Getter;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -10,6 +12,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 
 @Component
+@Getter
 @Scope("prototype")
 public class PrototypeRequestMarker {
 
@@ -25,13 +28,5 @@ public class PrototypeRequestMarker {
 	@PreDestroy
 	public void cleanup() {
 		// Prototype beans are not automatically destroyed by Spring container.
-	}
-
-	public String getMarkerId() {
-		return markerId;
-	}
-
-	public LocalDateTime getCreatedAt() {
-		return createdAt;
 	}
 }

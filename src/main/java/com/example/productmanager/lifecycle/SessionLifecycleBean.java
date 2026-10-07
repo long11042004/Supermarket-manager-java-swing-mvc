@@ -12,14 +12,20 @@ import org.springframework.web.context.WebApplicationContext;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 
+import lombok.Getter;
+
 @Component
 @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class SessionLifecycleBean implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
+	@Getter 
 	private String sessionToken;
+
+	@Getter
 	private LocalDateTime createdAt;
+
 	private int visitCount;
 
 	@PostConstruct
@@ -37,13 +43,5 @@ public class SessionLifecycleBean implements Serializable {
 	public int increaseAndGetVisitCount() {
 		visitCount++;
 		return visitCount;
-	}
-
-	public String getSessionToken() {
-		return sessionToken;
-	}
-
-	public LocalDateTime getCreatedAt() {
-		return createdAt;
 	}
 }

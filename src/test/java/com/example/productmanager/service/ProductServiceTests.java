@@ -13,8 +13,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.context.i18n.LocaleContextHolder;
 
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import com.example.productmanager.entity.CustomerOrder;
 import com.example.productmanager.entity.CustomerOrderItem;
 import com.example.productmanager.entity.OrderStatus;
@@ -23,13 +29,33 @@ import com.example.productmanager.entity.ProductCategory;
 import com.example.productmanager.repository.CustomerOrderRepository;
 import com.example.productmanager.repository.ProductRepository;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ProductServiceTests {
+    private ValidatorFactory validatorFactory;
+    private Validator validator;
+
+    @BeforeAll
+    void createValidator() {
+        validatorFactory = Validation.buildDefaultValidatorFactory();
+        validator = validatorFactory.getValidator();
+    }
+
+    @AfterAll
+    void closeValidator() {
+        validatorFactory.close();
+    }
+
+    private ProductService createProductService(
+            ProductRepository productRepository,
+            CustomerOrderRepository customerOrderRepository) {
+        return new ProductService(productRepository, customerOrderRepository, null, validator);
+    }
 
     @Test
     void shouldReturnOnlyFeaturedProductsWithinRequestedLimit() {
         ProductRepository productRepository = mock(ProductRepository.class);
         CustomerOrderRepository customerOrderRepository = mock(CustomerOrderRepository.class);
-        ProductService productService = new ProductService(productRepository, customerOrderRepository);
+        ProductService productService = createProductService(productRepository, customerOrderRepository);
 
         Product featuredOne = Product.builder()
                 .id(1L)
@@ -66,7 +92,7 @@ class ProductServiceTests {
     void createProductShouldRejectInvalidDataBeforeSave() {
         ProductRepository productRepository = mock(ProductRepository.class);
         CustomerOrderRepository customerOrderRepository = mock(CustomerOrderRepository.class);
-        ProductService productService = new ProductService(productRepository, customerOrderRepository);
+        ProductService productService = createProductService(productRepository, customerOrderRepository);
 
         Product invalidProduct = Product.builder()
                 .nameVi("   ")
@@ -85,7 +111,7 @@ class ProductServiceTests {
     void createProductShouldRejectUnexpectedUnitAndPastExpiryDate() {
         ProductRepository productRepository = mock(ProductRepository.class);
         CustomerOrderRepository customerOrderRepository = mock(CustomerOrderRepository.class);
-        ProductService productService = new ProductService(productRepository, customerOrderRepository);
+        ProductService productService = createProductService(productRepository, customerOrderRepository);
 
         Product invalidProduct = Product.builder()
                 .nameVi("Sữa tươi")
@@ -105,7 +131,7 @@ class ProductServiceTests {
     void createProductShouldAcceptLocalizedNameAndUnitFields() {
         ProductRepository productRepository = mock(ProductRepository.class);
         CustomerOrderRepository customerOrderRepository = mock(CustomerOrderRepository.class);
-        ProductService productService = new ProductService(productRepository, customerOrderRepository);
+        ProductService productService = createProductService(productRepository, customerOrderRepository);
         Locale originalLocale = LocaleContextHolder.getLocale();
         LocaleContextHolder.setLocale(Locale.ENGLISH);
 
@@ -139,7 +165,7 @@ class ProductServiceTests {
     void createProductShouldRejectImageUrlLongerThan255Characters() {
         ProductRepository productRepository = mock(ProductRepository.class);
         CustomerOrderRepository customerOrderRepository = mock(CustomerOrderRepository.class);
-        ProductService productService = new ProductService(productRepository, customerOrderRepository);
+        ProductService productService = createProductService(productRepository, customerOrderRepository);
         Product product = Product.builder()
                 .nameVi("Sữa tươi")
                 .category(ProductCategory.SUA)
@@ -153,10 +179,35 @@ class ProductServiceTests {
     }
 
     @Test
+    void createProductShouldRejectInvalidPriceScaleAndExcessiveQuantity() {
+        ProductRepository productRepository = mock(ProductRepository.class);
+        CustomerOrderRepository customerOrderRepository = mock(CustomerOrderRepository.class);
+        ProductService productService = createProductService(productRepository, customerOrderRepository);
+
+        Product invalidPrice = Product.builder()
+                .nameVi("Sữa tươi")
+                .category(ProductCategory.SUA)
+                .price(new BigDecimal("42000.123"))
+                .quantity(10)
+                .build();
+        Product invalidQuantity = Product.builder()
+                .nameVi("Sữa tươi")
+                .category(ProductCategory.SUA)
+                .price(new BigDecimal("42000"))
+                .quantity(1000001)
+                .build();
+
+        assertThrows(IllegalArgumentException.class, () -> productService.createProduct(invalidPrice));
+        assertThrows(IllegalArgumentException.class, () -> productService.createProduct(invalidQuantity));
+        verify(productRepository, never()).save(invalidPrice);
+        verify(productRepository, never()).save(invalidQuantity);
+    }
+
+    @Test
     void deleteProductShouldCancelRelatedOrdersAndRemoveItemReferences() {
         ProductRepository productRepository = mock(ProductRepository.class);
         CustomerOrderRepository customerOrderRepository = mock(CustomerOrderRepository.class);
-        ProductService productService = new ProductService(productRepository, customerOrderRepository);
+        ProductService productService = createProductService(productRepository, customerOrderRepository);
 
         Product product = Product.builder()
                 .id(10L)
@@ -197,7 +248,7 @@ class ProductServiceTests {
     void updateProductShouldSyncOrderItemPriceAndTotal() {
         ProductRepository productRepository = mock(ProductRepository.class);
         CustomerOrderRepository customerOrderRepository = mock(CustomerOrderRepository.class);
-        ProductService productService = new ProductService(productRepository, customerOrderRepository);
+        ProductService productService = createProductService(productRepository, customerOrderRepository);
 
         Product existing = Product.builder()
                 .id(11L)
