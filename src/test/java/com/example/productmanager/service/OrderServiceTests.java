@@ -9,7 +9,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -38,6 +40,7 @@ class OrderServiceTests {
 	private final UserRepository userRepository = org.mockito.Mockito.mock(UserRepository.class);
 	private final UserService userService = org.mockito.Mockito.mock(UserService.class);
 	private final ApplicationEventPublisher applicationEventPublisher = org.mockito.Mockito.mock(ApplicationEventPublisher.class);
+	private final PromotionService promotionService = org.mockito.Mockito.mock(PromotionService.class);
 	private final MessageResolver messageResolver = new MessageResolver(createMessageSource());
 	private final OrderService orderService = new OrderService(
 			customerOrderRepository,
@@ -45,7 +48,8 @@ class OrderServiceTests {
 			userRepository,
 			userService,
 			messageResolver,
-			applicationEventPublisher);
+			applicationEventPublisher,
+			promotionService);
 	private final CartService cartService = new CartService(messageResolver);
 
 	private ResourceBundleMessageSource createMessageSource() {
@@ -54,6 +58,17 @@ class OrderServiceTests {
 		source.setBasename("messages");
 		source.setDefaultEncoding("UTF-8");
 		return source;
+	}
+
+	@BeforeEach
+	void setUpPromotionQuote() {
+		when(promotionService.quote(any(BigDecimal.class), nullable(String.class)))
+				.thenAnswer(invocation -> {
+					BigDecimal subtotal = invocation.getArgument(0);
+					return new PromotionService.PromotionQuote(
+							null, null, null, BigDecimal.ZERO, null, null, BigDecimal.ZERO,
+							BigDecimal.ZERO, subtotal);
+				});
 	}
 
 	@Test
@@ -93,6 +108,37 @@ class OrderServiceTests {
 		assertEquals(8, product.getQuantity());
 		assertEquals(1, order.getItems().size());
 		verify(userService, never()).recordActivity(any(), any(), any());
+	}
+
+	@Test
+	void checkoutShouldPersistCouponAndAutomaticPromotionDiscounts() {
+		CartView cart = new CartView();
+		Product product = Product.builder()
+				.id(25L)
+				.nameVi("Gạo")
+				.price(new BigDecimal("1000"))
+				.quantity(10)
+				.build();
+		cartService.addItem(cart, product, 2);
+		cart.setCouponCode("SAVE10");
+		PromotionService.PromotionQuote quote = new PromotionService.PromotionQuote(
+				10L, "Coupon", "SAVE10", new BigDecimal("100"),
+				11L, "Auto offer", new BigDecimal("50"),
+				new BigDecimal("150"), new BigDecimal("1850"));
+		when(promotionService.quote(new BigDecimal("2000"), "SAVE10")).thenReturn(quote);
+		when(productRepository.findById(25L)).thenReturn(Optional.of(product));
+		when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		when(customerOrderRepository.save(any(CustomerOrder.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+		CustomerOrder order = orderService.checkoutAsGuest(
+				"Khách lẻ", "guest@example.com", cart, "45 Đường ABC", null, null);
+
+		assertEquals(new BigDecimal("2000"), order.getSubtotalAmount());
+		assertEquals(new BigDecimal("150"), order.getDiscountAmount());
+		assertEquals("SAVE10", order.getCouponCode());
+		assertEquals("Auto offer", order.getAutomaticPromotionName());
+		assertEquals(new BigDecimal("1850"), order.getTotalAmount());
+		verify(promotionService).recordRedemptions(quote);
 	}
 
 	@Test

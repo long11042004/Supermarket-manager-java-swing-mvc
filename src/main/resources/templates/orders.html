@@ -50,6 +50,16 @@
         </div>
         <div class="text-end">
           <div><span class="status-pill" th:text="#{orderStatus.__${order.status.name()}__}">PENDING</span></div>
+          <div th:if="${order.discountAmount != null and order.discountAmount.signum() > 0}" class="small text-muted">
+            <span th:text="#{promotion.subtotal}">Tạm tính</span>:
+            <span th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(order.subtotalAmount)}">0 ₫</span>
+          </div>
+          <div th:if="${order.couponCode != null}" class="small text-success" th:text="#{promotion.couponApplied(${order.couponCode})}">Mã giảm giá</div>
+          <div th:if="${order.automaticPromotionName != null}" class="small text-success" th:text="#{promotion.automaticApplied(${order.automaticPromotionName})}">Khuyến mãi tự động</div>
+          <div th:if="${order.discountAmount != null and order.discountAmount.signum() > 0}" class="small text-success">
+            <span th:text="#{promotion.totalDiscount}">Tổng giảm</span>:
+            <span th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(order.discountAmount)}">0 ₫</span>
+          </div>
           <strong th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(order.totalAmount)}">0 ₫</strong>
           <form th:if="${order.status.name() == 'PENDING' or order.status.name() == 'CONFIRMED'}"
                 th:action="@{/orders/{orderId}/cancel(orderId=${order.id})}"

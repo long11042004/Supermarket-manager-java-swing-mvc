@@ -17,6 +17,10 @@ public class CartView {
     @Setter
     private List<CartItem> items = new ArrayList<>();
 
+	@Getter
+	@Setter
+	private String couponCode;
+
     public int getItemCount() {
 		return items.stream().mapToInt(item -> item.getQuantity()).sum();
 	}

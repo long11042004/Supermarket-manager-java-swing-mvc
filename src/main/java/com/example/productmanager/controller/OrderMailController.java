@@ -70,6 +70,9 @@ public class OrderMailController {
 		context.setVariable("order", order);
 		context.setVariable("recipientName", recipientName);
 		context.setVariable("formattedTotal", formatMoney(order.getTotalAmount()));
+		context.setVariable("formattedSubtotal", formatMoney(
+				order.getSubtotalAmount() == null ? order.getTotalAmount() : order.getSubtotalAmount()));
+		context.setVariable("formattedDiscount", formatMoney(order.getDiscountAmount()));
 		return templateEngine.process("email/order-confirmation", context);
 	}
 

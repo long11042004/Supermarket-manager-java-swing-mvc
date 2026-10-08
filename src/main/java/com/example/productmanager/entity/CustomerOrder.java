@@ -51,6 +51,18 @@ public class CustomerOrder {
 	@Column(nullable = false, precision = 12, scale = 2)
 	private BigDecimal totalAmount;
 
+	@Column(precision = 12, scale = 2)
+	private BigDecimal subtotalAmount;
+
+	@Column(precision = 12, scale = 2)
+	private BigDecimal discountAmount;
+
+	@Column(length = 40)
+	private String couponCode;
+
+	@Column(length = 100)
+	private String automaticPromotionName;
+
 	@Column(nullable = false, length = 255)
 	private String deliveryAddress;
 

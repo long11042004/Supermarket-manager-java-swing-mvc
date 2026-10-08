@@ -16,6 +16,7 @@ import com.example.productmanager.entity.User;
 import com.example.productmanager.lifecycle.PrototypeRequestMarker;
 import com.example.productmanager.lifecycle.SessionLifecycleBean;
 import com.example.productmanager.service.ProductService;
+import com.example.productmanager.service.PromotionService;
 import com.example.productmanager.service.UserService;
 
 import jakarta.servlet.http.HttpSession;
@@ -26,6 +27,7 @@ import lombok.AllArgsConstructor;
 public class DashboardController extends SessionController {
 
 	private final ProductService productService;
+	private final PromotionService promotionService;
 	private final UserService userService;
 	private final SessionLifecycleBean sessionLifecycleBean;
 	private final ObjectProvider<PrototypeRequestMarker> prototypeRequestMarkerProvider;
@@ -69,6 +71,7 @@ public class DashboardController extends SessionController {
 		model.addAttribute("lifecycleRequestMarker", requestMarker.getMarkerId());
 
 		if (roles.contains(RoleName.CUSTOMER)) {
+			model.addAttribute("featuredPromotions", promotionService.getFeaturedPromotions());
 			return "customer-dashboard";
 		}
 		return "dashboard";

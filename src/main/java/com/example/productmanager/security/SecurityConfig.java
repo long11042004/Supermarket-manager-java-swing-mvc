@@ -47,6 +47,8 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.POST,
 								"/products/*/cart",
 								"/products/cart/**",
+								"/orders/coupon",
+								"/orders/coupon/remove",
 								"/orders/checkout").permitAll()
 						.requestMatchers(HttpMethod.GET, "/products/*/edit").hasAnyRole("MANAGER", "ADMIN")
 						.requestMatchers(HttpMethod.HEAD, "/products/*/edit").hasAnyRole("MANAGER", "ADMIN")
@@ -58,6 +60,8 @@ public class SecurityConfig {
 						.requestMatchers("/dashboard", "/customer-dashboard", "/profile", "/profile/**")
 						.hasAnyRole("ADMIN", "MANAGER", "STAFF", "CUSTOMER")
 						.requestMatchers("/users", "/users/**", "/reports", "/reports/**")
+						.hasAnyRole("MANAGER", "ADMIN")
+						.requestMatchers("/promotions", "/promotions/**")
 						.hasAnyRole("MANAGER", "ADMIN")
 						.requestMatchers(HttpMethod.POST, "/api/products", "/api/products/**")
 						.hasAnyRole("MANAGER", "ADMIN")

@@ -98,10 +98,40 @@
 
     <div class="card-box">
       <h4 class="mb-3" th:text="#{customer.highlightOffers}">Ưu đãi nổi bật</h4>
-      <div class="d-flex flex-wrap gap-2">
-        <span class="badge bg-success-subtle text-success-emphasis p-2" th:text="#{customer.offer1}">Giảm giá 10% cho thực phẩm tươi</span>
-        <span class="badge bg-warning-subtle text-warning-emphasis p-2" th:text="#{customer.offer2}">Mua 2 tặng 1 vào cuối tuần</span>
-        <span class="badge bg-info-subtle text-info-emphasis p-2" th:text="#{customer.offer3}">Miễn phí giao hàng từ 300k</span>
+      <div th:if="${#lists.isEmpty(featuredPromotions)}" class="text-muted" th:text="#{promotion.noFeatured}">
+        Hiện chưa có chương trình khuyến mãi đang áp dụng.
+      </div>
+      <div th:unless="${#lists.isEmpty(featuredPromotions)}" class="row g-3">
+        <div class="col-md-6 col-lg-4" th:each="offer : ${featuredPromotions}">
+          <article class="h-100 border border-success-subtle rounded p-3">
+            <span class="badge mb-2"
+                  th:classappend="${offer.kind.name() == 'COUPON'} ? ' bg-warning text-dark' : ' bg-success'"
+                  th:text="#{promotion.kind.__${offer.kind.name()}__}">Ưu đãi</span>
+            <h5 class="mb-2" th:text="${offer.name}">Tên chương trình</h5>
+            <div class="fw-bold text-success mb-2">
+              <span th:if="${offer.discountType.name() == 'PERCENTAGE'}"
+                    th:text="${offer.discountValue.stripTrailingZeros().toPlainString()} + '%'">10%</span>
+              <span th:if="${offer.discountType.name() == 'FIXED_AMOUNT'}"
+                    th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(offer.discountValue)}">10.000 ₫</span>
+            </div>
+            <div th:if="${offer.code != null}" class="small mb-1">
+              <span th:text="#{promotion.codeLabel}">Mã:</span>
+              <code class="user-select-all" th:text="${offer.code}">SAVE10</code>
+            </div>
+            <div th:if="${offer.minimumOrderAmount.signum() > 0}" class="small text-muted mb-1">
+              <span th:text="#{promotion.minimumOrderLabel}">Đơn tối thiểu:</span>
+              <span th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(offer.minimumOrderAmount)}">100.000 ₫</span>
+            </div>
+            <div th:if="${offer.maximumDiscount != null}" class="small text-muted mb-1">
+              <span th:text="#{promotion.maximumDiscountLabel}">Giảm tối đa:</span>
+              <span th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(offer.maximumDiscount)}">50.000 ₫</span>
+            </div>
+            <div class="small text-muted">
+              <span th:text="#{promotion.validUntil}">Có hiệu lực đến</span>
+              <span th:text="${#temporals.format(offer.endsAt, 'dd/MM/yyyy HH:mm')}">31/12/2026 23:59</span>
+            </div>
+          </article>
+        </div>
       </div>
     </div>
 

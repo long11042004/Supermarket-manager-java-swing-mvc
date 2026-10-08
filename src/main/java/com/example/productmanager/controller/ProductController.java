@@ -24,6 +24,7 @@ import com.example.productmanager.mapper.ProductMapper;
 import com.example.productmanager.multilanguage.MessageResolver;
 import com.example.productmanager.service.CartService;
 import com.example.productmanager.service.ProductService;
+import com.example.productmanager.service.PromotionService;
 import com.example.productmanager.service.UserService;
 import com.example.productmanager.view.CartView;
 
@@ -39,6 +40,7 @@ public class ProductController extends SessionController {
 
 	private final ProductService productService;
 	private final CartService cartService;
+	private final PromotionService promotionService;
 	private final UserService userService;
 	private final ProductMapper productMapper;
 	private final MessageResolver messageResolver;
@@ -90,7 +92,14 @@ public class ProductController extends SessionController {
 				checkoutCustomer != null && checkoutCustomer.getAddress() != null ? checkoutCustomer.getAddress() : "");
 		model.addAttribute("checkoutContactPhone",
 				checkoutCustomer != null && checkoutCustomer.getPhoneNumber() != null ? checkoutCustomer.getPhoneNumber() : "");
-		model.addAttribute("cart", getOrCreateCart(session));
+		CartView cart = getOrCreateCart(session);
+		model.addAttribute("cart", cart);
+		try {
+			model.addAttribute("promotionQuote", promotionService.quote(cart.getGrandTotal(), cart.getCouponCode()));
+		} catch (IllegalArgumentException ex) {
+			model.addAttribute("promotionErrorMessage", ex.getMessage());
+			model.addAttribute("promotionQuote", promotionService.quote(cart.getGrandTotal(), null));
+		}
 		model.addAttribute("lifecycleSessionToken", sessionLifecycleBean.getSessionToken());
 		model.addAttribute("lifecycleVisitCount", visitCount);
 		model.addAttribute("lifecycleRequestMarker", requestMarker.getMarkerId());

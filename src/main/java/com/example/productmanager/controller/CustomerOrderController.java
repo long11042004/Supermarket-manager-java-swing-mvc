@@ -23,6 +23,7 @@ import com.example.productmanager.lifecycle.SessionLifecycleBean;
 import com.example.productmanager.multilanguage.MessageResolver;
 import com.example.productmanager.service.CartService;
 import com.example.productmanager.service.OrderService;
+import com.example.productmanager.service.PromotionService;
 import com.example.productmanager.view.CartView;
 
 import jakarta.servlet.http.HttpSession;
@@ -36,6 +37,7 @@ public class CustomerOrderController extends SessionController {
 
 	private final OrderService orderService;
 	private final CartService cartService;
+	private final PromotionService promotionService;
 	private final MessageResolver messageResolver;
 	private final SessionLifecycleBean sessionLifecycleBean;
 	private final ObjectProvider<PrototypeRequestMarker> prototypeRequestMarkerProvider;
@@ -94,6 +96,44 @@ public class CustomerOrderController extends SessionController {
 			log.error("Unexpected checkout failure", ex);
 			redirectAttributes.addFlashAttribute("errorMessage", messageResolver.msg("msg.order.checkoutUnexpected"));
 		}
+		return "redirect:/products";
+	}
+
+	@PostMapping("/coupon")
+	public String applyCoupon(@RequestParam(required = false) String code,
+			HttpSession session,
+			RedirectAttributes redirectAttributes) {
+		User currentUser = getCustomer(session);
+		boolean guestCheckout = Boolean.TRUE.equals(session.getAttribute("guestCheckout"));
+		if (currentUser == null && !guestCheckout) {
+			return "redirect:/login";
+		}
+
+		CartView cart = getOrCreateCart(session);
+		try {
+			if (code == null || code.isBlank()) {
+				throw new IllegalArgumentException(messageResolver.msg("err.promotion.codeRequired"));
+			}
+			promotionService.quote(cart.getGrandTotal(), code);
+			cart.setCouponCode(code == null || code.isBlank() ? null : code.trim());
+			session.setAttribute("shoppingCart", cart);
+			redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.promotion.couponApplied"));
+		} catch (IllegalArgumentException ex) {
+			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+		}
+		return "redirect:/products";
+	}
+
+	@PostMapping("/coupon/remove")
+	public String removeCoupon(HttpSession session) {
+		User currentUser = getCustomer(session);
+		boolean guestCheckout = Boolean.TRUE.equals(session.getAttribute("guestCheckout"));
+		if (currentUser == null && !guestCheckout) {
+			return "redirect:/login";
+		}
+		CartView cart = getOrCreateCart(session);
+		cart.setCouponCode(null);
+		session.setAttribute("shoppingCart", cart);
 		return "redirect:/products";
 	}
 

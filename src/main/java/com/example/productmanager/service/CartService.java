@@ -107,6 +107,7 @@ public class CartService {
 		CartView workingCart = cart == null ? new CartView() : cart;
 		synchronized (workingCart) {
 			workingCart.setItems(new ArrayList<>());
+			workingCart.setCouponCode(null);
 			return workingCart;
 		}
 	}

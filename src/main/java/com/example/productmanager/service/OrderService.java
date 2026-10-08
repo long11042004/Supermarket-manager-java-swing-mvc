@@ -37,6 +37,7 @@ public class OrderService {
 	private final UserService userService;
 	private final MessageResolver messageResolver;
 	private final ApplicationEventPublisher applicationEventPublisher;
+	private final PromotionService promotionService;
 
 	@Transactional
 	public CustomerOrder checkout(Long userId, 
@@ -132,7 +133,13 @@ public class OrderService {
 		}
 
 		order.setItems(orderItems);
-		order.setTotalAmount(totalAmount);
+		PromotionService.PromotionQuote promotionQuote = promotionService.quote(totalAmount, cart.getCouponCode());
+		order.setSubtotalAmount(totalAmount);
+		order.setDiscountAmount(promotionQuote.totalDiscount());
+		order.setCouponCode(promotionQuote.couponCode());
+		order.setAutomaticPromotionName(promotionQuote.automaticPromotionName());
+		order.setTotalAmount(promotionQuote.totalAmount());
+		promotionService.recordRedemptions(promotionQuote);
 		CustomerOrder savedOrder = customerOrderRepository.save(order);
 		if (userId != null && user != null) {
 			String details = messageResolver.msg("activity.order.createdPrefix")

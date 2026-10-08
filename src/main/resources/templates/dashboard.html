@@ -27,6 +27,7 @@
         <a th:href="@{/profile}" class="btn btn-outline-dark nav-btn" th:text="#{common.profile}">Tài khoản</a>
         <a th:href="@{/products}" class="btn btn-primary nav-btn" th:text="#{dashboard.viewProducts}">Xem sản phẩm</a>
         <a th:if="${canManageUsers}" th:href="@{/reports}" class="btn btn-outline-success nav-btn" th:text="#{dashboard.report}">Báo cáo</a>
+        <a th:if="${canManageUsers}" th:href="@{/promotions}" class="btn btn-outline-warning nav-btn" th:text="#{promotion.manage}">Khuyến mãi</a>
         <a th:if="${canManageUsers}" th:href="@{/users}" class="btn btn-outline-primary nav-btn" th:text="#{dashboard.manageUsers}">Quản lý nhân sự</a>
         <form method="get" th:action="@{/dashboard}" class="d-inline-flex align-items-center gap-2">
           <label class="visually-hidden" for="dashboard-language-select" th:text="#{app.language}">Language</label>
@@ -80,6 +81,7 @@
         <a th:href="@{/profile}" class="btn btn-outline-dark" th:text="#{dashboard.personalProfile}">Hồ sơ cá nhân</a>
         <a th:href="@{/products}" class="btn btn-primary" th:text="#{dashboard.viewProducts}">Xem sản phẩm</a>
         <a th:if="${canManageUsers}" th:href="@{/reports}" class="btn btn-outline-success" th:text="#{reports.title}">Báo cáo thống kê</a>
+        <a th:if="${canManageUsers}" th:href="@{/promotions}" class="btn btn-outline-warning" th:text="#{promotion.manage}">Quản lý khuyến mãi</a>
         <a th:if="${canManageUsers}" th:href="@{/users}" class="btn btn-outline-primary" th:text="#{dashboard.manageStaff}">Quản lý nhân sự</a>
         <a th:if="${canManageProducts}" th:href="@{/products}" class="btn btn-outline-success" th:text="#{dashboard.restock}">Nhập hàng / bổ sung</a>
       </div>

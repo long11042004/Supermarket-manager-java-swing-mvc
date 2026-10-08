@@ -38,6 +38,7 @@
           <span class="badge bg-secondary" th:if="${session.loggedInUser != null}" th:text="${session.loggedInUser.fullName}">User</span>
           <span th:if="${isGuest}" class="badge bg-light text-dark border" th:text="#{app.guestBadge}">Guest</span>
           <a th:if="${!isGuest}" th:href="@{/dashboard}" class="btn btn-outline-primary btn-sm" th:text="#{common.dashboard}">Dashboard</a>
+          <a th:if="${canManageProducts}" th:href="@{/promotions}" class="btn btn-outline-warning btn-sm" th:text="#{promotion.manage}">Khuyến mãi</a>
           <a th:if="${isGuest}" th:href="@{/login}" class="btn btn-outline-primary btn-sm" th:text="#{app.login}">Login</a>
           <a th:if="${isCustomer}" th:href="@{/orders}" class="btn btn-outline-dark btn-sm" th:text="#{app.myOrders}">My orders</a>
           <form th:if="${!isGuest}" th:action="@{/logout}" method="post" class="d-inline">
@@ -133,10 +134,39 @@
               </div>
             </div>
 
+            <div class="border rounded p-3 mt-3">
+              <h6 th:text="#{promotion.title}">Ưu đãi</h6>
+              <div th:if="${promotionErrorMessage}" class="small text-danger mb-2" th:text="${promotionErrorMessage}">Mã không còn hợp lệ.</div>
+              <div th:if="${promotionQuote.couponName != null}" class="small text-success mb-2">
+                <span th:text="#{promotion.couponApplied(${promotionQuote.couponCode})}">Đã áp dụng mã</span>
+                <span th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(promotionQuote.couponDiscount)}">0 ₫</span>
+                <form th:action="@{/orders/coupon/remove}" method="post" class="d-inline">
+                  <button type="submit" class="btn btn-link btn-sm py-0" th:text="#{promotion.removeCoupon}">Gỡ mã</button>
+                </form>
+              </div>
+              <div th:if="${promotionQuote.automaticPromotionName != null}" class="small text-success mb-2">
+                <span th:text="#{promotion.automaticApplied(${promotionQuote.automaticPromotionName})}">Khuyến mãi tự động</span>
+                <span th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(promotionQuote.automaticDiscount)}">0 ₫</span>
+              </div>
+              <form th:unless="${promotionQuote.couponName != null}" th:action="@{/orders/coupon}" method="post" class="input-group input-group-sm">
+                <input type="text" name="code" class="form-control" maxlength="40" th:placeholder="#{promotion.codePlaceholder}" />
+                <button type="submit" class="btn btn-outline-success" th:text="#{promotion.applyCoupon}">Áp dụng mã</button>
+              </form>
+              <div th:if="${promotionQuote.totalDiscount.signum() == 0}" class="small text-muted mt-2" th:text="#{promotion.noDiscountYet}">Chưa có ưu đãi áp dụng.</div>
+            </div>
+
             <div class="cart-summary mt-4">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted" th:text="#{promotion.subtotal}">Tạm tính</span>
+                <span th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(cart.grandTotal)}">0 ₫</span>
+              </div>
+              <div th:if="${promotionQuote.totalDiscount.signum() > 0}" class="d-flex justify-content-between align-items-center mb-2 text-success">
+                <span th:text="#{promotion.totalDiscount}">Tổng giảm</span>
+                <span th:text="${'- ' + T(com.example.productmanager.util.CurrencyFormatter).formatMoney(promotionQuote.totalDiscount)}">- 0 ₫</span>
+              </div>
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <span class="text-muted" th:text="#{app.totalPayment}">Tổng thanh toán</span>
-                <strong th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(cart.grandTotal)}">0 ₫</strong>
+                <strong th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(promotionQuote.totalAmount)}">0 ₫</strong>
               </div>
 
               <form th:action="@{/orders/checkout}" method="post" class="row g-3">

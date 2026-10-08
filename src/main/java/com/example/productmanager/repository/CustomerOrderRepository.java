@@ -71,14 +71,20 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
 			SELECT COALESCE(p.name_vi, p.name_en) AS productName,
 			       COALESCE(p.unit_vi, p.unit_en) AS unit,
 			       SUM(coi.quantity) AS totalQuantity,
-			       SUM(coi.line_total) AS totalRevenue
+			SUM(coi.line_total * CASE
+			    WHEN co.subtotal_amount > 0 THEN co.total_amount / co.subtotal_amount
+			    ELSE 1
+			END) AS totalRevenue
 			FROM customer_order_items coi
 			JOIN products p ON coi.product_id = p.id
 			JOIN customer_orders co ON coi.order_id = co.id
 			WHERE co.created_at BETWEEN :startTime AND :endTime
 			  AND (:status IS NULL OR co.status = :status)
 			GROUP BY p.id, p.name_vi, p.name_en, p.unit_vi, p.unit_en
-			ORDER BY SUM(coi.line_total) DESC
+			ORDER BY SUM(coi.line_total * CASE
+			           WHEN co.subtotal_amount > 0 THEN co.total_amount / co.subtotal_amount
+			           ELSE 1
+			       END) DESC
 			""", nativeQuery = true)
 	List<TopProductProjection> findTopProductsInPeriod(@Param("startTime") LocalDateTime startTime,
 			@Param("endTime") LocalDateTime endTime,

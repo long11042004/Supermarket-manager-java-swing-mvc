@@ -66,8 +66,8 @@ public class GoogleTranslateService {
 			StringBuilder translatedText = new StringBuilder();
 			if (segments.isArray()) {
 				for (JsonNode segment : segments) {
-					if (segment.isArray() && !segment.isEmpty() && segment.get(0).isTextual()) {
-						translatedText.append(segment.get(0).textValue());
+					if (segment.isArray() && !segment.isEmpty() && segment.get(0).isString()) {
+						translatedText.append(segment.get(0).asString());
 					}
 				}
 			}

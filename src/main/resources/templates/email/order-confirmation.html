@@ -10,6 +10,12 @@
         <p>Xin chào <strong th:text="${recipientName}">Khách hàng</strong>,</p>
         <p>Đơn hàng #<span th:text="${order.id}">0</span> đã được tạo thành công.</p>
 
+        <div th:if="${order.discountAmount != null and order.discountAmount.signum() > 0}">
+            <p><strong>Tạm tính:</strong> <span th:text="${formattedSubtotal}">0</span> ₫</p>
+            <p th:if="${order.couponCode != null}"><strong>Mã giảm giá:</strong> <span th:text="${order.couponCode}">CODE</span></p>
+            <p th:if="${order.automaticPromotionName != null}"><strong>Khuyến mãi:</strong> <span th:text="${order.automaticPromotionName}">Ưu đãi</span></p>
+            <p><strong>Tổng giảm:</strong> <span th:text="${formattedDiscount}">0</span> ₫</p>
+        </div>
         <p><strong>Tổng tiền:</strong> <span th:text="${formattedTotal}">0</span> ₫</p>
         <p><strong>Địa chỉ giao hàng:</strong> <span th:text="${order.deliveryAddress}">-</span></p>
         <p><strong>Trạng thái:</strong> <span th:text="${order.status}">PENDING</span></p>
