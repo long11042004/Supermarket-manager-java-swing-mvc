@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title th:text="#{orders.manage}">Quản lý đơn hàng</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background: linear-gradient(180deg, #f8fafc 0%, #ecfeff 100%);
+      font-family: "Segoe UI", sans-serif;
+    }
+    .shell {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+    .order-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.07);
+      padding: 1.25rem;
+      margin-top: 1rem;
+    }
+    .status-pill {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 0.35rem 0.75rem;
+      background: #ccfbf1;
+      color: #115e59;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+      <div>
+        <div class="small text-uppercase fw-bold text-success" th:text="#{orders.manage}">Quản lý đơn hàng</div>
+        <h1 class="mb-0" th:text="#{orders.manage}">Quản lý đơn hàng</h1>
+      </div>
+      <div class="d-flex gap-2">
+        <a th:href="@{/dashboard}" class="btn btn-outline-dark" th:text="#{common.dashboard}">Bảng điều khiển</a>
+        <a th:href="@{/products}" class="btn btn-outline-success" th:text="#{dashboard.viewProducts}">Xem sản phẩm</a>
+      </div>
+    </header>
+
+    <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
+    <div th:if="${#lists.isEmpty(orders)}" class="order-card text-muted" th:text="#{orders.manageEmpty}">
+      Chưa có đơn hàng nào.
+    </div>
+
+    <section th:each="order : ${orders}" class="order-card">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+          <h2 class="h5 mb-1" th:text="#{orders.orderPrefix(${order.id})}">Đơn hàng #1</h2>
+          <div class="text-muted small" th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026 10:00</div>
+        </div>
+        <div class="text-end">
+          <span class="status-pill" th:text="#{orderStatus.__${order.status.name()}__}">Chờ xác nhận</span>
+          <div class="fw-bold mt-2"
+               th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(order.totalAmount)}">0 ₫</div>
+        </div>
+      </div>
+
+      <div class="row g-3 mt-1">
+        <div class="col-md-6">
+          <div class="small text-muted" th:text="#{orders.recipient}">Người nhận</div>
+          <div th:text="${order.user != null ? order.user.fullName : order.guestName}">Tên người nhận</div>
+        </div>
+        <div class="col-md-6">
+          <div class="small text-muted" th:text="#{orders.contact}">Liên hệ</div>
+          <div th:text="${order.user != null ? order.user.email : order.guestEmail}">email@example.com</div>
+        </div>
+        <div class="col-12">
+          <div class="small text-muted" th:text="#{orders.shipTo}">Giao đến</div>
+          <div th:text="${order.deliveryAddress}">Địa chỉ</div>
+        </div>
+      </div>
+
+      <div class="table-responsive mt-3">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th th:text="#{orders.product}">Sản phẩm</th>
+              <th th:text="#{common.quantity}">Số lượng</th>
+              <th th:text="#{orders.lineTotal}">Thành tiền</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="item : ${order.items}">
+              <td th:text="${@productDisplayService.displayName(item.product)}">Tên sản phẩm</td>
+              <td th:text="${item.quantity}">1</td>
+              <td th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(item.lineTotal)}">0 ₫</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-end mt-3">
+        <form th:if="${order.status.name() == 'PENDING'}"
+              th:action="@{/order-management/{orderId}/status(orderId=${order.id})}" method="post">
+          <input type="hidden" name="status" value="CONFIRMED" />
+          <button type="submit" class="btn btn-success" th:text="#{orders.action.confirm}">Xác nhận đơn</button>
+        </form>
+        <form th:if="${order.status.name() == 'CONFIRMED'}"
+              th:action="@{/order-management/{orderId}/status(orderId=${order.id})}" method="post">
+          <input type="hidden" name="status" value="DELIVERING" />
+          <button type="submit" class="btn btn-primary" th:text="#{orders.action.deliver}">Bắt đầu giao</button>
+        </form>
+        <form th:if="${order.status.name() == 'DELIVERING'}"
+              th:action="@{/order-management/{orderId}/status(orderId=${order.id})}" method="post">
+          <input type="hidden" name="status" value="COMPLETED" />
+          <button type="submit" class="btn btn-dark" th:text="#{orders.action.complete}">Đánh dấu đã giao</button>
+        </form>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

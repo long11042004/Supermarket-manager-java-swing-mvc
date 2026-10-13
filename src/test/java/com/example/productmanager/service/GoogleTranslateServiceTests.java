@@ -46,7 +46,7 @@ class GoogleTranslateServiceTests {
 	void vietnameseMessageSourceUsesVietnameseAsItsSourceLocale() {
 		GoogleTranslateMessageSource messageSource = new GoogleTranslateMessageSource(new GoogleTranslateService());
 
-		assertEquals("SIêu thị ABC",
+		assertEquals("Cửa hàng ABC",
 				messageSource.getMessage("app.system", null, Locale.forLanguageTag("vi-VN")));
 	}
 
@@ -64,7 +64,7 @@ class GoogleTranslateServiceTests {
 		};
 		GoogleTranslateMessageSource messageSource = new GoogleTranslateMessageSource(translateService);
 
-		assertEquals("SIêu thị ABC", messageSource.getMessage("app.system", null, Locale.ENGLISH));
+		assertEquals("Cửa hàng ABC", messageSource.getMessage("app.system", null, Locale.ENGLISH));
 		assertEquals(0, translationCalls.get());
 		assertEquals("Translated fallback",
 				messageSource.getMessage("profile.avatarFile", null, Locale.ENGLISH));

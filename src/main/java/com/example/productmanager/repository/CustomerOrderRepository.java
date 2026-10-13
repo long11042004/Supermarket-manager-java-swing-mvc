@@ -38,6 +38,9 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
 	@Query("SELECT DISTINCT o FROM CustomerOrder o LEFT JOIN FETCH o.items i LEFT JOIN FETCH i.product WHERE o.user.id = :userId ORDER BY o.createdAt DESC")
 	List<CustomerOrder> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
 
+	@Query("SELECT DISTINCT o FROM CustomerOrder o LEFT JOIN FETCH o.user LEFT JOIN FETCH o.items i LEFT JOIN FETCH i.product ORDER BY o.createdAt DESC")
+	List<CustomerOrder> findAllForManagement();
+
 	@Query("SELECT o FROM CustomerOrder o LEFT JOIN FETCH o.items i LEFT JOIN FETCH i.product WHERE o.id = :orderId AND o.user.id = :userId")
 	Optional<CustomerOrder> findDetailByIdAndUserId(@Param("orderId") Long orderId, @Param("userId") Long userId);
 

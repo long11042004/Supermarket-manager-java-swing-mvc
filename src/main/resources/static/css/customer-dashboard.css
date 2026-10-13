@@ -1,0 +1,76 @@
+body {
+      background: linear-gradient(180deg, #f8fafc 0%, #ecfeff 100%);
+      font-family: "Segoe UI", sans-serif;
+    }
+    .container {
+      max-width: 1200px;
+    }
+    .topbar {
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .card-box {
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+      padding: 1.25rem;
+      margin-top: 1.5rem;
+    }
+    .stat {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #0f766e;
+      margin: 0.4rem 0;
+    }
+    .btn-primary {
+      background: #0f766e;
+      border-color: #0f766e;
+    }
+    .suggested-products-header {
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .suggested-product-card {
+      height: 100%;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      background: linear-gradient(145deg, #ffffff 0%, #f8fffe 100%);
+      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+    }
+    .suggested-product-image,
+    .suggested-product-image-placeholder {
+      width: 76px;
+      height: 76px;
+      flex: 0 0 76px;
+      border-radius: 12px;
+    }
+    .suggested-product-image {
+      object-fit: cover;
+      background: #f1f5f9;
+    }
+    .suggested-product-image-placeholder {
+      background: linear-gradient(135deg, #ccfbf1, #f0fdfa);
+    }
+    .suggested-product-card:hover {
+      transform: translateY(-3px);
+      border-color: #99f6e4;
+      box-shadow: 0 14px 28px rgba(15, 118, 110, 0.12);
+    }
+    .suggested-product-price {
+      color: #0f766e;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    .suggested-product-category {
+      color: #0f766e;
+      background: #ccfbf1;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .suggested-product-card {
+        transition: none;
+      }
+    }

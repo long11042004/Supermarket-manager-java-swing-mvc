@@ -63,6 +63,8 @@ public class SecurityConfig {
 						.hasAnyRole("MANAGER", "ADMIN")
 						.requestMatchers("/promotions", "/promotions/**")
 						.hasAnyRole("MANAGER", "ADMIN")
+						.requestMatchers("/order-management", "/order-management/**")
+						.hasAnyRole("STAFF", "MANAGER", "ADMIN")
 						.requestMatchers(HttpMethod.POST, "/api/products", "/api/products/**")
 						.hasAnyRole("MANAGER", "ADMIN")
 						.requestMatchers(HttpMethod.PUT, "/api/products", "/api/products/**")

@@ -175,6 +175,27 @@ public class OrderService {
 		return customerOrderRepository.findByUserIdOrderByCreatedAtDesc(userId);
 	}
 
+	@Transactional(readOnly = true)
+	public List<CustomerOrder> getOrdersForManagement() {
+		return customerOrderRepository.findAllForManagement();
+	}
+
+	@Transactional
+	public void updateOrderStatus(Long orderId, OrderStatus targetStatus) {
+		CustomerOrder order = customerOrderRepository.findById(orderId)
+				.orElseThrow(() -> new NotFoundException(messageResolver.msg("err.order.notFoundForStatusUpdate")));
+		OrderStatus currentStatus = order.getStatus();
+		boolean validTransition = (currentStatus == OrderStatus.PENDING && targetStatus == OrderStatus.CONFIRMED)
+				|| (currentStatus == OrderStatus.CONFIRMED && targetStatus == OrderStatus.DELIVERING)
+				|| (currentStatus == OrderStatus.DELIVERING && targetStatus == OrderStatus.COMPLETED);
+		if (!validTransition) {
+			throw new ConflictException(messageResolver.msg("err.order.invalidStatusTransition"));
+		}
+
+		order.setStatus(targetStatus);
+		customerOrderRepository.save(order);
+	}
+
 	@Transactional
 	public void cancelOrderForUser(Long userId, Long orderId) {
 		if (userId == null) {

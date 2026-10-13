@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.springframework.context.ApplicationEventPublisher;
@@ -202,6 +203,41 @@ class OrderServiceTests {
 				() -> orderService.checkoutAsGuest("Khach", "guest@demo.com", cart, "12 Duong Moi", "0909000000", null));
 
 		assertEquals("Sản phẩm Sua hop chưa có giá bán hợp lệ.", ex.getMessage());
+		verify(customerOrderRepository, never()).save(any(CustomerOrder.class));
+	}
+
+	@Test
+	void updateOrderStatusShouldAdvanceThroughFulfillmentStages() {
+		CustomerOrder order = CustomerOrder.builder()
+				.id(100L)
+				.status(OrderStatus.PENDING)
+				.build();
+		when(customerOrderRepository.findById(100L)).thenReturn(Optional.of(order));
+		when(customerOrderRepository.save(any(CustomerOrder.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+		orderService.updateOrderStatus(100L, OrderStatus.CONFIRMED);
+		assertEquals(OrderStatus.CONFIRMED, order.getStatus());
+
+		orderService.updateOrderStatus(100L, OrderStatus.DELIVERING);
+		assertEquals(OrderStatus.DELIVERING, order.getStatus());
+
+		orderService.updateOrderStatus(100L, OrderStatus.COMPLETED);
+		assertEquals(OrderStatus.COMPLETED, order.getStatus());
+		verify(customerOrderRepository, times(3)).save(order);
+	}
+
+	@Test
+	void updateOrderStatusShouldRejectSkippingFulfillmentStages() {
+		CustomerOrder order = CustomerOrder.builder()
+				.id(101L)
+				.status(OrderStatus.PENDING)
+				.build();
+		when(customerOrderRepository.findById(101L)).thenReturn(Optional.of(order));
+
+		ConflictException ex = assertThrows(ConflictException.class,
+				() -> orderService.updateOrderStatus(101L, OrderStatus.DELIVERING));
+
+		assertEquals("Không thể chuyển đơn hàng sang trạng thái đã chọn.", ex.getMessage());
 		verify(customerOrderRepository, never()).save(any(CustomerOrder.class));
 	}
 
