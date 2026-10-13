@@ -41,6 +41,8 @@ class OrderServiceTests {
 	private final UserService userService = org.mockito.Mockito.mock(UserService.class);
 	private final ApplicationEventPublisher applicationEventPublisher = org.mockito.Mockito.mock(ApplicationEventPublisher.class);
 	private final PromotionService promotionService = org.mockito.Mockito.mock(PromotionService.class);
+	private final ShippingService shippingService = new ShippingService(
+			new BigDecimal("30000"), new BigDecimal("300000"));
 	private final MessageResolver messageResolver = new MessageResolver(createMessageSource());
 	private final OrderService orderService = new OrderService(
 			customerOrderRepository,
@@ -49,7 +51,8 @@ class OrderServiceTests {
 			userService,
 			messageResolver,
 			applicationEventPublisher,
-			promotionService);
+			promotionService,
+			shippingService);
 	private final CartService cartService = new CartService(messageResolver);
 
 	private ResourceBundleMessageSource createMessageSource() {
@@ -104,7 +107,8 @@ class OrderServiceTests {
 		assertNull(order.getUser());
 		assertEquals("Khách lẻ", order.getGuestName());
 		assertEquals("guest@example.com", order.getGuestEmail());
-		assertEquals(new BigDecimal("100000"), order.getTotalAmount());
+		assertEquals(new BigDecimal("30000"), order.getShippingFee());
+		assertEquals(new BigDecimal("130000"), order.getTotalAmount());
 		assertEquals(8, product.getQuantity());
 		assertEquals(1, order.getItems().size());
 		verify(userService, never()).recordActivity(any(), any(), any());
@@ -137,7 +141,8 @@ class OrderServiceTests {
 		assertEquals(new BigDecimal("150"), order.getDiscountAmount());
 		assertEquals("SAVE10", order.getCouponCode());
 		assertEquals("Auto offer", order.getAutomaticPromotionName());
-		assertEquals(new BigDecimal("1850"), order.getTotalAmount());
+		assertEquals(new BigDecimal("30000"), order.getShippingFee());
+		assertEquals(new BigDecimal("31850"), order.getTotalAmount());
 		verify(promotionService).recordRedemptions(quote);
 	}
 

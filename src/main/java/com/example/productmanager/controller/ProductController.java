@@ -1,5 +1,7 @@
 package com.example.productmanager.controller;
 
+import java.math.BigDecimal;
+
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -25,6 +27,7 @@ import com.example.productmanager.multilanguage.MessageResolver;
 import com.example.productmanager.service.CartService;
 import com.example.productmanager.service.ProductService;
 import com.example.productmanager.service.PromotionService;
+import com.example.productmanager.service.ShippingService;
 import com.example.productmanager.service.UserService;
 import com.example.productmanager.view.CartView;
 
@@ -41,6 +44,7 @@ public class ProductController extends SessionController {
 	private final ProductService productService;
 	private final CartService cartService;
 	private final PromotionService promotionService;
+	private final ShippingService shippingService;
 	private final UserService userService;
 	private final ProductMapper productMapper;
 	private final MessageResolver messageResolver;
@@ -94,12 +98,18 @@ public class ProductController extends SessionController {
 				checkoutCustomer != null && checkoutCustomer.getPhoneNumber() != null ? checkoutCustomer.getPhoneNumber() : "");
 		CartView cart = getOrCreateCart(session);
 		model.addAttribute("cart", cart);
+		PromotionService.PromotionQuote promotionQuote;
 		try {
-			model.addAttribute("promotionQuote", promotionService.quote(cart.getGrandTotal(), cart.getCouponCode()));
+			promotionQuote = promotionService.quote(cart.getGrandTotal(), cart.getCouponCode());
 		} catch (IllegalArgumentException ex) {
 			model.addAttribute("promotionErrorMessage", ex.getMessage());
-			model.addAttribute("promotionQuote", promotionService.quote(cart.getGrandTotal(), null));
+			promotionQuote = promotionService.quote(cart.getGrandTotal(), null);
 		}
+		BigDecimal shippingFee = shippingService.calculateFee(promotionQuote.totalAmount());
+		model.addAttribute("promotionQuote", promotionQuote);
+		model.addAttribute("shippingFee", shippingFee);
+		model.addAttribute("freeShippingThreshold", shippingService.getFreeShippingThreshold());
+		model.addAttribute("checkoutTotal", promotionQuote.totalAmount().add(shippingFee));
 		model.addAttribute("lifecycleSessionToken", sessionLifecycleBean.getSessionToken());
 		model.addAttribute("lifecycleVisitCount", visitCount);
 		model.addAttribute("lifecycleRequestMarker", requestMarker.getMarkerId());
@@ -182,6 +192,33 @@ public class ProductController extends SessionController {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 		}
 		return "redirect:/products";
+	}
+
+	@GetMapping("/{id}")
+	public String showProductDetail(@PathVariable Long id, HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+		if (isAuthenticated(session)
+				&& !hasPermission(session, RoleName.ADMIN, RoleName.MANAGER, RoleName.STAFF, RoleName.CUSTOMER)) {
+			return "redirect:/login";
+		}
+		if (!canShop(session)) {
+			session.setAttribute("guestCheckout", true);
+		}
+		try {
+			Product product = productService.getProductById(id);
+			model.addAttribute("product", product);
+			model.addAttribute("canManageProducts", hasPermission(session, RoleName.ADMIN, RoleName.MANAGER));
+			model.addAttribute("isAdmin", hasPermission(session, RoleName.ADMIN));
+			model.addAttribute("isManager", hasPermission(session, RoleName.MANAGER));
+			model.addAttribute("isStaff", hasPermission(session, RoleName.STAFF));
+			model.addAttribute("isCustomer", hasPermission(session, RoleName.CUSTOMER));
+			model.addAttribute("isGuest", !isAuthenticated(session));
+			model.addAttribute("cart", getOrCreateCart(session));
+			model.addAttribute("categories", productService.getAllCategories());
+			return "product-detail";
+		} catch (RuntimeException ex) {
+			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+			return "redirect:/products";
+		}
 	}
 
 	@GetMapping("/{id}/edit")

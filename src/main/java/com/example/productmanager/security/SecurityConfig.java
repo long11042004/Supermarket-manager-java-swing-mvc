@@ -42,8 +42,8 @@ public class SecurityConfig {
 								"/webjars/**",
 								"/uploads/avatars/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-						.requestMatchers(HttpMethod.GET, "/products", "/products/").permitAll()
-						.requestMatchers(HttpMethod.HEAD, "/products", "/products/").permitAll()
+						.requestMatchers(HttpMethod.GET, "/products", "/products/", "/products/*").permitAll()
+						.requestMatchers(HttpMethod.HEAD, "/products", "/products/", "/products/*").permitAll()
 						.requestMatchers(HttpMethod.POST,
 								"/products/*/cart",
 								"/products/cart/**",

@@ -164,9 +164,19 @@
                 <span th:text="#{promotion.totalDiscount}">Tổng giảm</span>
                 <span th:text="${'- ' + T(com.example.productmanager.util.CurrencyFormatter).formatMoney(promotionQuote.totalDiscount)}">- 0 ₫</span>
               </div>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span th:text="#{shipping.fee}">Phí giao hàng</span>
+                <strong th:if="${shippingFee.signum() > 0}"
+                        th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(shippingFee)}">30.000 ₫</strong>
+                <strong th:if="${shippingFee.signum() == 0}" class="text-success" th:text="#{shipping.free}">Miễn phí</strong>
+              </div>
+              <div th:if="${shippingFee.signum() > 0}" class="small text-muted mb-3">
+                <span th:text="#{shipping.freeFrom}">Miễn phí giao hàng từ</span>
+                <span th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(freeShippingThreshold)}">300.000 ₫</span>
+              </div>
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <span class="text-muted" th:text="#{app.totalPayment}">Tổng thanh toán</span>
-                <strong th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(promotionQuote.totalAmount)}">0 ₫</strong>
+                <strong th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(checkoutTotal)}">0 ₫</strong>
               </div>
 
               <form th:action="@{/orders/checkout}" method="post" class="row g-3">
@@ -320,7 +330,7 @@
               </div>
 
               <div class="product-card-body">
-                <div class="product-name" th:text="${@productDisplayService.displayName(item)}">Tên sản phẩm</div>
+                <a class="product-name text-decoration-none text-dark d-block" th:href="@{/products/{id}(id=${item.id})}" th:text="${@productDisplayService.displayName(item)}">Tên sản phẩm</a>
                 <div class="product-meta">
                   <span th:text="${@productDisplayService.displayUnit(item) != null ? @productDisplayService.displayUnit(item) : #messages.msg('app.unitDefault')}">Unit</span>
                   <span th:text="${item.expiryDate != null ? #temporals.format(item.expiryDate, 'dd/MM/yyyy') : '—'}">—</span>
@@ -330,6 +340,7 @@
                 <div class="product-card-actions" th:if="${canManageProducts or isCustomer or isGuest or isStaff}">
                   <div class="d-flex gap-2" th:if="${canManageProducts}">
                     <a class="btn btn-sm btn-outline-primary" th:href="@{/products/{id}/edit(id=${item.id})}" th:text="#{app.edit}">Sửa</a>
+                    <a class="btn btn-sm btn-outline-info" th:href="@{/products/{id}(id=${item.id})}" th:text="#{app.viewDetails}">Chi tiết</a>
                     <form th:action="@{/products/{id}/delete(id=${item.id})}" method="post" style="display:inline;">
                       <button type="submit" class="btn btn-sm btn-outline-danger" th:attr="data-confirm-message=#{app.confirmDelete}" th:text="#{app.delete}">Xóa</button>
                     </form>
@@ -340,12 +351,15 @@
                     View-only inventory information
                   </div>
 
-                  <form th:if="${isCustomer or isGuest}" th:action="@{/products/{id}/cart(id=${item.id})}" method="post" class="customer-add-form w-100">
-                    <div class="input-group input-group-sm customer-buy-box">
-                      <input type="number" name="quantity" min="1" th:attr="max=${item.quantity}" value="1" class="form-control" />
-                      <button type="submit" class="btn btn-warning" th:disabled="${item.quantity == 0}" th:text="${item.quantity == 0 ? #messages.msg('app.outOfStock') : #messages.msg('app.addToCart')}" th:attr="data-saving-message=#{app.saving}">Thêm giỏ</button>
-                    </div>
-                  </form>
+                  <div class="d-flex gap-2 mt-2" th:if="${!canManageProducts}">
+                    <a class="btn btn-sm btn-outline-info flex-fill" th:href="@{/products/{id}(id=${item.id})}" th:text="#{app.viewDetails}">Chi tiết</a>
+                    <form th:if="${isCustomer or isGuest}" th:action="@{/products/{id}/cart(id=${item.id})}" method="post" class="customer-add-form flex-fill">
+                      <div class="input-group input-group-sm customer-buy-box">
+                        <input type="number" name="quantity" min="1" th:attr="max=${item.quantity}" value="1" class="form-control" />
+                        <button type="submit" class="btn btn-warning" th:disabled="${item.quantity == 0}" th:text="${item.quantity == 0 ? #messages.msg('app.outOfStock') : #messages.msg('app.addToCart')}" th:attr="data-saving-message=#{app.saving}">Thêm giỏ</button>
+                      </div>
+                    </form>
+                  </div>
                 </div>
               </div>
             </article>

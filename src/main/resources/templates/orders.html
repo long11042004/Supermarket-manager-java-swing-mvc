@@ -60,6 +60,12 @@
             <span th:text="#{promotion.totalDiscount}">Tổng giảm</span>:
             <span th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(order.discountAmount)}">0 ₫</span>
           </div>
+          <div th:if="${order.shippingFee != null}" class="small">
+            <span th:text="#{shipping.fee}">Phí giao hàng</span>:
+            <span th:if="${order.shippingFee.signum() > 0}"
+                  th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(order.shippingFee)}">30.000 ₫</span>
+            <span th:if="${order.shippingFee.signum() == 0}" class="text-success" th:text="#{shipping.free}">Miễn phí</span>
+          </div>
           <strong th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(order.totalAmount)}">0 ₫</strong>
           <form th:if="${order.status.name() == 'PENDING' or order.status.name() == 'CONFIRMED'}"
                 th:action="@{/orders/{orderId}/cancel(orderId=${order.id})}"

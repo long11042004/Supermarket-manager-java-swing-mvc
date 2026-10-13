@@ -57,6 +57,9 @@ public class CustomerOrder {
 	@Column(precision = 12, scale = 2)
 	private BigDecimal discountAmount;
 
+	@Column(precision = 12, scale = 2)
+	private BigDecimal shippingFee;
+
 	@Column(length = 40)
 	private String couponCode;
 

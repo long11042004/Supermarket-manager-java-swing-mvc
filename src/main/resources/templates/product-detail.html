@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title th:text="${@productDisplayService.displayName(product)} + ' | ' + #{app.title}">Product detail</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background: linear-gradient(180deg, #f8fafc 0%, #eef4ff 100%);
+      color: #1f2937;
+    }
+    .product-detail-card {
+      border: 0;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+    }
+    .product-image-wrap {
+      background: linear-gradient(135deg, #edf4ff 0%, #ffffff 100%);
+      min-height: 360px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .product-detail-image {
+      max-width: 100%;
+      max-height: 420px;
+      object-fit: contain;
+      border-radius: 20px;
+      box-shadow: 0 12px 30px rgba(59, 130, 246, 0.18);
+    }
+    .placeholder-image {
+      width: 100%;
+      height: 100%;
+      min-height: 320px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 20px;
+      border: 2px dashed rgba(59, 130, 246, 0.35);
+      background: rgba(239, 246, 255, 0.8);
+      color: #2563eb;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .detail-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .detail-badges .badge {
+      font-size: 0.8rem;
+      padding: 0.55rem 0.9rem;
+      border-radius: 999px;
+    }
+    .info-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 1rem 1.1rem;
+    }
+    .info-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #667085;
+      margin-bottom: 0.25rem;
+    }
+    .detail-price {
+      font-size: clamp(2rem, 3vw, 3rem);
+      font-weight: 800;
+      color: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <a th:href="@{/products}" class="btn btn-outline-secondary">
+        <span aria-hidden="true">←</span>
+        <span class="ms-1" th:text="#{app.backToProducts}">Quay lại cửa hàng</span>
+      </a>
+      <div class="d-flex gap-2">
+        <a th:if="${canManageProducts}" th:href="@{/products/{id}/edit(id=${product.id})}" class="btn btn-primary" th:text="#{app.edit}">Sửa</a>
+      </div>
+    </div>
+
+    <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}">Có lỗi xảy ra</div>
+
+    <div class="card product-detail-card">
+      <div class="row g-0">
+        <div class="col-lg-5">
+          <div class="product-image-wrap">
+            <img th:if="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
+                 class="product-detail-image"
+                 th:src="${product.imageUrl}"
+                 th:alt="${@productDisplayService.displayName(product)}" />
+            <div th:unless="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}" class="placeholder-image">
+              <span th:text="${@productDisplayService.displayName(product)}">Product</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-7">
+          <div class="p-4 p-lg-5">
+            <div class="detail-badges">
+              <span class="badge bg-light text-dark" th:text="${product.category.label}">Danh mục</span>
+              <span th:if="${product.quantity <= 10}" class="badge bg-warning text-dark" th:text="#{app.stockLow}">Sắp hết</span>
+              <span th:unless="${product.quantity <= 10}" class="badge bg-success" th:text="#{app.stockAvailable}">Còn hàng</span>
+            </div>
+
+            <h1 class="mb-3" th:text="${@productDisplayService.displayName(product)}">Tên sản phẩm</h1>
+            <div class="detail-price mb-4" th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(product.price)}">0 ₫</div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <div class="info-box">
+                  <span class="info-label" th:text="#{app.unit}">Đơn vị</span>
+                  <div class="fw-semibold" th:text="${@productDisplayService.displayUnit(product) != null ? @productDisplayService.displayUnit(product) : #messages.msg('app.unitDefault')}">kg</div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-box">
+                  <span class="info-label" th:text="#{app.quantity}">Số lượng</span>
+                  <div class="fw-semibold" th:text="${product.quantity}">0</div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-box">
+                  <span class="info-label" th:text="#{app.category}">Danh mục</span>
+                  <div class="fw-semibold" th:text="${product.category.label}">Danh mục</div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-box">
+                  <span class="info-label" th:text="#{app.expiryDate}">Hạn sử dụng</span>
+                  <div class="fw-semibold" th:text="${product.expiryDate != null ? #temporals.format(product.expiryDate, 'dd/MM/yyyy') : '—'}">—</div>
+                </div>
+              </div>
+            </div>
+
+            <div th:if="${isCustomer or isGuest}" class="border rounded-4 p-3 bg-light mb-4">
+              <form th:action="@{/products/{id}/cart(id=${product.id})}" method="post">
+                <label class="form-label fw-semibold" th:text="#{app.quantity}">Số lượng</label>
+                <div class="input-group">
+                  <input type="number" name="quantity" min="1" th:attr="max=${product.quantity}" value="1" class="form-control form-control-lg" />
+                  <button type="submit" class="btn btn-warning btn-lg" th:disabled="${product.quantity == 0}" th:text="${product.quantity == 0 ? #messages.msg('app.outOfStock') : #messages.msg('app.addToCart')}">Thêm giỏ</button>
+                </div>
+              </form>
+            </div>
+
+            <div th:if="${isStaff and !canManageProducts}" class="alert alert-light border mb-0" role="alert"
+                 th:text="#{app.viewOnly}">
+              Chỉ xem thông tin kho
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

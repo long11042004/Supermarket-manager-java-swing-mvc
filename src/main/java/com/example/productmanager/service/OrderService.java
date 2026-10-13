@@ -38,6 +38,7 @@ public class OrderService {
 	private final MessageResolver messageResolver;
 	private final ApplicationEventPublisher applicationEventPublisher;
 	private final PromotionService promotionService;
+	private final ShippingService shippingService;
 
 	@Transactional
 	public CustomerOrder checkout(Long userId, 
@@ -136,9 +137,11 @@ public class OrderService {
 		PromotionService.PromotionQuote promotionQuote = promotionService.quote(totalAmount, cart.getCouponCode());
 		order.setSubtotalAmount(totalAmount);
 		order.setDiscountAmount(promotionQuote.totalDiscount());
+		BigDecimal shippingFee = shippingService.calculateFee(promotionQuote.totalAmount());
+		order.setShippingFee(shippingFee);
 		order.setCouponCode(promotionQuote.couponCode());
 		order.setAutomaticPromotionName(promotionQuote.automaticPromotionName());
-		order.setTotalAmount(promotionQuote.totalAmount());
+		order.setTotalAmount(promotionQuote.totalAmount().add(shippingFee));
 		promotionService.recordRedemptions(promotionQuote);
 		CustomerOrder savedOrder = customerOrderRepository.save(order);
 		if (userId != null && user != null) {

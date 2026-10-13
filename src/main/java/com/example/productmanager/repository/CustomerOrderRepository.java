@@ -72,7 +72,8 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
 			       COALESCE(p.unit_vi, p.unit_en) AS unit,
 			       SUM(coi.quantity) AS totalQuantity,
 			SUM(coi.line_total * CASE
-			    WHEN co.subtotal_amount > 0 THEN co.total_amount / co.subtotal_amount
+			    WHEN co.subtotal_amount > 0 THEN
+			        (co.subtotal_amount - COALESCE(co.discount_amount, 0)) / co.subtotal_amount
 			    ELSE 1
 			END) AS totalRevenue
 			FROM customer_order_items coi
@@ -82,7 +83,8 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
 			  AND (:status IS NULL OR co.status = :status)
 			GROUP BY p.id, p.name_vi, p.name_en, p.unit_vi, p.unit_en
 			ORDER BY SUM(coi.line_total * CASE
-			           WHEN co.subtotal_amount > 0 THEN co.total_amount / co.subtotal_amount
+			           WHEN co.subtotal_amount > 0 THEN
+			               (co.subtotal_amount - COALESCE(co.discount_amount, 0)) / co.subtotal_amount
 			           ELSE 1
 			       END) DESC
 			""", nativeQuery = true)

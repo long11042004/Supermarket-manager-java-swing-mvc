@@ -16,6 +16,11 @@
             <p th:if="${order.automaticPromotionName != null}"><strong>Khuyến mãi:</strong> <span th:text="${order.automaticPromotionName}">Ưu đãi</span></p>
             <p><strong>Tổng giảm:</strong> <span th:text="${formattedDiscount}">0</span> ₫</p>
         </div>
+        <p th:if="${order.shippingFee != null}">
+            <strong>Phí giao hàng:</strong>
+            <span th:if="${order.shippingFee.signum() > 0}" th:text="${formattedShippingFee} + ' ₫'">30.000 ₫</span>
+            <span th:if="${order.shippingFee.signum() == 0}" th:text="#{shipping.free}">Miễn phí</span>
+        </p>
         <p><strong>Tổng tiền:</strong> <span th:text="${formattedTotal}">0</span> ₫</p>
         <p><strong>Địa chỉ giao hàng:</strong> <span th:text="${order.deliveryAddress}">-</span></p>
         <p><strong>Trạng thái:</strong> <span th:text="${order.status}">PENDING</span></p>
