@@ -5,25 +5,77 @@ body {
     .container {
       max-width: 1200px;
     }
+    .container.py-4 {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
     .topbar {
       background: white;
       border-radius: 18px;
       box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
-      padding: 1rem 1.25rem;
-      margin-bottom: 1.5rem;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 0;
+    }
+    .dashboard-header-copy {
+      min-width: 190px;
+    }
+    .dashboard-header-copy h1 {
+      font-size: clamp(1.45rem, 2.5vw, 1.9rem);
+      font-weight: 700;
+    }
+    .dashboard-header-actions,
+    .dashboard-primary-links,
+    .dashboard-account-links {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+    }
+    .dashboard-header-actions {
+      justify-content: flex-end;
+    }
+    .customer-name-chip {
+      max-width: 190px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .card-box {
       background: white;
       border-radius: 18px;
       box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
       padding: 1.25rem;
-      margin-top: 1.5rem;
+      margin-top: 0;
+    }
+    .card-box > h4,
+    .suggested-products-header h4 {
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+    .customer-metrics {
+      margin-top: 0;
+      --bs-gutter-y: 0;
+      row-gap: 1rem;
+    }
+    .metric-card {
+      height: 100%;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+      padding: 1.15rem 1.25rem;
+    }
+    .metric-label {
+      color: #64748b;
+      font-size: 0.92rem;
+      font-weight: 600;
     }
     .stat {
       font-size: 2rem;
       font-weight: 700;
       color: #0f766e;
-      margin: 0.4rem 0;
+      line-height: 1.2;
+      margin: 0.45rem 0;
     }
     .btn-primary {
       background: #0f766e;
@@ -60,6 +112,10 @@ body {
       border-color: #99f6e4;
       box-shadow: 0 14px 28px rgba(15, 118, 110, 0.12);
     }
+    .suggested-product-card h5 {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
     .suggested-product-price {
       color: #0f766e;
       font-size: 1.2rem;
@@ -72,5 +128,42 @@ body {
     @media (prefers-reduced-motion: reduce) {
       .suggested-product-card {
         transition: none;
+      }
+    }
+    @media (max-width: 991.98px) {
+      .dashboard-header-actions {
+        justify-content: flex-start;
+        width: 100%;
+      }
+    }
+    @media (max-width: 767.98px) {
+      .container.py-4 {
+        gap: 1rem;
+      }
+      .topbar {
+        padding: 1rem;
+      }
+      .dashboard-header-actions {
+        justify-content: flex-start;
+        width: 100%;
+      }
+      .dashboard-primary-links,
+      .dashboard-account-links {
+        width: 100%;
+      }
+      .dashboard-primary-links > *,
+      .dashboard-account-links > * {
+        flex: 1 1 auto;
+      }
+      .customer-name-chip {
+        flex-basis: 100%;
+        max-width: none;
+        text-align: center;
+      }
+      .dashboard-account-links .form-select {
+        min-width: 120px;
+      }
+      .card-box {
+        padding: 1rem;
       }
     }

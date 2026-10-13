@@ -17,52 +17,57 @@
              th:text="${#messages.msg('app.updatedAt')} + ' ' + ${#temporals.format(specialNoticeUpdatedAt, 'dd/MM/yyyy HH:mm')}">Updated at</small>
     </div>
 
-    <div class="topbar d-flex justify-content-between align-items-center flex-wrap gap-3">
-      <div>
+    <header class="topbar d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div class="dashboard-header-copy">
         <div class="text-success fw-bold text-uppercase small" th:text="#{customer.system}">Cửa hàng ABC</div>
         <h1 class="mb-0" th:text="#{customer.heading}">Khách hàng</h1>
       </div>
-      <div class="d-flex align-items-center gap-2 flex-wrap">
-        <span class="badge bg-secondary" th:text="${currentUser.fullName}">Khách hàng</span>
-        <a th:href="@{/profile}" class="btn btn-outline-dark" th:text="#{common.profile}">Tài khoản</a>
-        <a th:href="@{/products}" class="btn btn-primary" th:text="#{dashboard.viewProducts}">Xem sản phẩm</a>
-        <a th:href="@{/orders}" class="btn btn-outline-warning" th:text="#{app.myOrders}">Đơn hàng của tôi</a>
-        <form method="get" th:action="@{/dashboard}" class="d-inline-flex align-items-center gap-2">
-          <label class="visually-hidden" for="customer-language-select" th:text="#{app.language}">Language</label>
-          <select id="customer-language-select" class="form-select form-select-sm" name="lang" onchange="this.form.submit()">
-            <option value="vi" th:selected="${#locale.language == 'vi'}" th:text="#{common.language.vi}">Tiếng Việt</option>
-            <option value="en" th:selected="${#locale.language == 'en'}" th:text="#{common.language.en}">English</option>
-          </select>
-        </form>
-        <form th:action="@{/logout}" method="post" class="d-inline">
-          <button type="submit" class="btn btn-outline-secondary" th:text="#{common.logout}">Đăng xuất</button>
-        </form>
+      <div class="dashboard-header-actions">
+        <nav class="dashboard-primary-links">
+          <a th:href="@{/products}" class="btn btn-primary" th:text="#{dashboard.viewProducts}">Xem sản phẩm</a>
+          <a th:href="@{/orders}" class="btn btn-outline-warning" th:text="#{app.myOrders}">Đơn hàng của tôi</a>
+        </nav>
+        <div class="dashboard-account-links">
+          <span class="badge bg-secondary customer-name-chip" th:text="${currentUser.fullName}">Khách hàng</span>
+          <a th:href="@{/profile}" class="btn btn-outline-dark" th:text="#{common.profile}">Tài khoản</a>
+          <form method="get" th:action="@{/dashboard}" class="d-inline-flex align-items-center gap-2">
+            <label class="visually-hidden" for="customer-language-select" th:text="#{app.language}">Language</label>
+            <select id="customer-language-select" class="form-select form-select-sm" name="lang" onchange="this.form.submit()">
+              <option value="vi" th:selected="${#locale.language == 'vi'}" th:text="#{common.language.vi}">Tiếng Việt</option>
+              <option value="en" th:selected="${#locale.language == 'en'}" th:text="#{common.language.en}">English</option>
+            </select>
+          </form>
+          <form th:action="@{/logout}" method="post" class="d-inline">
+            <button type="submit" class="btn btn-outline-secondary" th:text="#{common.logout}">Đăng xuất</button>
+          </form>
+        </div>
       </div>
-    </div>
+    </header>
 
-    <div class="row g-4">
-      <div class="col-md-4">
-        <div class="card-box">
-          <div class="text-muted" th:text="#{customer.totalProducts}">Tổng sản phẩm</div>
+    <section class="row row-cols-1 row-cols-md-3 g-3 customer-metrics"
+             th:aria-label="#{customer.overview}">
+      <div class="col">
+        <article class="metric-card">
+          <div class="metric-label" th:text="#{customer.totalProducts}">Tổng sản phẩm</div>
           <div class="stat" th:text="${totalProducts}">0</div>
           <div class="text-muted" th:text="#{customer.availableProducts}">Sản phẩm hiện có</div>
-        </div>
+        </article>
       </div>
-      <div class="col-md-4">
-        <div class="card-box">
-          <div class="text-muted" th:text="#{customer.lowStock}">Sắp hết hàng</div>
+      <div class="col">
+        <article class="metric-card">
+          <div class="metric-label" th:text="#{customer.lowStock}">Sắp hết hàng</div>
           <div class="stat" th:text="${lowStockCount}">0</div>
           <div class="text-muted" th:text="#{customer.attentionItems}">Mặt hàng cần chú ý</div>
-        </div>
+        </article>
       </div>
-      <div class="col-md-4">
-        <div class="card-box">
-          <div class="text-muted" th:text="#{customer.categories}">Danh mục</div>
+      <div class="col">
+        <article class="metric-card">
+          <div class="metric-label" th:text="#{customer.categories}">Danh mục</div>
           <div class="stat" th:text="${#lists.size(products)}">0</div>
           <div class="text-muted" th:text="#{customer.displayedProducts}">Sản phẩm đang hiển thị</div>
-        </div>
+        </article>
       </div>
-    </div>
+    </section>
 
     <div class="card-box">
       <h4 class="mb-3" th:text="#{customer.highlightOffers}">Ưu đãi nổi bật</h4>
@@ -70,7 +75,7 @@
         Hiện chưa có chương trình khuyến mãi đang áp dụng.
       </div>
       <div th:unless="${#lists.isEmpty(featuredPromotions)}" class="row g-3">
-        <div class="col-md-6 col-lg-4" th:each="offer : ${featuredPromotions}">
+        <div class="col-md-6" th:each="offer : ${featuredPromotions}">
           <article class="h-100 border border-success-subtle rounded p-3">
             <span class="badge mb-2"
                   th:classappend="${offer.kind.name() == 'COUPON'} ? ' bg-warning text-dark' : ' bg-success'"
@@ -100,15 +105,6 @@
             </div>
           </article>
         </div>
-      </div>
-    </div>
-
-    <div class="card-box">
-      <h4 class="mb-3" th:text="#{customer.onlineShopping}">Mua sắm trực tuyến</h4>
-      <div class="d-flex flex-wrap gap-2">
-        <a th:href="@{/products}" class="btn btn-primary" th:text="#{customer.openStore}">Mở gian hàng</a>
-        <a th:href="@{/orders}" class="btn btn-outline-dark" th:text="#{customer.viewOrderHistory}">Xem lịch sử đơn</a>
-        <a th:href="@{/profile}" class="btn btn-outline-secondary" th:text="#{customer.updateAddress}">Cập nhật địa chỉ giao hàng</a>
       </div>
     </div>
 

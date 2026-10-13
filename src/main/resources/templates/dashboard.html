@@ -17,19 +17,17 @@
              th:text="${#messages.msg('app.updatedAt')} + ' ' + ${#temporals.format(specialNoticeUpdatedAt, 'dd/MM/yyyy HH:mm')}">Updated at</small>
     </div>
 
-    <div class="topbar d-flex justify-content-between align-items-center flex-wrap gap-3">
-      <div>
+    <header class="topbar d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div class="dashboard-header-copy">
         <div class="text-primary fw-bold text-uppercase small" th:text="#{dashboard.system}">Cửa hàng ABC</div>
         <h1 class="mb-0" th:text="#{common.dashboard}">Dashboard</h1>
+        <div class="dashboard-roles" th:aria-label="#{dashboard.currentRole}">
+          <span class="badge-role" th:each="role : ${roles}" th:text="#{role.__${role.name()}__}">ADMIN</span>
+        </div>
       </div>
-      <div class="d-flex align-items-center gap-2 flex-wrap">
+      <div class="dashboard-header-actions">
         <span class="badge bg-secondary" th:text="${currentUser.fullName}">Người dùng</span>
         <a th:href="@{/profile}" class="btn btn-outline-dark nav-btn" th:text="#{common.profile}">Tài khoản</a>
-        <a th:href="@{/products}" class="btn btn-primary nav-btn" th:text="#{dashboard.viewProducts}">Xem sản phẩm</a>
-        <a th:if="${canManageUsers}" th:href="@{/reports}" class="btn btn-outline-success nav-btn" th:text="#{dashboard.report}">Báo cáo</a>
-        <a th:if="${canManageUsers}" th:href="@{/promotions}" class="btn btn-outline-warning nav-btn" th:text="#{promotion.manage}">Khuyến mãi</a>
-        <a th:if="${canManageUsers}" th:href="@{/users}" class="btn btn-outline-primary nav-btn" th:text="#{dashboard.manageUsers}">Quản lý nhân sự</a>
-        <a th:if="${isStaff or canManageUsers}" th:href="@{/order-management}" class="btn btn-outline-info nav-btn" th:text="#{orders.manage}">Quản lý đơn hàng</a>
         <form method="get" th:action="@{/dashboard}" class="d-inline-flex align-items-center gap-2">
           <label class="visually-hidden" for="dashboard-language-select" th:text="#{app.language}">Language</label>
           <select id="dashboard-language-select" class="form-select form-select-sm" name="lang" onchange="this.form.submit()">
@@ -41,10 +39,11 @@
           <button type="submit" class="btn btn-outline-secondary nav-btn" th:text="#{common.logout}">Đăng xuất</button>
         </form>
       </div>
-    </div>
+    </header>
 
-    <div class="row g-4">
-      <div class="col-md-4">
+    <section class="row row-cols-1 row-cols-md-3 g-3 dashboard-metrics"
+             th:aria-label="#{dashboard.overview}">
+      <div class="col">
         <div class="stat-card">
           <div class="text-muted" th:text="#{dashboard.totalProducts}">Tổng sản phẩm</div>
           <div class="stat-value" th:text="${totalProducts}">0</div>
@@ -52,7 +51,7 @@
         </div>
       </div>
 
-      <div class="col-md-4">
+      <div class="col">
         <div class="stat-card">
           <div class="text-muted" th:text="#{dashboard.totalUsers}">Tổng nhân sự</div>
           <div class="stat-value" th:text="${totalUsers}">0</div>
@@ -60,80 +59,78 @@
         </div>
       </div>
 
-      <div class="col-md-4">
+      <div class="col">
         <div class="stat-card">
           <div class="text-muted" th:text="#{dashboard.lowStock}">Sắp hết hàng</div>
           <div class="stat-value" th:text="${lowStockCount}">0</div>
           <div class="text-muted" th:text="#{dashboard.belowThreshold}">Dưới ngưỡng 10</div>
         </div>
       </div>
-    </div>
-
-    <div class="section-card">
-      <h4 class="mb-3" th:text="#{dashboard.currentRole}">Vai trò hiện tại</h4>
-      <div>
-        <span class="badge-role" th:each="role : ${roles}" th:text="#{role.__${role.name()}__}">ADMIN</span>
-      </div>
-    </div>
+    </section>
 
     <div class="section-card">
       <h4 class="mb-3" th:text="#{dashboard.quickActions}">Thao tác nhanh</h4>
-      <div class="d-flex flex-wrap gap-2">
-        <a th:href="@{/profile}" class="btn btn-outline-dark" th:text="#{dashboard.personalProfile}">Hồ sơ cá nhân</a>
+      <div class="quick-actions-grid">
         <a th:href="@{/products}" class="btn btn-primary" th:text="#{dashboard.viewProducts}">Xem sản phẩm</a>
+        <a th:if="${isStaff or canManageUsers}" th:href="@{/order-management}" class="btn btn-outline-info" th:text="#{orders.manage}">Quản lý đơn hàng</a>
         <a th:if="${canManageUsers}" th:href="@{/reports}" class="btn btn-outline-success" th:text="#{reports.title}">Báo cáo thống kê</a>
         <a th:if="${canManageUsers}" th:href="@{/promotions}" class="btn btn-outline-warning" th:text="#{promotion.manage}">Quản lý khuyến mãi</a>
         <a th:if="${canManageUsers}" th:href="@{/users}" class="btn btn-outline-primary" th:text="#{dashboard.manageStaff}">Quản lý nhân sự</a>
-        <a th:if="${canManageProducts}" th:href="@{/products}" class="btn btn-outline-success" th:text="#{dashboard.restock}">Nhập hàng / bổ sung</a>
       </div>
     </div>
 
-    <div class="section-card">
-      <h4 class="mb-3" th:text="#{dashboard.lowStockList}">Danh sách sản phẩm sắp hết hàng</h4>
-      <div th:if="${#lists.isEmpty(lowStockProducts)}" class="text-muted" th:text="#{dashboard.noLowStock}">Không có sản phẩm nào sắp hết hàng.</div>
-      <div th:unless="${#lists.isEmpty(lowStockProducts)}" class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead>
-            <tr>
-              <th th:text="#{app.name}">Tên sản phẩm</th>
-              <th th:text="#{app.category}">Danh mục</th>
-              <th th:text="#{common.quantity}">Số lượng</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr th:each="item : ${lowStockProducts}">
-              <td th:text="${@productDisplayService.displayName(item)}">Tên</td>
-              <td th:text="${item.category}">Danh mục</td>
-              <td><span class="badge bg-warning text-dark" th:text="${item.quantity}">0</span></td>
-            </tr>
-          </tbody>
-        </table>
+    <div class="row g-4 dashboard-data-grid">
+      <div class="col-xl-6">
+        <section class="section-card h-100">
+          <h4 class="mb-3" th:text="#{dashboard.lowStockList}">Danh sách sản phẩm sắp hết hàng</h4>
+          <div th:if="${#lists.isEmpty(lowStockProducts)}" class="text-muted" th:text="#{dashboard.noLowStock}">Không có sản phẩm nào sắp hết hàng.</div>
+          <div th:unless="${#lists.isEmpty(lowStockProducts)}" class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th th:text="#{app.name}">Tên sản phẩm</th>
+                  <th th:text="#{app.category}">Danh mục</th>
+                  <th th:text="#{common.quantity}">Số lượng</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="item : ${lowStockProducts}">
+                  <td th:text="${@productDisplayService.displayName(item)}">Tên</td>
+                  <td th:text="${item.category}">Danh mục</td>
+                  <td><span class="badge bg-warning text-dark" th:text="${item.quantity}">0</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
-    </div>
 
-    <div class="section-card mt-4">
-      <h4 class="mb-3" th:text="#{dashboard.expiringSoonList}">Danh sách sản phẩm sắp hết hạn</h4>
-      <div th:if="${#lists.isEmpty(expiringSoonProducts)}" class="text-muted" th:text="#{dashboard.noExpiringSoon}">Không có sản phẩm nào sắp hết hạn.</div>
-      <div th:unless="${#lists.isEmpty(expiringSoonProducts)}" class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead>
-            <tr>
-              <th th:text="#{app.name}">Tên sản phẩm</th>
-              <th th:text="#{app.category}">Danh mục</th>
-              <th th:text="#{app.expiryDate}">Hạn sử dụng</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr th:each="item : ${expiringSoonProducts}">
-              <td th:text="${@productDisplayService.displayName(item)}">Tên</td>
-              <td th:text="${item.category}">Danh mục</td>
-              <td>
-                <span class="badge bg-danger-subtle text-danger-emphasis"
-                      th:text="${item.expiryDate != null ? #temporals.format(item.expiryDate, 'dd/MM/yyyy') : '—'}">—</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="col-xl-6">
+        <section class="section-card h-100">
+          <h4 class="mb-3" th:text="#{dashboard.expiringSoonList}">Danh sách sản phẩm sắp hết hạn</h4>
+          <div th:if="${#lists.isEmpty(expiringSoonProducts)}" class="text-muted" th:text="#{dashboard.noExpiringSoon}">Không có sản phẩm nào sắp hết hạn.</div>
+          <div th:unless="${#lists.isEmpty(expiringSoonProducts)}" class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th th:text="#{app.name}">Tên sản phẩm</th>
+                  <th th:text="#{app.category}">Danh mục</th>
+                  <th th:text="#{app.expiryDate}">Hạn sử dụng</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="item : ${expiringSoonProducts}">
+                  <td th:text="${@productDisplayService.displayName(item)}">Tên</td>
+                  <td th:text="${item.category}">Danh mục</td>
+                  <td>
+                    <span class="badge bg-danger-subtle text-danger-emphasis"
+                          th:text="${item.expiryDate != null ? #temporals.format(item.expiryDate, 'dd/MM/yyyy') : '—'}">—</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
     </div>
   </div>

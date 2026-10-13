@@ -1,6 +1,7 @@
 package com.example.productmanager.controller;
 
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -40,7 +41,7 @@ public class PromotionController extends SessionController {
 			PromotionFormDTO form = new PromotionFormDTO();
 			form.setKind(PromotionKind.COUPON);
 			form.setDiscountType(DiscountType.PERCENTAGE);
-			form.setMinimumOrderAmount(java.math.BigDecimal.ZERO);
+			form.setMinimumOrderAmount(BigDecimal.ZERO);
 			form.setStartsAt(LocalDateTime.now().withSecond(0).withNano(0));
 			form.setEndsAt(LocalDateTime.now().plusDays(7).withSecond(0).withNano(0));
 			model.addAttribute("promotionForm", form);

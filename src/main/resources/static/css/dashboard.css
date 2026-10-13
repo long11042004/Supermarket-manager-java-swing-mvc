@@ -7,12 +7,31 @@ body {
   max-width: 1200px;
 }
 
+.container.py-4 {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
 .topbar {
   background: white;
   border-radius: 18px;
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
-  padding: 1rem 1.25rem;
-  margin-bottom: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 0;
+}
+
+.dashboard-header-copy h1 {
+  font-size: clamp(1.45rem, 2.5vw, 1.9rem);
+  font-weight: 700;
+}
+
+.dashboard-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.55rem;
 }
 
 .stat-card {
@@ -21,6 +40,12 @@ body {
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
   padding: 1.25rem;
   height: 100%;
+}
+
+.dashboard-metrics {
+  --bs-gutter-y: 0;
+  row-gap: 1rem;
+  margin-top: 0;
 }
 
 .stat-value {
@@ -35,7 +60,39 @@ body {
   border-radius: 18px;
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
   padding: 1.25rem;
-  margin-top: 1.5rem;
+  margin-top: 0;
+}
+
+.section-card h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.dashboard-roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 0.75rem;
+}
+
+.quick-actions-grid .btn {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  text-align: left;
+  white-space: normal;
+}
+
+.dashboard-data-grid {
+  --bs-gutter-y: 0;
+  row-gap: 1.25rem;
+  margin-top: 0;
 }
 
 .badge-role {
@@ -45,10 +102,34 @@ body {
   background: #dbeafe;
   color: #1d4ed8;
   font-weight: 600;
-  margin-right: 0.4rem;
-  margin-bottom: 0.2rem;
+  margin: 0;
 }
 
 .nav-btn {
   border-radius: 12px;
+}
+
+@media (max-width: 991.98px) {
+  .dashboard-header-actions {
+    justify-content: flex-start;
+    width: 100%;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .container.py-4 {
+    gap: 1rem;
+  }
+
+  .topbar {
+    padding: 1rem;
+  }
+
+  .dashboard-header-actions > * {
+    flex: 0 1 auto;
+  }
+
+  .section-card {
+    padding: 1rem;
+  }
 }
