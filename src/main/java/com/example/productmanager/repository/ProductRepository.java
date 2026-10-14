@@ -14,14 +14,14 @@ import com.example.productmanager.entity.ProductCategory;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-	@Query("""
-			SELECT p FROM Product p
+	@Query(value = """
+			SELECT * FROM products p
 			WHERE (:keyword = ''
-			    OR LOWER(COALESCE(p.nameVi, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
-			    OR LOWER(COALESCE(p.nameEn, '')) LIKE LOWER(CONCAT('%', :keyword, '%')))
+			    OR LOWER(COALESCE(p.name_vi, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+			    OR LOWER(COALESCE(p.name_en, '')) LIKE LOWER(CONCAT('%', :keyword, '%')))
 			  AND (:category IS NULL OR p.category = :category)
-			ORDER BY LOWER(COALESCE(p.nameVi, p.nameEn, '')) ASC
-			""")
+			ORDER BY LOWER(COALESCE(p.name_vi, p.name_en, '')) ASC
+			""", nativeQuery = true)
 	Page<Product> findByKeywordAndCategory(
 			@Param("keyword") String keyword,
 			@Param("category") ProductCategory category,
@@ -30,13 +30,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 	@Query("SELECT DISTINCT p.category FROM Product p WHERE p.category IS NOT NULL ORDER BY p.category ASC")
 	List<ProductCategory> findDistinctCategories();
 
-	@Query("""
-			SELECT p FROM Product p
+	@Query(value = """
+			SELECT * FROM products p
 			WHERE (:keyword = ''
-			    OR LOWER(COALESCE(p.nameVi, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
-			    OR LOWER(COALESCE(p.nameEn, '')) LIKE LOWER(CONCAT('%', :keyword, '%')))
-			ORDER BY LOWER(COALESCE(p.nameVi, p.nameEn, '')) ASC
-			""")
+			    OR LOWER(COALESCE(p.name_vi, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+			    OR LOWER(COALESCE(p.name_en, '')) LIKE LOWER(CONCAT('%', :keyword, '%')))
+			ORDER BY LOWER(COALESCE(p.name_vi, p.name_en, '')) ASC
+			""", nativeQuery = true)
 	List<Product> getProducts(@Param("keyword") String keyword);
 
 	@Query("SELECT p FROM Product p WHERE (:category IS NULL OR p.category = :category)")

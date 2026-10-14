@@ -49,6 +49,7 @@ public class ReportController extends SessionController {
 		model.addAttribute("status", statusFilter == null ? "" : statusFilter.name());
 		model.addAttribute("statuses", OrderStatus.values());
 		model.addAttribute("report", reportData);
+		model.addAttribute("currentUser", getCurrentUser(session));
 		return "reports";
 	}
 

@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title th:text="#{app.title}">Product Management</title>
+  <title th:text="${isCustomer or isGuest} ? #{app.storefrontTitle} : #{app.manageProductsTitle}">Online store</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" th:href="@{/css/products.css}" />
+  <link rel="stylesheet" th:href="@{/css/account-link.css}" />
 </head>
 <body>
   <div class="container py-4">
@@ -24,7 +25,7 @@
       <div>
         <p class="text-primary fw-bold mb-1 text-uppercase small" th:text="#{app.system}">Cửa hàng ABC</p>
         <h1 class="mb-0"
-            th:text="${isCustomer or isGuest} ? #{app.title} : #{app.manageProductsTitle}">Product Management</h1>
+            th:text="${isCustomer or isGuest} ? #{app.storefrontTitle} : #{app.manageProductsTitle}">Online store</h1>
       </div>
       <div class="d-flex align-items-center gap-2">
         <div class="date-badge">
@@ -35,7 +36,9 @@
         <span th:if="${isCustomer or isGuest}" class="badge bg-warning text-dark fs-6" th:text="#{app.cartBadge(${cart.itemCount})}">Giỏ: 0</span>
 
         <div class="d-flex align-items-center gap-2">
-          <span class="badge bg-secondary" th:if="${session.loggedInUser != null}" th:text="${session.loggedInUser.fullName}">User</span>
+          <div th:if="${currentUser != null}">
+            <div th:replace="~{fragments/common :: accountLink(${currentUser})}"></div>
+          </div>
           <span th:if="${isGuest}" class="badge bg-light text-dark border" th:text="#{app.guestBadge}">Guest</span>
           <a th:if="${!isGuest}" th:href="@{/dashboard}" class="btn btn-outline-primary btn-sm" th:text="#{common.dashboard}">Dashboard</a>
           <a th:if="${canManageProducts}" th:href="@{/promotions}" class="btn btn-outline-warning btn-sm" th:text="#{promotion.manage}">Khuyến mãi</a>
@@ -315,17 +318,40 @@
             </div>
           </div>
 
-          <div class="product-grid">
+          <div th:if="${#lists.isEmpty(products)}" class="catalog-empty-state">
+            <div class="catalog-empty-icon" aria-hidden="true">
+              <svg viewBox="0 0 48 48" fill="none">
+                <circle cx="21" cy="21" r="12" stroke="currentColor" stroke-width="2.5"/>
+                <path d="m30 30 9 9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M16 21h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h4 th:text="#{app.noProductsFound}">Không tìm thấy sản phẩm</h4>
+            <p class="text-muted mb-3" th:text="#{app.noProductsHint}">Thử thay đổi từ khóa hoặc danh mục để xem thêm sản phẩm.</p>
+            <a th:href="@{/products}" class="btn btn-outline-primary btn-sm" th:text="#{common.filter.clear}">Xóa bộ lọc</a>
+          </div>
+
+          <div class="product-grid" th:attr="aria-label=#{app.productList}">
             <article class="product-card" th:each="item, state : ${products}">
               <div class="product-card-media" th:classappend="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)} ? 'has-image'">
                 <img th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
                      class="product-card-image" th:src="${item.imageUrl}"
                      th:alt="${@productDisplayService.displayName(item)}"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';"
                      loading="lazy" decoding="async" />
+                <div class="product-image-placeholder"
+                     th:style="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)} ? 'display:none' : null"
+                     aria-hidden="true">
+                  <svg viewBox="0 0 48 48" fill="none">
+                    <rect x="6" y="7" width="36" height="34" rx="7" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="17" cy="18" r="3" fill="currentColor"/>
+                    <path d="m9 36 11-11 7 7 5-5 8 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
                 <div class="product-card-badges">
                   <span class="category-chip" th:text="${item.category.label}">Danh mục</span>
                   <span class="stock-badge" th:classappend="${item.quantity <= 10} ? 'low' : 'good'"
-                        th:text="${item.quantity <= 10 ? (isCustomer or isGuest ? #messages.msg('app.stockLow') : #messages.msg('app.stockInsufficient')) : (isCustomer or isGuest ? #messages.msg('app.stockAvailable') : #messages.msg('app.stockEnough'))}">In stock</span>
+                        th:text="${item.quantity == 0 ? #messages.msg('app.outOfStock') : (item.quantity <= 10 ? (isCustomer or isGuest ? #messages.msg('app.stockLow') : #messages.msg('app.stockInsufficient')) : (isCustomer or isGuest ? #messages.msg('app.stockAvailable') : #messages.msg('app.stockEnough')))}">In stock</span>
                 </div>
               </div>
 
@@ -333,7 +359,11 @@
                 <a class="product-name text-decoration-none text-dark d-block" th:href="@{/products/{id}(id=${item.id})}" th:text="${@productDisplayService.displayName(item)}">Tên sản phẩm</a>
                 <div class="product-meta">
                   <span th:text="${@productDisplayService.displayUnit(item) != null ? @productDisplayService.displayUnit(item) : #messages.msg('app.unitDefault')}">Unit</span>
-                  <span th:text="${item.expiryDate != null ? #temporals.format(item.expiryDate, 'dd/MM/yyyy') : '—'}">—</span>
+                  <span class="product-expiry" th:if="${item.expiryDate != null}">
+                    <span th:text="#{app.expiryDate}">Hạn sử dụng</span>
+                    <strong th:text="${#temporals.format(item.expiryDate, 'dd/MM/yyyy')}">31/12/2026</strong>
+                  </span>
+                  <span class="product-expiry text-muted" th:unless="${item.expiryDate != null}" aria-hidden="true">—</span>
                 </div>
                 <div class="product-price" th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(item.price)}">0 ₫</div>
 

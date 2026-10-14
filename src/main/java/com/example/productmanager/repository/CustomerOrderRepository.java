@@ -1,6 +1,7 @@
 package com.example.productmanager.repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -66,9 +67,24 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
 			@Param("endTime") LocalDateTime endTime,
 			@Param("status") OrderStatus status);
 
-	@Query("SELECT o.status AS status, COUNT(o) AS total FROM CustomerOrder o WHERE o.createdAt BETWEEN :startTime AND :endTime GROUP BY o.status")
+	@Query("SELECT o.status AS status, COUNT(o) AS total FROM CustomerOrder o WHERE o.createdAt BETWEEN :startTime AND :endTime AND (:status IS NULL OR o.status = :status) GROUP BY o.status")
 	List<OrderStatusCountProjection> countOrdersByStatusInPeriod(@Param("startTime") LocalDateTime startTime,
-			@Param("endTime") LocalDateTime endTime);
+			@Param("endTime") LocalDateTime endTime,
+			@Param("status") OrderStatus status);
+
+	@Query("""
+			SELECT FUNCTION('DATE', o.createdAt) AS orderDate,
+			       COUNT(o) AS orderCount,
+			       COALESCE(SUM(o.totalAmount), 0) AS revenue
+			FROM CustomerOrder o
+			WHERE o.createdAt BETWEEN :startTime AND :endTime
+			  AND (:status IS NULL OR o.status = :status)
+			GROUP BY FUNCTION('DATE', o.createdAt)
+			ORDER BY FUNCTION('DATE', o.createdAt)
+			""")
+	List<DailySalesProjection> findDailySalesInPeriod(@Param("startTime") LocalDateTime startTime,
+			@Param("endTime") LocalDateTime endTime,
+			@Param("status") OrderStatus status);
 
 	@Query(value = """
 			SELECT COALESCE(p.name_vi, p.name_en) AS productName,
@@ -100,6 +116,14 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
 		OrderStatus getStatus();
 
 		Long getTotal();
+	}
+
+	interface DailySalesProjection {
+		LocalDate getOrderDate();
+
+		Long getOrderCount();
+
+		BigDecimal getRevenue();
 	}
 
 	interface TopProductProjection {

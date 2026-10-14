@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+  <a th:fragment="accountLink(user)"
+     th:href="@{/profile}"
+     class="account-link"
+     th:title="${user.fullName != null and !#strings.isEmpty(user.fullName) ? user.fullName : user.username}">
+    <img th:if="${user.avatarUrl != null and !#strings.isEmpty(user.avatarUrl)}"
+         class="account-avatar"
+         th:src="${user.avatarUrl}"
+         alt=""
+         onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';" />
+    <span class="account-avatar-fallback"
+          th:style="${user.avatarUrl != null and !#strings.isEmpty(user.avatarUrl)} ? 'display:none' : null"
+          aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M4.5 20a7.5 7.5 0 0 1 15 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </span>
+    <span class="account-name"
+          th:text="${user.fullName != null and !#strings.isEmpty(user.fullName) ? user.fullName : user.username}">User name</span>
+  </a>
+</body>
+</html>

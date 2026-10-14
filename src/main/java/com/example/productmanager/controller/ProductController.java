@@ -79,6 +79,7 @@ public class ProductController extends SessionController {
 		model.addAttribute("pageSize", productsPage.getSize());
 		model.addAttribute("totalProducts", productsPage.getTotalElements());
 		model.addAttribute("product", new ProductFormDTO());
+		model.addAttribute("currentUser", getCurrentUser(session));
 		model.addAttribute("keyword", keyword == null ? "" : keyword);
 		model.addAttribute("category", category == null ? "" : category);
 		model.addAttribute("categories", productService.getAllCategories());
@@ -229,6 +230,7 @@ public class ProductController extends SessionController {
 		Product product = productService.getProductById(id);
 		Page<Product> productsPage = productService.getFilteredProducts(null, null, 0, 12);
 		model.addAttribute("product", productMapper.toForm(product));
+		model.addAttribute("currentUser", getCurrentUser(session));
 		model.addAttribute("products", productsPage.getContent());
 		model.addAttribute("currentPage", productsPage.getNumber());
 		model.addAttribute("totalPages", productsPage.getTotalPages());

@@ -32,6 +32,77 @@ body {
   font-weight: 700;
   color: #047857;
   margin-top: 0.5rem;
+  overflow-wrap: anywhere;
+}
+
+.trend-card {
+  min-width: 0;
+}
+
+.sales-trend-scroll {
+  overflow-x: auto;
+  padding: 0.5rem 0 0.25rem;
+}
+
+.sales-trend {
+  display: grid;
+  grid-auto-columns: minmax(32px, 1fr);
+  grid-auto-flow: column;
+  align-items: end;
+  gap: 0.5rem;
+  min-width: 100%;
+}
+
+.trend-column {
+  display: flex;
+  min-width: 32px;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  color: #64748b;
+  font-size: 0.7rem;
+  text-align: center;
+}
+
+.trend-bar-track {
+  display: flex;
+  width: min(100%, 30px);
+  height: 150px;
+  align-items: flex-end;
+  overflow: hidden;
+  border-radius: 8px 8px 2px 2px;
+  background: #f1f5f9;
+}
+
+.trend-bar {
+  width: 100%;
+  min-height: 0;
+  border-radius: 7px 7px 2px 2px;
+  background: linear-gradient(180deg, #34d399, #059669);
+}
+
+.trend-date {
+  white-space: nowrap;
+}
+
+.trend-orders {
+  color: #334155;
+  font-weight: 700;
+}
+
+.trend-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.trend-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #10b981;
 }
 
 .status-pill {
@@ -41,4 +112,24 @@ body {
   background: #dcfce7;
   color: #065f46;
   font-weight: 600;
+}
+
+@media (max-width: 575.98px) {
+  .report-topbar,
+  .filter-card,
+  .section-card {
+    padding: 1rem;
+  }
+
+  .stat-card {
+    padding: 0.9rem;
+  }
+
+  .stat-value {
+    font-size: 1.2rem;
+  }
+
+  .sales-trend {
+    grid-auto-columns: 38px;
+  }
 }

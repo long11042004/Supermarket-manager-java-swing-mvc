@@ -115,6 +115,7 @@ public class UserController extends SessionController {
 		}
 
 		model.addAttribute("users", users);
+		model.addAttribute("currentUser", getCurrentUser(session));
 		model.addAttribute("keyword", keyword);
 		model.addAttribute("manageableOnly", manageableOnly);
 		model.addAttribute("roles", editableRoles(session));
@@ -181,6 +182,7 @@ public class UserController extends SessionController {
 				.collect(Collectors.toSet());
 
 		model.addAttribute("user", user);
+		model.addAttribute("currentUser", getCurrentUser(session));
 		model.addAttribute("users", users);
 		model.addAttribute("manageableOnly", false);
 		model.addAttribute("roles", editableRoles(session));
