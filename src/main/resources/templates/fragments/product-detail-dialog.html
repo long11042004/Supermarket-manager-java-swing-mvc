@@ -1,0 +1,78 @@
+<dialog xmlns:th="http://www.thymeleaf.org"
+        th:fragment="dialog(item, isCustomer, isGuest, isStaff, canManageProducts, autoOpen)"
+        class="product-detail-dialog"
+        th:id="|product-detail-dialog-${item.id}|"
+        th:attr="aria-labelledby=|product-detail-title-${item.id}|, data-auto-open=${autoOpen}">
+  <div class="product-detail-dialog-content">
+    <div class="product-detail-dialog-image-wrap">
+      <img th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
+           class="product-detail-dialog-image"
+           th:src="${item.imageUrl}"
+           th:alt="${@productDisplayService.displayName(item)}"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+      <div class="product-detail-dialog-placeholder"
+           th:style="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)} ? 'display:none' : ''">
+        <span th:text="${@productDisplayService.displayName(item)}">Tên sản phẩm</span>
+      </div>
+    </div>
+
+    <div class="product-detail-dialog-info">
+      <div class="product-detail-dialog-header">
+        <div class="detail-badges">
+          <span class="badge bg-light text-dark" th:text="${item.category.label}">Danh mục</span>
+          <span th:if="${item.quantity == 0}" class="badge bg-danger" th:text="#{app.outOfStock}">Hết hàng</span>
+          <span th:if="${item.quantity > 0 and item.quantity <= 10}" class="badge bg-warning text-dark" th:text="#{app.stockLow}">Sắp hết</span>
+          <span th:if="${item.quantity > 10}" class="badge bg-success" th:text="#{app.stockAvailable}">Còn hàng</span>
+        </div>
+        <button type="button"
+                class="btn-close"
+                data-close-product-detail
+                th:attr="aria-label=#{app.hide}, title=#{app.hide}"></button>
+      </div>
+
+      <h2 class="product-detail-dialog-title"
+          th:id="|product-detail-title-${item.id}|"
+          th:text="${@productDisplayService.displayName(item)}">Tên sản phẩm</h2>
+      <div class="product-detail-dialog-price"
+           th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(item.price)}">0 ₫</div>
+
+      <div class="product-detail-dialog-facts">
+        <div class="product-detail-dialog-fact">
+          <span class="info-label" th:text="#{app.unit}">Đơn vị</span>
+          <strong th:text="${@productDisplayService.displayUnit(item) != null ? @productDisplayService.displayUnit(item) : #messages.msg('app.unitDefault')}">kg</strong>
+        </div>
+        <div class="product-detail-dialog-fact">
+          <span class="info-label" th:text="#{app.quantity}">Số lượng</span>
+          <strong th:text="${item.quantity}">0</strong>
+        </div>
+        <div class="product-detail-dialog-fact">
+          <span class="info-label" th:text="#{app.category}">Danh mục</span>
+          <strong th:text="${item.category.label}">Danh mục</strong>
+        </div>
+        <div class="product-detail-dialog-fact">
+          <span class="info-label" th:text="#{app.expiryDate}">Hạn sử dụng</span>
+          <strong th:text="${item.expiryDate != null ? #temporals.format(item.expiryDate, 'dd/MM/yyyy') : '—'}">—</strong>
+        </div>
+      </div>
+
+      <div th:if="${isCustomer or isGuest}" class="product-detail-dialog-buy">
+        <form th:action="@{/products/{id}/cart(id=${item.id})}" method="post">
+          <label class="form-label fw-semibold" th:text="#{app.quantity}">Số lượng</label>
+          <div class="input-group">
+            <input type="number" name="quantity" min="1" th:attr="max=${item.quantity}" value="1" class="form-control" />
+            <button type="submit"
+                    class="btn btn-warning"
+                    th:disabled="${item.quantity == 0}"
+                    th:text="${item.quantity == 0 ? #messages.msg('app.outOfStock') : #messages.msg('app.addToCart')}"
+                    th:attr="data-saving-message=#{app.saving}">Thêm giỏ</button>
+          </div>
+        </form>
+      </div>
+
+      <div th:if="${isStaff and !canManageProducts}"
+           class="alert alert-light border mb-0"
+           role="status"
+           th:text="#{app.viewOnly}">Chỉ xem thông tin kho</div>
+    </div>
+  </div>
+</dialog>

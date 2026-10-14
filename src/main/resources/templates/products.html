@@ -33,6 +33,16 @@
           <strong th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}">13/08/2026</strong>
         </div>
 
+        <button th:if="${isCustomer or isGuest}"
+                type="button"
+                id="open-cart-button"
+                class="btn btn-warning cart-trigger d-inline-flex align-items-center gap-2"
+                aria-haspopup="dialog"
+                aria-controls="cart-dialog">
+          <span th:replace="~{fragments/common :: shopIcon}"></span>
+          <span th:text="#{app.cartBadge(${cart.itemCount})}">Cart: 0</span>
+        </button>
+
         <div class="d-flex align-items-center gap-2">
           <div th:if="${currentUser != null}">
             <div th:replace="~{fragments/common :: accountLink(${currentUser})}"></div>
@@ -76,8 +86,20 @@
       <div class="toolbar-top">
         <div>
           <div class="eyebrow" th:text="${isCustomer or isGuest} ? #{app.shopCollection} : #{app.inventoryOverview}">Shop collection</div>
-          <h2 class="toolbar-title"
-              th:text="${isCustomer or isGuest} ? #{app.smartShopping} : #{app.inventoryManagement}">Shop smarter, save more</h2>
+          <div class="toolbar-title-row">
+            <h2 class="toolbar-title"
+                th:text="${isCustomer or isGuest} ? #{app.smartShopping} : #{app.inventoryManagement}">Shop smarter, save more</h2>
+            <button th:if="${canManageProducts}"
+                    type="button"
+                    id="show-product-form"
+                    class="btn btn-primary add-product-btn d-inline-flex align-items-center gap-2">
+              <span th:if="${product.id == null}" class="add-product-icon">＋</span>
+              <span th:if="${product.id != null}">
+                <span th:replace="~{fragments/common :: editIcon}"></span>
+              </span>
+              <span th:text="${product.id != null} ? #{app.edit} : #{app.addProduct}">Thêm sản phẩm</span>
+            </button>
+          </div>
         </div>
         <div class="summary-pills">
           <span class="summary-pill">
@@ -96,10 +118,18 @@
         <input type="hidden" name="size" th:value="${pageSize}" />
         <div class="col-md-5">
           <label class="form-label mb-1" for="keyword" th:text="#{app.searchLabel}">Search</label>
-          <input id="keyword" type="text" class="form-control" name="keyword" th:value="${keyword}" th:placeholder="#{app.searchPlaceholder}" />
+          <div class="input-group catalog-search-group">
+            <span class="input-group-text">
+              <span th:replace="~{fragments/common :: searchIcon}"></span>
+            </span>
+            <input id="keyword" type="search" class="form-control" name="keyword" th:value="${keyword}" th:placeholder="#{app.searchPlaceholder}" />
+          </div>
         </div>
         <div class="col-md-4">
-          <label class="form-label mb-1" for="categoryFilter" th:text="#{app.category}">Category</label>
+          <label class="form-label mb-1 d-flex align-items-center gap-1" for="categoryFilter">
+            <span th:replace="~{fragments/common :: filterIcon}"></span>
+            <span th:text="#{app.category}">Category</span>
+          </label>
           <select id="categoryFilter" class="form-select" name="category">
             <option value="" th:text="#{app.allCategories}">All</option>
             <option th:each="item : ${categories}"
@@ -108,26 +138,43 @@
                     th:selected="${item.name() == category}">Category</option>
           </select>
         </div>
-        <div class="col-md-3 d-flex align-items-end gap-2">
-          <button type="submit" class="btn btn-primary flex-fill" th:text="#{common.search}">Search</button>
-          <a th:href="@{/products}" class="btn btn-outline-secondary" th:text="#{common.filter.clear}">Clear filters</a>
+        <div class="col-md-3 d-flex align-items-end gap-2 toolbar-actions">
+          <button type="submit" class="btn btn-primary flex-fill d-inline-flex align-items-center justify-content-center gap-2">
+            <span th:replace="~{fragments/common :: searchIcon}"></span>
+            <span th:text="#{common.search}">Search</span>
+          </button>
+          <a th:href="@{/products}" class="btn btn-outline-secondary d-inline-flex align-items-center justify-content-center gap-1"
+             th:attr="aria-label=#{common.filter.clear}, title=#{common.filter.clear}">
+            <span th:replace="~{fragments/common :: clearIcon}"></span>
+            <span th:text="#{common.filter.clear}">Clear filters</span>
+          </a>
         </div>
       </form>
     </div>
 
     <div class="row g-4 align-items-start">
-      <div class="col-lg-4">
-        <div th:if="${isCustomer or isGuest}" class="card p-4 mb-4 customer-cart-panel">
+      <div class="dialog-host">
+        <dialog th:if="${isCustomer or isGuest}"
+                id="cart-dialog"
+                class="cart-dialog customer-cart-panel"
+                aria-labelledby="cart-dialog-title">
+          <div class="cart-dialog-content">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
-              <h3 class="mb-1" th:text="#{app.cartTitle}">Cart</h3>
+              <h2 id="cart-dialog-title" class="h4 mb-1" th:text="#{app.cartTitle}">Cart</h2>
               <p class="text-muted mb-0" th:text="#{app.cartSubtitle}">Choose products and order online</p>
             </div>
-            <span class="badge rounded-pill text-bg-warning" th:text="#{app.cartItemsCount(${cart.itemCount})}">0 items</span>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge rounded-pill text-bg-warning" th:text="#{app.cartItemsCount(${cart.itemCount})}">0 items</span>
+              <button type="button"
+                      id="close-cart-button"
+                      class="btn-close"
+                      th:attr="aria-label=#{app.hide}, title=#{app.hide}"></button>
+            </div>
           </div>
 
           <div th:if="${#lists.isEmpty(cart.items)}" class="text-muted empty-cart-state">
-            <span th:text="#{app.cartEmpty}">Giỏ hàng đang trống. Thêm sản phẩm ở danh sách bên phải để bắt đầu.</span>
+            <span th:text="#{app.cartEmpty}">Giỏ hàng đang trống. Thêm sản phẩm từ danh sách để bắt đầu.</span>
           </div>
 
           <div th:unless="${#lists.isEmpty(cart.items)}">
@@ -222,26 +269,25 @@
               </form>
             </div>
           </div>
-        </div>
-
-        <div class="mb-3" th:if="${canManageProducts}">
-          <button type="button" id="show-product-form" class="btn btn-primary w-100 add-product-btn" th:classappend="${product.id != null} ? 'd-none' : ''">
-            <span class="add-product-icon">＋</span>
-            <span th:text="#{app.addProduct}">Thêm sản phẩm</span>
-          </button>
-        </div>
-
-        <div th:if="${canManageProducts}"
-             id="product-form-card"
-             class="card p-4"
-             th:classappend="${product.id != null} ? '' : 'form-hidden'"
-             th:attr="data-editing=${product.id != null}">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h3 class="mb-0" th:text="${product.id != null} ? #{app.updateProduct} : #{app.addProduct}">Thêm sản phẩm</h3>
-            <button type="button" id="hide-product-form" class="btn btn-sm btn-outline-secondary" th:classappend="${product.id != null} ? 'd-none' : ''" th:text="#{app.hide}">Đóng</button>
           </div>
+        </dialog>
 
-          <form th:action="${product.id != null} ? @{/products/{id}/update(id=${product.id})} : @{/products}" method="post" th:object="${product}">
+        <dialog th:if="${canManageProducts}"
+                id="product-form-dialog"
+                class="product-form-dialog"
+                th:attr="data-editing=${product.id != null}"
+                aria-labelledby="product-form-title">
+          <div class="product-form-dialog-content">
+            <div class="product-form-dialog-header d-flex justify-content-between align-items-center mb-3">
+              <h3 id="product-form-title" class="mb-0"
+                  th:text="${product.id != null} ? #{app.updateProduct} : #{app.addProduct}">Thêm sản phẩm</h3>
+              <button type="button"
+                      id="hide-product-form"
+                      class="btn-close"
+                      th:attr="aria-label=#{app.hide}, title=#{app.hide}"></button>
+            </div>
+
+            <form th:action="${product.id != null} ? @{/products/{id}/update(id=${product.id})} : @{/products}" method="post" th:object="${product}">
             <div class="row">
               <div class="col-md-6 mb-3">
                 <label class="form-label" for="nameVi">Tên tiếng Việt</label>
@@ -303,11 +349,12 @@
                       th:attr="data-saving-message=#{app.saving}">Lưu</button>
               <a th:if="${product.id != null}" th:href="@{/products}" class="btn btn-outline-secondary" th:text="#{app.cancel}">Hủy</a>
             </div>
-          </form>
-        </div>
+            </form>
+          </div>
+        </dialog>
       </div>
 
-      <div class="col-lg-8">
+      <div class="col-12">
         <div class="catalog-panel card p-3">
           <div class="catalog-header">
             <div>
@@ -369,7 +416,11 @@
               </div>
 
               <div class="product-card-body">
-                <a class="product-name text-decoration-none text-dark d-block" th:href="@{/products/{id}(id=${item.id})}" th:text="${@productDisplayService.displayName(item)}">Tên sản phẩm</a>
+                <button type="button"
+                        class="product-name product-detail-trigger text-decoration-none text-dark d-block"
+                        th:attr="data-product-detail-target=|product-detail-dialog-${item.id}|, aria-controls=|product-detail-dialog-${item.id}|"
+                        aria-haspopup="dialog"
+                        th:text="${@productDisplayService.displayName(item)}">Tên sản phẩm</button>
                 <div class="product-meta">
                   <span th:text="${@productDisplayService.displayUnit(item) != null ? @productDisplayService.displayUnit(item) : #messages.msg('app.unitDefault')}">Unit</span>
                   <span class="product-expiry" th:if="${item.expiryDate != null}">
@@ -383,7 +434,11 @@
                 <div class="product-card-actions" th:if="${canManageProducts or isCustomer or isGuest or isStaff}">
                   <div class="d-flex gap-2" th:if="${canManageProducts}">
                     <a class="btn btn-sm btn-outline-primary" th:href="@{/products/{id}/edit(id=${item.id})}" th:text="#{app.edit}">Sửa</a>
-                    <a class="btn btn-sm btn-outline-info" th:href="@{/products/{id}(id=${item.id})}" th:text="#{app.viewDetails}">Chi tiết</a>
+                    <button type="button"
+                            class="btn btn-sm btn-outline-info"
+                            th:attr="data-product-detail-target=|product-detail-dialog-${item.id}|, aria-controls=|product-detail-dialog-${item.id}|"
+                            aria-haspopup="dialog"
+                            th:text="#{app.viewDetails}">Chi tiết</button>
                     <form th:action="@{/products/{id}/delete(id=${item.id})}" method="post" style="display:inline;">
                       <button type="submit" class="btn btn-sm btn-outline-danger" th:attr="data-confirm-message=#{app.confirmDelete}" th:text="#{app.delete}">Xóa</button>
                     </form>
@@ -395,7 +450,11 @@
                   </div>
 
                   <div class="d-flex gap-2 mt-2" th:if="${!canManageProducts}">
-                    <a class="btn btn-sm btn-outline-info flex-fill" th:href="@{/products/{id}(id=${item.id})}" th:text="#{app.viewDetails}">Chi tiết</a>
+                    <button type="button"
+                            class="btn btn-sm btn-outline-info flex-fill"
+                            th:attr="data-product-detail-target=|product-detail-dialog-${item.id}|, aria-controls=|product-detail-dialog-${item.id}|"
+                            aria-haspopup="dialog"
+                            th:text="#{app.viewDetails}">Chi tiết</button>
                     <form th:if="${isCustomer or isGuest}" th:action="@{/products/{id}/cart(id=${item.id})}" method="post" class="customer-add-form flex-fill">
                       <div class="input-group input-group-sm customer-buy-box">
                         <input type="number" name="quantity" min="1" th:attr="max=${item.quantity}" value="1" class="form-control" />
@@ -405,8 +464,16 @@
                   </div>
                 </div>
               </div>
+
+              <th:block th:if="${detailProduct == null or item.id != detailProduct.id}">
+                <th:block th:replace="~{fragments/product-detail-dialog :: dialog(${item}, ${isCustomer}, ${isGuest}, ${isStaff}, ${canManageProducts}, false)}"></th:block>
+              </th:block>
             </article>
           </div>
+
+          <th:block th:if="${detailProduct != null}">
+            <th:block th:replace="~{fragments/product-detail-dialog :: dialog(${detailProduct}, ${isCustomer}, ${isGuest}, ${isStaff}, ${canManageProducts}, true)}"></th:block>
+          </th:block>
 
           <div class="d-flex justify-content-between align-items-center mt-3" th:if="${totalPages > 1}">
             <a class="btn btn-outline-secondary btn-sm"

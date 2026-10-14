@@ -29,7 +29,10 @@
 
       <div class="text-center mb-4">
         <div class="brand" th:text="#{app.system}">Cửa hàng ABC</div>
-        <h2 class="mt-2 mb-0" th:text="#{login.heading}">Đăng nhập</h2>
+        <h2 class="auth-heading mt-2 mb-0">
+          <span th:replace="~{fragments/common :: loginIcon}"></span>
+          <span th:text="#{login.heading}">Đăng nhập</span>
+        </h2>
       </div>
 
       <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}">
@@ -41,45 +44,87 @@
 
       <form th:action="@{/login}" method="post" th:object="${loginUser}">
         <div class="mb-3">
-          <label class="form-label" th:text="#{common.username}">Tên đăng nhập</label>
-          <input type="text" class="form-control" th:field="*{username}" th:placeholder="#{login.usernamePlaceholder}" required />
+          <label class="form-label" for="login-username" th:text="#{common.username}">Tên đăng nhập</label>
+          <div class="input-group auth-input-group">
+            <span class="input-group-text">
+              <span th:replace="~{fragments/common :: userIcon}"></span>
+            </span>
+            <input id="login-username" type="text" class="form-control" th:field="*{username}" th:placeholder="#{login.usernamePlaceholder}" autocomplete="username" required />
+          </div>
         </div>
         <div class="mb-3">
-          <label class="form-label" th:text="#{common.password}">Mật khẩu</label>
-          <input type="password" class="form-control" th:field="*{password}" th:placeholder="#{login.passwordPlaceholder}" required />
+          <label class="form-label" for="login-password" th:text="#{common.password}">Mật khẩu</label>
+          <div class="input-group auth-input-group">
+            <span class="input-group-text">
+              <span th:replace="~{fragments/common :: lockIcon}"></span>
+            </span>
+            <input id="login-password" type="password" class="form-control" th:field="*{password}" th:placeholder="#{login.passwordPlaceholder}" autocomplete="current-password" required />
+          </div>
         </div>
-        <button type="submit" class="btn btn-primary w-100" th:text="#{login.loginButton}" th:attr="data-loading-message=#{login.loginLoading}">Đăng nhập</button>
+        <button type="submit" class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2" th:attr="data-loading-message=#{login.loginLoading}">
+          <span th:replace="~{fragments/common :: loginIcon}"></span>
+          <span th:text="#{login.loginButton}">Đăng nhập</span>
+        </button>
       </form>
 
       <div class="mt-3">
-        <a th:href="@{/products}" class="btn btn-outline-secondary w-100" th:text="#{app.guestOrderLink}">Đặt hàng không cần tài khoản</a>
+        <a th:href="@{/products}" class="btn btn-outline-secondary w-100 d-inline-flex align-items-center justify-content-center gap-2">
+          <span th:replace="~{fragments/common :: shopIcon}"></span>
+          <span th:text="#{app.guestOrderLink}">Đặt hàng không cần tài khoản</span>
+        </a>
       </div>
     </div>
 
       <div class="register-card">
       <div class="text-center mb-4">
         <div class="brand" th:text="#{login.registerBrand}">Đăng ký</div>
-        <h2 class="mt-2 mb-0" th:text="#{login.registerHeading}">Tạo tài khoản</h2>
+        <h2 class="auth-heading mt-2 mb-0">
+          <span th:replace="~{fragments/common :: registerIcon}"></span>
+          <span th:text="#{login.registerHeading}">Tạo tài khoản</span>
+        </h2>
       </div>
 
       <form th:action="@{/register}" method="post" th:object="${registerUser}">
         <div class="mb-3">
-          <label class="form-label" th:text="#{common.fullName}">Họ và tên</label>
-          <input type="text" class="form-control" th:field="*{fullName}" th:placeholder="#{login.fullNamePlaceholder}" />
+          <label class="form-label" for="register-full-name" th:text="#{common.fullName}">Họ và tên</label>
+          <div class="input-group auth-input-group">
+            <span class="input-group-text">
+              <span th:replace="~{fragments/common :: userIcon}"></span>
+            </span>
+            <input id="register-full-name" type="text" class="form-control" th:field="*{fullName}" th:placeholder="#{login.fullNamePlaceholder}" autocomplete="name" />
+          </div>
         </div>
         <div class="mb-3">
-          <label class="form-label" th:text="#{common.username}">Tên đăng nhập</label>
-          <input type="text" class="form-control" th:field="*{username}" th:placeholder="#{login.usernamePlaceholder}" required />
+          <label class="form-label" for="register-username" th:text="#{common.username}">Tên đăng nhập</label>
+          <div class="input-group auth-input-group">
+            <span class="input-group-text">
+              <span th:replace="~{fragments/common :: userIcon}"></span>
+            </span>
+            <input id="register-username" type="text" class="form-control" th:field="*{username}" th:placeholder="#{login.usernamePlaceholder}" autocomplete="username" required />
+          </div>
         </div>
         <div class="mb-3">
-          <label class="form-label" th:text="#{common.email}">Email</label>
-          <input type="email" class="form-control" th:field="*{email}" placeholder="name@example.com" required />
+          <label class="form-label" for="register-email" th:text="#{common.email}">Email</label>
+          <div class="input-group auth-input-group">
+            <span class="input-group-text">
+              <span th:replace="~{fragments/common :: emailIcon}"></span>
+            </span>
+            <input id="register-email" type="email" class="form-control" th:field="*{email}" placeholder="name@example.com" autocomplete="email" required />
+          </div>
         </div>
         <div class="mb-3">
-          <label class="form-label" th:text="#{common.password}">Mật khẩu</label>
-          <input type="password" class="form-control" th:field="*{password}" th:placeholder="#{login.createPasswordPlaceholder}" required />
+          <label class="form-label" for="register-password" th:text="#{common.password}">Mật khẩu</label>
+          <div class="input-group auth-input-group">
+            <span class="input-group-text">
+              <span th:replace="~{fragments/common :: lockIcon}"></span>
+            </span>
+            <input id="register-password" type="password" class="form-control" th:field="*{password}" th:placeholder="#{login.createPasswordPlaceholder}" autocomplete="new-password" required />
+          </div>
         </div>
-        <button type="submit" class="btn btn-dark w-100" th:text="#{login.registerButton}">Đăng ký tài khoản</button>
+        <button type="submit" class="btn btn-dark w-100 d-inline-flex align-items-center justify-content-center gap-2">
+          <span th:replace="~{fragments/common :: registerIcon}"></span>
+          <span th:text="#{login.registerButton}">Đăng ký tài khoản</span>
+        </button>
       </form>
       </div>
     </div>

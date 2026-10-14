@@ -4,35 +4,80 @@ document.addEventListener('DOMContentLoaded', () => {
     countBadge.title = 'Current product count';
   }
 
-  const showFormButton = document.getElementById('show-product-form');
-  const hideFormButton = document.getElementById('hide-product-form');
-  const productFormCard = document.getElementById('product-form-card');
+  const openProductFormButton = document.getElementById('show-product-form');
+  const closeProductFormButton = document.getElementById('hide-product-form');
+  const productFormDialog = document.getElementById('product-form-dialog');
 
-  const toggleProductForm = (show) => {
-    if (!productFormCard) {
+  if (openProductFormButton && productFormDialog) {
+    openProductFormButton.addEventListener('click', () => {
+      if (!productFormDialog.open) {
+        productFormDialog.showModal();
+      }
+    });
+  }
+
+  if (closeProductFormButton && productFormDialog) {
+    closeProductFormButton.addEventListener('click', () => productFormDialog.close());
+  }
+
+  if (productFormDialog) {
+    if (productFormDialog.dataset.editing === 'true' && !productFormDialog.open) {
+      productFormDialog.showModal();
+    }
+
+    productFormDialog.addEventListener('click', (event) => {
+      if (event.target === productFormDialog) {
+        productFormDialog.close();
+      }
+    });
+  }
+
+  document.querySelectorAll('[data-product-detail-target]').forEach((trigger) => {
+    const dialog = document.getElementById(trigger.dataset.productDetailTarget);
+    if (!dialog) {
       return;
     }
 
-    productFormCard.classList.toggle('form-hidden', !show);
-    if (showFormButton) {
-      showFormButton.classList.toggle('d-none', show);
-    }
-    if (hideFormButton) {
-      hideFormButton.classList.toggle('d-none', !show);
-    }
-  };
+    trigger.addEventListener('click', () => {
+      if (!dialog.open) {
+        dialog.showModal();
+      }
+    });
+  });
 
-  const isEditing = productFormCard && productFormCard.dataset.editing === 'true';
-  if (productFormCard) {
-    toggleProductForm(Boolean(isEditing) || !productFormCard.classList.contains('form-hidden'));
+  document.querySelectorAll('.product-detail-dialog').forEach((dialog) => {
+    dialog.querySelector('[data-close-product-detail]')?.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', (event) => {
+      if (event.target === dialog) {
+        dialog.close();
+      }
+    });
+
+    if (dialog.dataset.autoOpen === 'true' && !dialog.open) {
+      dialog.showModal();
+    }
+  });
+
+  const openCartButton = document.getElementById('open-cart-button');
+  const closeCartButton = document.getElementById('close-cart-button');
+  const cartDialog = document.getElementById('cart-dialog');
+
+  if (openCartButton && cartDialog) {
+    openCartButton.addEventListener('click', () => {
+      if (!cartDialog.open) {
+        cartDialog.showModal();
+      }
+    });
+
+    cartDialog.addEventListener('click', (event) => {
+      if (event.target === cartDialog) {
+        cartDialog.close();
+      }
+    });
   }
 
-  if (showFormButton) {
-    showFormButton.addEventListener('click', () => toggleProductForm(true));
-  }
-
-  if (hideFormButton) {
-    hideFormButton.addEventListener('click', () => toggleProductForm(false));
+  if (closeCartButton && cartDialog) {
+    closeCartButton.addEventListener('click', () => cartDialog.close());
   }
 
   document.querySelectorAll('form').forEach((form) => {

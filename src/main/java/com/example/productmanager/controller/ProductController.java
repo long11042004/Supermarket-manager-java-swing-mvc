@@ -20,6 +20,7 @@ import com.example.productmanager.dto.product.ProductFormDTO;
 import com.example.productmanager.entity.Product;
 import com.example.productmanager.entity.RoleName;
 import com.example.productmanager.entity.User;
+import com.example.productmanager.exception.NotFoundException;
 import com.example.productmanager.lifecycle.PrototypeRequestMarker;
 import com.example.productmanager.lifecycle.SessionLifecycleBean;
 import com.example.productmanager.mapper.ProductMapper;
@@ -61,6 +62,7 @@ public class ProductController extends SessionController {
 			@RequestParam(value = "category", required = false) String category,
 			@RequestParam(value = "page", defaultValue = "0") int page,
 			@RequestParam(value = "size", defaultValue = "12") int size,
+			@RequestParam(value = "detailId", required = false) Long detailId,
 			HttpSession session,
 			Model model) {
 		if (isAuthenticated(session)
@@ -74,6 +76,15 @@ public class ProductController extends SessionController {
 		int visitCount = sessionLifecycleBean.increaseAndGetVisitCount();
 		Page<Product> productsPage = productService.getFilteredProducts(keyword, category, page, size);
 		model.addAttribute("products", productsPage.getContent());
+		Product detailProduct = null;
+		if (detailId != null) {
+			try {
+				detailProduct = productService.getProductById(detailId);
+			} catch (NotFoundException ex) {
+				model.addAttribute("errorMessage", ex.getMessage());
+			}
+		}
+		model.addAttribute("detailProduct", detailProduct);
 		model.addAttribute("currentPage", productsPage.getNumber());
 		model.addAttribute("totalPages", productsPage.getTotalPages());
 		model.addAttribute("pageSize", productsPage.getSize());
@@ -196,7 +207,7 @@ public class ProductController extends SessionController {
 	}
 
 	@GetMapping("/{id}")
-	public String showProductDetail(@PathVariable Long id, HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+	public String showProductDetail(@PathVariable Long id, HttpSession session, RedirectAttributes redirectAttributes) {
 		if (isAuthenticated(session)
 				&& !hasPermission(session, RoleName.ADMIN, RoleName.MANAGER, RoleName.STAFF, RoleName.CUSTOMER)) {
 			return "redirect:/login";
@@ -205,18 +216,9 @@ public class ProductController extends SessionController {
 			session.setAttribute("guestCheckout", true);
 		}
 		try {
-			Product product = productService.getProductById(id);
-			model.addAttribute("product", product);
-			model.addAttribute("canManageProducts", hasPermission(session, RoleName.ADMIN, RoleName.MANAGER));
-			model.addAttribute("isAdmin", hasPermission(session, RoleName.ADMIN));
-			model.addAttribute("isManager", hasPermission(session, RoleName.MANAGER));
-			model.addAttribute("isStaff", hasPermission(session, RoleName.STAFF));
-			model.addAttribute("isCustomer", hasPermission(session, RoleName.CUSTOMER));
-			model.addAttribute("isGuest", !isAuthenticated(session));
-			model.addAttribute("cart", getOrCreateCart(session));
-			model.addAttribute("categories", productService.getAllCategories());
-			return "product-detail";
-		} catch (RuntimeException ex) {
+			productService.getProductById(id);
+			return "redirect:/products?detailId=" + id;
+		} catch (NotFoundException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 			return "redirect:/products";
 		}
@@ -236,6 +238,7 @@ public class ProductController extends SessionController {
 		model.addAttribute("totalPages", productsPage.getTotalPages());
 		model.addAttribute("pageSize", productsPage.getSize());
 		model.addAttribute("totalProducts", productsPage.getTotalElements());
+		model.addAttribute("detailProduct", null);
 		model.addAttribute("keyword", "");
 		model.addAttribute("category", "");
 		model.addAttribute("categories", productService.getAllCategories());
