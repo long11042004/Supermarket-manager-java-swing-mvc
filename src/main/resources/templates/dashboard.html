@@ -36,7 +36,10 @@
           </select>
         </form>
         <form th:action="@{/logout}" method="post" class="d-inline">
-          <button type="submit" class="btn btn-outline-secondary nav-btn" th:text="#{common.logout}">Đăng xuất</button>
+          <button type="submit" class="btn btn-outline-secondary nav-btn d-inline-flex align-items-center gap-2">
+            <span th:replace="~{fragments/common :: logoutIcon}"></span>
+            <span th:text="#{common.logout}">Đăng xuất</span>
+          </button>
         </form>
       </div>
     </header>
@@ -71,11 +74,26 @@
     <div class="section-card">
       <h4 class="mb-3" th:text="#{dashboard.quickActions}">Thao tác nhanh</h4>
       <div class="quick-actions-grid">
-        <a th:href="@{/products}" class="btn btn-primary" th:text="#{dashboard.viewProducts}">Xem sản phẩm</a>
-        <a th:if="${isStaff or canManageUsers}" th:href="@{/order-management}" class="btn btn-outline-info" th:text="#{orders.manage}">Quản lý đơn hàng</a>
-        <a th:if="${canManageUsers}" th:href="@{/reports}" class="btn btn-outline-success" th:text="#{reports.title}">Báo cáo thống kê</a>
-        <a th:if="${canManageUsers}" th:href="@{/promotions}" class="btn btn-outline-warning" th:text="#{promotion.manage}">Quản lý khuyến mãi</a>
-        <a th:if="${canManageUsers}" th:href="@{/users}" class="btn btn-outline-primary" th:text="#{dashboard.manageStaff}">Quản lý nhân sự</a>
+        <a th:href="@{/products}" class="btn btn-primary d-inline-flex align-items-center gap-2">
+          <span th:replace="~{fragments/common :: productsIcon}"></span>
+          <span th:text="#{dashboard.viewProducts}">Xem sản phẩm</span>
+        </a>
+        <a th:if="${isStaff or canManageUsers}" th:href="@{/order-management}" class="btn btn-outline-info d-inline-flex align-items-center gap-2">
+          <span th:replace="~{fragments/common :: ordersIcon}"></span>
+          <span th:text="#{orders.manage}">Quản lý đơn hàng</span>
+        </a>
+        <a th:if="${canManageUsers}" th:href="@{/reports}" class="btn btn-outline-success d-inline-flex align-items-center gap-2">
+          <span th:replace="~{fragments/common :: reportsIcon}"></span>
+          <span th:text="#{reports.title}">Báo cáo thống kê</span>
+        </a>
+        <a th:if="${canManageUsers}" th:href="@{/promotions}" class="btn btn-outline-warning d-inline-flex align-items-center gap-2">
+          <span th:replace="~{fragments/common :: promotionsIcon}"></span>
+          <span th:text="#{promotion.manage}">Quản lý khuyến mãi</span>
+        </a>
+        <a th:if="${canManageUsers}" th:href="@{/users}" class="btn btn-outline-primary d-inline-flex align-items-center gap-2">
+          <span th:replace="~{fragments/common :: usersIcon}"></span>
+          <span th:text="#{dashboard.manageStaff}">Quản lý nhân sự</span>
+        </a>
       </div>
     </div>
 

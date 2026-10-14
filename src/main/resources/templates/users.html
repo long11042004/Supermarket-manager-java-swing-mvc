@@ -31,8 +31,14 @@
         <div th:if="${currentUser != null}">
           <div th:replace="~{fragments/common :: accountLink(${currentUser})}"></div>
         </div>
-        <a th:href="@{/dashboard}" class="btn btn-outline-primary" th:text="#{common.dashboard}">Dashboard</a>
-        <a href="/products" class="btn btn-outline-primary" th:text="#{users.manageProducts}">Quản lý sản phẩm</a>
+        <a th:href="@{/dashboard}" class="btn btn-outline-primary d-inline-flex align-items-center gap-2">
+          <span th:replace="~{fragments/common :: dashboardIcon}"></span>
+          <span th:text="#{common.dashboard}">Dashboard</span>
+        </a>
+        <a th:href="@{/products}" class="btn btn-outline-primary d-inline-flex align-items-center gap-2">
+          <span th:replace="~{fragments/common :: productsIcon}"></span>
+          <span th:text="#{users.manageProducts}">Quản lý sản phẩm</span>
+        </a>
         <form method="get" th:action="@{/users}" class="d-inline-flex align-items-center gap-2">
           <label class="visually-hidden" for="users-language-select" th:text="#{app.language}">Language</label>
           <select id="users-language-select" class="form-select form-select-sm" name="lang" onchange="this.form.submit()">
@@ -41,7 +47,10 @@
           </select>
         </form>
         <form th:action="@{/logout}" method="post" class="d-inline">
-          <button type="submit" class="btn btn-outline-secondary" th:text="#{common.logout}">Đăng xuất</button>
+          <button type="submit" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+            <span th:replace="~{fragments/common :: logoutIcon}"></span>
+            <span th:text="#{common.logout}">Đăng xuất</span>
+          </button>
         </form>
       </div>
     </div>

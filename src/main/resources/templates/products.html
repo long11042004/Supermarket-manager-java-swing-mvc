@@ -32,20 +32,33 @@
           <span class="date-badge-label" th:text="#{common.today}">Today</span>
           <strong th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}">13/08/2026</strong>
         </div>
-        <span class="badge bg-primary fs-6" th:text="${isCustomer or isGuest} ? #{app.total(${totalProducts})} : ${totalProducts} + ' ' + #{common.products}">Total: 0</span>
-        <span th:if="${isCustomer or isGuest}" class="badge bg-warning text-dark fs-6" th:text="#{app.cartBadge(${cart.itemCount})}">Giỏ: 0</span>
 
         <div class="d-flex align-items-center gap-2">
           <div th:if="${currentUser != null}">
             <div th:replace="~{fragments/common :: accountLink(${currentUser})}"></div>
           </div>
           <span th:if="${isGuest}" class="badge bg-light text-dark border" th:text="#{app.guestBadge}">Guest</span>
-          <a th:if="${!isGuest}" th:href="@{/dashboard}" class="btn btn-outline-primary btn-sm" th:text="#{common.dashboard}">Dashboard</a>
-          <a th:if="${canManageProducts}" th:href="@{/promotions}" class="btn btn-outline-warning btn-sm" th:text="#{promotion.manage}">Khuyến mãi</a>
-          <a th:if="${isGuest}" th:href="@{/login}" class="btn btn-outline-primary btn-sm" th:text="#{app.login}">Login</a>
-          <a th:if="${isCustomer}" th:href="@{/orders}" class="btn btn-outline-dark btn-sm" th:text="#{app.myOrders}">My orders</a>
+          <a th:if="${!isGuest}" th:href="@{/dashboard}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1">
+            <span th:replace="~{fragments/common :: dashboardIcon}"></span>
+            <span th:text="#{common.dashboard}">Dashboard</span>
+          </a>
+          <a th:if="${canManageProducts}" th:href="@{/promotions}" class="btn btn-outline-warning btn-sm d-inline-flex align-items-center gap-1">
+            <span th:replace="~{fragments/common :: promotionsIcon}"></span>
+            <span th:text="#{promotion.manage}">Khuyến mãi</span>
+          </a>
+          <a th:if="${isGuest}" th:href="@{/login}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1">
+            <span th:replace="~{fragments/common :: loginIcon}"></span>
+            <span th:text="#{app.login}">Login</span>
+          </a>
+          <a th:if="${isCustomer}" th:href="@{/orders}" class="btn btn-outline-dark btn-sm d-inline-flex align-items-center gap-1">
+            <span th:replace="~{fragments/common :: ordersIcon}"></span>
+            <span th:text="#{app.myOrders}">My orders</span>
+          </a>
           <form th:if="${!isGuest}" th:action="@{/logout}" method="post" class="d-inline">
-            <button type="submit" class="btn btn-outline-secondary btn-sm" th:text="#{common.logout}">Đăng xuất</button>
+            <button type="submit" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1">
+              <span th:replace="~{fragments/common :: logoutIcon}"></span>
+              <span th:text="#{common.logout}">Đăng xuất</span>
+            </button>
           </form>
         </div>
 

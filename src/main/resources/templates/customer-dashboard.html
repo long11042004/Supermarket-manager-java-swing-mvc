@@ -25,8 +25,14 @@
       </div>
       <div class="dashboard-header-actions">
         <nav class="dashboard-primary-links">
-          <a th:href="@{/products}" class="btn btn-primary" th:text="#{dashboard.viewProducts}">Xem sản phẩm</a>
-          <a th:href="@{/orders}" class="btn btn-outline-warning" th:text="#{app.myOrders}">Đơn hàng của tôi</a>
+          <a th:href="@{/products}" class="btn btn-primary d-inline-flex align-items-center gap-2">
+            <span th:replace="~{fragments/common :: productsIcon}"></span>
+            <span th:text="#{dashboard.viewProducts}">Xem sản phẩm</span>
+          </a>
+          <a th:href="@{/orders}" class="btn btn-outline-warning d-inline-flex align-items-center gap-2">
+            <span th:replace="~{fragments/common :: ordersIcon}"></span>
+            <span th:text="#{app.myOrders}">Đơn hàng của tôi</span>
+          </a>
         </nav>
         <div class="dashboard-account-links">
           <div th:replace="~{fragments/common :: accountLink(${currentUser})}"></div>
@@ -38,7 +44,10 @@
             </select>
           </form>
           <form th:action="@{/logout}" method="post" class="d-inline">
-            <button type="submit" class="btn btn-outline-secondary" th:text="#{common.logout}">Đăng xuất</button>
+            <button type="submit" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+              <span th:replace="~{fragments/common :: logoutIcon}"></span>
+              <span th:text="#{common.logout}">Đăng xuất</span>
+            </button>
           </form>
         </div>
       </div>

@@ -16,8 +16,14 @@
         <h1 class="mb-0" th:text="#{reports.title}">Báo cáo thống kê</h1>
       </div>
       <div class="d-flex gap-2 flex-wrap">
-        <a th:href="@{/dashboard}" class="btn btn-outline-secondary" th:text="#{common.dashboard}">Dashboard</a>
-        <a th:href="@{/products}" class="btn btn-outline-primary" th:text="#{common.products}">Sản phẩm</a>
+        <a th:href="@{/dashboard}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+          <span th:replace="~{fragments/common :: dashboardIcon}"></span>
+          <span th:text="#{common.dashboard}">Dashboard</span>
+        </a>
+        <a th:href="@{/products}" class="btn btn-outline-primary d-inline-flex align-items-center gap-2">
+          <span th:replace="~{fragments/common :: productsIcon}"></span>
+          <span th:text="#{common.products}">Sản phẩm</span>
+        </a>
         <form method="get" th:action="@{/reports}" class="d-inline-flex align-items-center gap-2">
           <label class="visually-hidden" for="reports-language-select" th:text="#{app.language}">Language</label>
           <select id="reports-language-select" class="form-select form-select-sm" name="lang" onchange="this.form.submit()">
