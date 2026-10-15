@@ -54,4 +54,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 	@Query("SELECT u FROM User u JOIN u.roles r WHERE r.name = :roleName")
 	List<User> findByRoleName(@Param("roleName") RoleName roleName);
+
+	@Query("""
+			SELECT DISTINCT u FROM User u JOIN u.roles r
+			WHERE r.name = :roleName
+			  AND u.promotionEmailsEnabled = true
+			  AND u.enabled = true
+			  AND u.email IS NOT NULL
+			  AND u.email <> ''
+			""")
+	List<User> findPromotionEmailSubscribers(@Param("roleName") RoleName roleName);
 }

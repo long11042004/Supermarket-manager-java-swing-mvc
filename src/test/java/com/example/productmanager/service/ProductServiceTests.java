@@ -17,6 +17,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -49,6 +51,21 @@ class ProductServiceTests {
             ProductRepository productRepository,
             CustomerOrderRepository customerOrderRepository) {
         return new ProductService(productRepository, customerOrderRepository, null, validator);
+    }
+
+    @Test
+    void getFilteredProductsShouldPassSelectedCategoryToRepository() {
+        ProductRepository productRepository = mock(ProductRepository.class);
+        CustomerOrderRepository customerOrderRepository = mock(CustomerOrderRepository.class);
+        ProductService productService = createProductService(productRepository, customerOrderRepository);
+        PageRequest pageRequest = PageRequest.of(0, 12);
+
+        when(productRepository.findByKeywordAndCategory("", ProductCategory.SUA, pageRequest))
+                .thenReturn(Page.empty(pageRequest));
+
+        productService.getFilteredProducts("  ", "SUA", 0, 12);
+
+        verify(productRepository).findByKeywordAndCategory("", ProductCategory.SUA, pageRequest);
     }
 
     @Test

@@ -113,10 +113,10 @@
         </div>
       </div>
 
-      <form method="get" th:action="@{/products}" class="row g-2 align-items-center toolbar-form">
+      <form id="product-filter-form" method="get" th:action="@{/products}" class="row g-2 align-items-center toolbar-form">
         <input type="hidden" name="page" value="0" />
         <input type="hidden" name="size" th:value="${pageSize}" />
-        <div class="col-md-5">
+        <div class="col-md-6">
           <label class="form-label mb-1" for="keyword" th:text="#{app.searchLabel}">Search</label>
           <div class="input-group catalog-search-group">
             <span class="input-group-text">
@@ -125,7 +125,7 @@
             <input id="keyword" type="search" class="form-control" name="keyword" th:value="${keyword}" th:placeholder="#{app.searchPlaceholder}" />
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-6">
           <label class="form-label mb-1 d-flex align-items-center gap-1" for="categoryFilter">
             <span th:replace="~{fragments/common :: filterIcon}"></span>
             <span th:text="#{app.category}">Category</span>
@@ -138,17 +138,6 @@
                     th:selected="${item.name() == category}">Category</option>
           </select>
         </div>
-        <div class="col-md-3 d-flex align-items-end gap-2 toolbar-actions">
-          <button type="submit" class="btn btn-primary flex-fill d-inline-flex align-items-center justify-content-center gap-2">
-            <span th:replace="~{fragments/common :: searchIcon}"></span>
-            <span th:text="#{common.search}">Search</span>
-          </button>
-          <a th:href="@{/products}" class="btn btn-outline-secondary d-inline-flex align-items-center justify-content-center gap-1"
-             th:attr="aria-label=#{common.filter.clear}, title=#{common.filter.clear}">
-            <span th:replace="~{fragments/common :: clearIcon}"></span>
-            <span th:text="#{common.filter.clear}">Clear filters</span>
-          </a>
-        </div>
       </form>
     </div>
 
@@ -157,6 +146,7 @@
         <dialog th:if="${isCustomer or isGuest}"
                 id="cart-dialog"
                 class="cart-dialog customer-cart-panel"
+                th:attr="data-auto-open=${cartSuccessMessage != null or cartErrorMessage != null or promotionErrorMessage != null}"
                 aria-labelledby="cart-dialog-title">
           <div class="cart-dialog-content">
           <div class="d-flex justify-content-between align-items-center mb-3">
@@ -172,6 +162,8 @@
                       th:attr="aria-label=#{app.hide}, title=#{app.hide}"></button>
             </div>
           </div>
+          <div th:if="${cartSuccessMessage}" class="alert alert-success mb-3" role="status" th:text="${cartSuccessMessage}">Thành công</div>
+          <div th:if="${cartErrorMessage}" class="alert alert-danger mb-3" role="alert" th:text="${cartErrorMessage}">Có lỗi xảy ra</div>
 
           <div th:if="${#lists.isEmpty(cart.items)}" class="text-muted empty-cart-state">
             <span th:text="#{app.cartEmpty}">Giỏ hàng đang trống. Thêm sản phẩm từ danh sách để bắt đầu.</span>
@@ -388,7 +380,6 @@
             </div>
             <h4 th:text="#{app.noProductsFound}">Không tìm thấy sản phẩm</h4>
             <p class="text-muted mb-3" th:text="#{app.noProductsHint}">Thử thay đổi từ khóa hoặc danh mục để xem thêm sản phẩm.</p>
-            <a th:href="@{/products}" class="btn btn-outline-primary btn-sm" th:text="#{common.filter.clear}">Xóa bộ lọc</a>
           </div>
 
           <div class="product-grid" th:attr="aria-label=#{app.productList}">

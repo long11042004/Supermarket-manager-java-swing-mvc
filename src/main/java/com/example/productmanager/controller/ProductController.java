@@ -148,7 +148,7 @@ public class ProductController extends SessionController {
 			}
 			redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.cart.added"));
 		} catch (IllegalArgumentException ex) {
-			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+			redirectAttributes.addFlashAttribute("cartErrorMessage", ex.getMessage());
 		}
 		return "redirect:/products";
 	}
@@ -165,9 +165,9 @@ public class ProductController extends SessionController {
 			Product product = productService.getProductById(productId);
 			CartView updatedCart = cartService.updateItemQuantity(getOrCreateCart(session), productId, quantity, product.getQuantity());
 			session.setAttribute("shoppingCart", updatedCart);
-			redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.cart.updated"));
+			redirectAttributes.addFlashAttribute("cartSuccessMessage", messageResolver.msg("msg.cart.updated"));
 		} catch (IllegalArgumentException ex) {
-			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+			redirectAttributes.addFlashAttribute("cartErrorMessage", ex.getMessage());
 		}
 		return "redirect:/products";
 	}

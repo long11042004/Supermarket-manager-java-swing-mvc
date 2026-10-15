@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Thông báo bảo mật tài khoản</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 24px; background-color: #f9fafb;">
+    <div style="max-width: 640px; margin: 0 auto; background: #ffffff; border-radius: 12px; padding: 32px; border: 1px solid #e5e7eb;">
+        <h2 style="color: #111827; margin-top: 0;">Thông báo bảo mật tài khoản</h2>
+        <p>Xin chào <strong th:text="${recipientName}">Khách hàng</strong>,</p>
+        <div th:if="${security.change == 'PASSWORD_CHANGED'}">
+            <p>Mật khẩu tài khoản của bạn vừa được thay đổi.</p>
+        </div>
+        <div th:if="${security.change == 'EMAIL_CHANGED'}">
+            <p>Email đăng nhập của bạn vừa được thay đổi.</p>
+            <p>
+                <strong>Email mới:</strong>
+                <span th:text="${security.newEmail}">new@example.com</span>
+            </p>
+        </div>
+        <p>Nếu bạn không thực hiện thay đổi này, hãy liên hệ với cửa hàng để bảo vệ tài khoản.</p>
+    </div>
+</body>
+</html>

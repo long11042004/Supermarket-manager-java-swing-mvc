@@ -21,6 +21,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ResourceBundleMessageSource;
 
 import com.example.productmanager.email.event.OrderCancelledEmailEvent;
+import com.example.productmanager.email.event.OrderStatusUpdatedEmailEvent;
 import com.example.productmanager.entity.CustomerOrder;
 import com.example.productmanager.entity.CustomerOrderItem;
 import com.example.productmanager.entity.OrderStatus;
@@ -208,9 +209,14 @@ class OrderServiceTests {
 
 	@Test
 	void updateOrderStatusShouldAdvanceThroughFulfillmentStages() {
+		User customer = User.builder()
+				.email("customer@example.com")
+				.fullName("Test customer")
+				.build();
 		CustomerOrder order = CustomerOrder.builder()
 				.id(100L)
 				.status(OrderStatus.PENDING)
+				.user(customer)
 				.build();
 		when(customerOrderRepository.findById(100L)).thenReturn(Optional.of(order));
 		when(customerOrderRepository.save(any(CustomerOrder.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -224,6 +230,7 @@ class OrderServiceTests {
 		orderService.updateOrderStatus(100L, OrderStatus.COMPLETED);
 		assertEquals(OrderStatus.COMPLETED, order.getStatus());
 		verify(customerOrderRepository, times(3)).save(order);
+		verify(applicationEventPublisher, times(3)).publishEvent(any(OrderStatusUpdatedEmailEvent.class));
 	}
 
 	@Test

@@ -10,10 +10,18 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import org.mockito.ArgumentCaptor;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ResourceBundleMessageSource;
+
+import com.example.productmanager.dto.promotion.PromotionFormDTO;
+import com.example.productmanager.email.event.PromotionAnnouncedEmailEvent;
+import org.springframework.context.ApplicationEventPublisher;
 
 import com.example.productmanager.entity.DiscountType;
 import com.example.productmanager.entity.Promotion;
@@ -24,7 +32,11 @@ import com.example.productmanager.repository.PromotionRepository;
 class PromotionServiceTests {
 
 	private final PromotionRepository promotionRepository = org.mockito.Mockito.mock(PromotionRepository.class);
-	private final PromotionService promotionService = new PromotionService(promotionRepository, new MessageResolver(createMessageSource()));
+	private final ApplicationEventPublisher applicationEventPublisher = org.mockito.Mockito.mock(ApplicationEventPublisher.class);
+	private final PromotionService promotionService = new PromotionService(
+			promotionRepository,
+			new MessageResolver(createMessageSource()),
+			applicationEventPublisher);
 
 	private ResourceBundleMessageSource createMessageSource() {
 		LocaleContextHolder.setLocale(Locale.forLanguageTag("vi-VN"));
@@ -62,6 +74,35 @@ class PromotionServiceTests {
 		assertEquals(new BigDecimal("270.00"), quote.automaticDiscount());
 		assertEquals(new BigDecimal("470.00"), quote.totalDiscount());
 		assertEquals(new BigDecimal("1530.00"), quote.totalAmount());
+	}
+
+	@Test
+	void createPromotionPublishesAnnouncementDetails() {
+		LocalDateTime startsAt = LocalDateTime.now().withSecond(0).withNano(0);
+		LocalDateTime endsAt = startsAt.plusDays(7);
+		PromotionFormDTO form = new PromotionFormDTO();
+		form.setName("Weekend offer");
+		form.setKind(PromotionKind.COUPON);
+		form.setCode("WEEKEND10");
+		form.setDiscountType(DiscountType.PERCENTAGE);
+		form.setDiscountValue(new BigDecimal("10"));
+		form.setMinimumOrderAmount(new BigDecimal("100000"));
+		form.setStartsAt(startsAt);
+		form.setEndsAt(endsAt);
+		when(promotionRepository.existsByCodeIgnoreCase("WEEKEND10")).thenReturn(false);
+		when(promotionRepository.save(any(Promotion.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+		Promotion created = promotionService.createPromotion(form);
+
+		assertNotNull(created);
+		ArgumentCaptor<PromotionAnnouncedEmailEvent> eventCaptor =
+				ArgumentCaptor.forClass(PromotionAnnouncedEmailEvent.class);
+		verify(applicationEventPublisher).publishEvent(eventCaptor.capture());
+		assertEquals("Weekend offer", eventCaptor.getValue().name());
+		assertEquals("WEEKEND10", eventCaptor.getValue().code());
+		assertEquals("PERCENTAGE", eventCaptor.getValue().discountType());
+		assertEquals(startsAt, eventCaptor.getValue().startsAt());
+		assertEquals(endsAt, eventCaptor.getValue().endsAt());
 	}
 
 	@Test

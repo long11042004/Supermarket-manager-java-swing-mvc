@@ -105,6 +105,13 @@
                 <label class="form-label" th:text="#{common.address}">Địa chỉ</label>
                 <textarea name="address" class="form-control" rows="3" th:text="${currentUser.address}"></textarea>
               </div>
+              <div class="col-12 form-check ms-2">
+                <input id="promotion-emails-enabled" type="checkbox" name="promotionEmailsEnabled"
+                       class="form-check-input" value="true" th:checked="${currentUser.promotionEmailsEnabled}" />
+                <label for="promotion-emails-enabled" class="form-check-label" th:text="#{profile.promotionEmailConsent}">
+                  Nhận email về khuyến mãi; có thể hủy đăng ký tại đây bất cứ lúc nào.
+                </label>
+              </div>
             </div>
             <button type="submit" class="btn btn-primary mt-3" th:text="#{profile.saveInfo}">Lưu thông tin</button>
           </form>

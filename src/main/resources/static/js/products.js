@@ -1,4 +1,25 @@
 document.addEventListener('DOMContentLoaded', () => {
+  const productFilterForm = document.getElementById('product-filter-form');
+  if (productFilterForm) {
+    const keywordInput = productFilterForm.querySelector('input[name="keyword"]');
+    const categorySelect = productFilterForm.querySelector('select[name="category"]');
+    let searchTimeout;
+
+    if (keywordInput) {
+      keywordInput.addEventListener('input', () => {
+        window.clearTimeout(searchTimeout);
+        searchTimeout = window.setTimeout(() => productFilterForm.requestSubmit(), 300);
+      });
+    }
+
+    if (categorySelect) {
+      categorySelect.addEventListener('change', () => {
+        window.clearTimeout(searchTimeout);
+        productFilterForm.requestSubmit();
+      });
+    }
+  }
+
   const countBadge = document.querySelector('.badge.bg-primary.fs-6');
   if (countBadge) {
     countBadge.title = 'Current product count';
@@ -74,6 +95,10 @@ document.addEventListener('DOMContentLoaded', () => {
         cartDialog.close();
       }
     });
+  }
+
+  if (cartDialog?.dataset.autoOpen === 'true' && !cartDialog.open) {
+    cartDialog.showModal();
   }
 
   if (closeCartButton && cartDialog) {

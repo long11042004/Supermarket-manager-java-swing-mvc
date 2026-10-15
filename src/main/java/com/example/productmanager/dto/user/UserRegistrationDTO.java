@@ -13,4 +13,5 @@ public class UserRegistrationDTO {
 	private String password;
 	private String email;
 	private String fullName;
+	private boolean promotionEmailsEnabled;
 }

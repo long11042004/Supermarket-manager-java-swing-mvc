@@ -20,6 +20,7 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.example.productmanager.email.event.UserRegisteredEmailEvent;
+import com.example.productmanager.email.event.AccountSecurityEmailEvent;
 import com.example.productmanager.entity.Role;
 import com.example.productmanager.entity.RoleName;
 import com.example.productmanager.entity.User;
@@ -74,9 +75,10 @@ class UserServiceTests {
 		when(passwordEncoder.encode("secret123")).thenReturn("encoded-secret123");
 		when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-		User savedUser = userService.registerCustomer("new-customer", "secret123", "customer@example.com", "Khách mới");
+		User savedUser = userService.registerCustomer("new-customer", "secret123", "customer@example.com", "Khách mới", true);
 
 		assertEquals(RoleName.CUSTOMER, savedUser.getRoles().stream().findFirst().orElseThrow().getName());
+		assertEquals(true, savedUser.isPromotionEmailsEnabled());
 		verify(userActivityRepository).save(any());
 		verify(applicationEventPublisher).publishEvent(any(UserRegisteredEmailEvent.class));
 	}
@@ -111,14 +113,16 @@ class UserServiceTests {
 		when(userRepository.existsByEmailAndIdNot("new@demo.com", 1L)).thenReturn(false);
 		when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-		User updatedUser = userService.updateProfile(1L, "Tên mới", "new@demo.com", "0909000000", "Hà Nội");
+		User updatedUser = userService.updateProfile(1L, "Tên mới", "new@demo.com", "0909000000", "Hà Nội", true);
 
 		assertEquals("Tên mới", updatedUser.getFullName());
 		assertEquals("new@demo.com", updatedUser.getEmail());
 		assertEquals("0909000000", updatedUser.getPhoneNumber());
 		assertEquals("Hà Nội", updatedUser.getAddress());
+		assertEquals(true, updatedUser.isPromotionEmailsEnabled());
 		verify(userRepository).save(existingUser);
 		verify(userActivityRepository).save(any());
+		verify(applicationEventPublisher).publishEvent(any(AccountSecurityEmailEvent.class));
 	}
 
 	@Test
@@ -162,6 +166,7 @@ class UserServiceTests {
 		assertEquals("encoded-new-pass-123", updatedUser.getPassword());
 		verify(userRepository).save(existingUser);
 		verify(userActivityRepository).save(any());
+		verify(applicationEventPublisher).publishEvent(any(AccountSecurityEmailEvent.class));
 	}
 
 	@Test

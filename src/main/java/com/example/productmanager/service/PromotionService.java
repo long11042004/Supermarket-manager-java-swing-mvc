@@ -8,10 +8,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.productmanager.dto.promotion.PromotionFormDTO;
+import com.example.productmanager.email.event.PromotionAnnouncedEmailEvent;
 import com.example.productmanager.entity.DiscountType;
 import com.example.productmanager.entity.Promotion;
 import com.example.productmanager.entity.PromotionKind;
@@ -28,6 +30,7 @@ public class PromotionService {
 
 	private final PromotionRepository promotionRepository;
 	private final MessageResolver messageResolver;
+	private final ApplicationEventPublisher applicationEventPublisher;
 
 	@Transactional(readOnly = true)
 	public PromotionQuote quote(BigDecimal subtotal, String couponCode) {
@@ -84,7 +87,7 @@ public class PromotionService {
 		if (code != null && promotionRepository.existsByCodeIgnoreCase(code)) {
 			throw new IllegalArgumentException(messageResolver.msg("err.promotion.duplicateCode"));
 		}
-		return promotionRepository.save(Promotion.builder()
+		Promotion savedPromotion = promotionRepository.save(Promotion.builder()
 				.name(form.getName().trim())
 				.kind(kind)
 				.code(code)
@@ -100,6 +103,8 @@ public class PromotionService {
 				.redemptionCount(0)
 				.active(true)
 				.build());
+		publishAnnouncement(savedPromotion);
+		return savedPromotion;
 	}
 
 	@Transactional(readOnly = true)
@@ -124,7 +129,23 @@ public class PromotionService {
 	public void updateActive(Long promotionId, boolean active) {
 		Promotion promotion = promotionRepository.findById(promotionId)
 				.orElseThrow(() -> new IllegalArgumentException(messageResolver.msg("err.promotion.notFound")));
+		boolean wasActive = promotion.isActive();
 		promotion.setActive(active);
+		if (active && !wasActive) {
+			publishAnnouncement(promotion);
+		}
+	}
+
+	private void publishAnnouncement(Promotion promotion) {
+		applicationEventPublisher.publishEvent(new PromotionAnnouncedEmailEvent(
+				promotion.getName(),
+				promotion.getCode(),
+				promotion.getKind().name(),
+				promotion.getDiscountType().name(),
+				promotion.getDiscountValue(),
+				promotion.getMinimumOrderAmount(),
+				promotion.getStartsAt(),
+				promotion.getEndsAt()));
 	}
 
 	@Transactional

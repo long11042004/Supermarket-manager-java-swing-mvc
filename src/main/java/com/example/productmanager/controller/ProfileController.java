@@ -66,6 +66,7 @@ public class ProfileController extends SessionController {
 			@RequestParam String email,
 			@RequestParam(required = false) String phoneNumber,
 			@RequestParam(required = false) String address,
+			@RequestParam(defaultValue = "false") boolean promotionEmailsEnabled,
 			HttpSession session,
 			RedirectAttributes redirectAttributes) {
 		User currentUser = getAuthenticatedUser(session);
@@ -74,7 +75,13 @@ public class ProfileController extends SessionController {
 		}
 
 		try {
-			userService.updateProfile(currentUser.getId(), fullName, email, phoneNumber, address);
+			userService.updateProfile(
+					currentUser.getId(),
+					fullName,
+					email,
+					phoneNumber,
+					address,
+					promotionEmailsEnabled);
 			redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.profile.updated"));
 		} catch (IllegalArgumentException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());

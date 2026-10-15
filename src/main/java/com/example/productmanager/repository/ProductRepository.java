@@ -14,14 +14,14 @@ import com.example.productmanager.entity.ProductCategory;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-	@Query(value = """
-			SELECT * FROM products p
+	@Query("""
+			SELECT p FROM Product p
 			WHERE (:keyword = ''
-			    OR LOWER(COALESCE(p.name_vi, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
-			    OR LOWER(COALESCE(p.name_en, '')) LIKE LOWER(CONCAT('%', :keyword, '%')))
+			    OR LOWER(COALESCE(p.nameVi, '')) LIKE LOWER(CONCAT(CONCAT('%', :keyword), '%'))
+			    OR LOWER(COALESCE(p.nameEn, '')) LIKE LOWER(CONCAT(CONCAT('%', :keyword), '%')))
 			  AND (:category IS NULL OR p.category = :category)
-			ORDER BY LOWER(COALESCE(p.name_vi, p.name_en, '')) ASC
-			""", nativeQuery = true)
+			ORDER BY LOWER(COALESCE(p.nameVi, p.nameEn, '')) ASC
+			""")
 	Page<Product> findByKeywordAndCategory(
 			@Param("keyword") String keyword,
 			@Param("category") ProductCategory category,

@@ -86,15 +86,15 @@ public class CustomerOrderController extends SessionController {
 			redirectAttributes.addFlashAttribute("previewUrl", "/mail-preview/order-confirmation/" + createdOrder.getId());
 		} catch (OptimisticLockingFailureException ex) {
 			log.warn("Checkout failed due to concurrent product update", ex);
-			redirectAttributes.addFlashAttribute("errorMessage", messageResolver.msg("msg.order.checkoutConcurrentUpdate"));
+			redirectAttributes.addFlashAttribute("cartErrorMessage", messageResolver.msg("msg.order.checkoutConcurrentUpdate"));
 		} catch (IllegalArgumentException ex) {
-			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+			redirectAttributes.addFlashAttribute("cartErrorMessage", ex.getMessage());
 		} catch (DataIntegrityViolationException ex) {
 			log.warn("Checkout failed due to data integrity issue", ex);
-			redirectAttributes.addFlashAttribute("errorMessage", messageResolver.msg("msg.order.checkoutInvalidData"));
+			redirectAttributes.addFlashAttribute("cartErrorMessage", messageResolver.msg("msg.order.checkoutInvalidData"));
 		} catch (RuntimeException ex) {
 			log.error("Unexpected checkout failure", ex);
-			redirectAttributes.addFlashAttribute("errorMessage", messageResolver.msg("msg.order.checkoutUnexpected"));
+			redirectAttributes.addFlashAttribute("cartErrorMessage", messageResolver.msg("msg.order.checkoutUnexpected"));
 		}
 		return "redirect:/products";
 	}
@@ -117,9 +117,9 @@ public class CustomerOrderController extends SessionController {
 			promotionService.quote(cart.getGrandTotal(), code);
 			cart.setCouponCode(code == null || code.isBlank() ? null : code.trim());
 			session.setAttribute("shoppingCart", cart);
-			redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.promotion.couponApplied"));
+			redirectAttributes.addFlashAttribute("cartSuccessMessage", messageResolver.msg("msg.promotion.couponApplied"));
 		} catch (IllegalArgumentException ex) {
-			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+			redirectAttributes.addFlashAttribute("cartErrorMessage", ex.getMessage());
 		}
 		return "redirect:/products";
 	}

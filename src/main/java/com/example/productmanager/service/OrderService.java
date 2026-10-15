@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.productmanager.email.event.OrderCancelledEmailEvent;
 import com.example.productmanager.email.event.OrderConfirmedEmailEvent;
+import com.example.productmanager.email.event.OrderStatusUpdatedEmailEvent;
 import com.example.productmanager.entity.CartItem;
 import com.example.productmanager.entity.CustomerOrder;
 import com.example.productmanager.entity.CustomerOrderItem;
@@ -157,7 +158,13 @@ public class OrderService {
 						user.getFullName() == null || user.getFullName().isBlank() ? user.getUsername() : user.getFullName(),
 						savedOrder.getId(),
 						savedOrder.getStatus().name(),
-						savedOrder.getDeliveryAddress()));
+						savedOrder.getDeliveryAddress(),
+						savedOrder.getTotalAmount(),
+						savedOrder.getSubtotalAmount(),
+						savedOrder.getDiscountAmount(),
+						savedOrder.getShippingFee(),
+						savedOrder.getCouponCode(),
+						savedOrder.getAutomaticPromotionName()));
 			}
 		} else if (guestEmail != null && !guestEmail.isBlank()) {
 			applicationEventPublisher.publishEvent(new OrderConfirmedEmailEvent(
@@ -165,7 +172,13 @@ public class OrderService {
 					guestName == null || guestName.isBlank() ? "Khách hàng" : guestName,
 					savedOrder.getId(),
 					savedOrder.getStatus().name(),
-					savedOrder.getDeliveryAddress()));
+					savedOrder.getDeliveryAddress(),
+					savedOrder.getTotalAmount(),
+					savedOrder.getSubtotalAmount(),
+					savedOrder.getDiscountAmount(),
+					savedOrder.getShippingFee(),
+					savedOrder.getCouponCode(),
+					savedOrder.getAutomaticPromotionName()));
 		}
 		return savedOrder;
 	}
@@ -194,6 +207,21 @@ public class OrderService {
 
 		order.setStatus(targetStatus);
 		customerOrderRepository.save(order);
+		User customer = order.getUser();
+		String recipientEmail = customer == null ? order.getGuestEmail() : customer.getEmail();
+		if (recipientEmail != null && !recipientEmail.isBlank()) {
+			String recipientName = customer == null
+					? order.getGuestName()
+					: customer.getFullName() == null || customer.getFullName().isBlank()
+							? customer.getUsername()
+							: customer.getFullName();
+			applicationEventPublisher.publishEvent(new OrderStatusUpdatedEmailEvent(
+					recipientEmail,
+					recipientName == null || recipientName.isBlank() ? "Khách hàng" : recipientName,
+					order.getId(),
+					targetStatus.name(),
+					order.getDeliveryAddress()));
+		}
 	}
 
 	@Transactional

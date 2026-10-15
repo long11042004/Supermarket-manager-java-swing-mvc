@@ -79,6 +79,10 @@ public class User {
 	@Builder.Default
 	private boolean enabled = true;
 
+	@Column(nullable = false)
+	@Builder.Default
+	private boolean promotionEmailsEnabled = false;
+
 	@Column(nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 

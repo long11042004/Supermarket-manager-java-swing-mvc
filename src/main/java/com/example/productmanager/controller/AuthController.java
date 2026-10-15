@@ -64,7 +64,8 @@ public class AuthController {
 					registerUser.getUsername(),
 					registerUser.getPassword(),
 					registerUser.getEmail(),
-					registerUser.getFullName());
+					registerUser.getFullName(),
+					registerUser.isPromotionEmailsEnabled());
 			redirectAttributes.addFlashAttribute("successMessage", messageResolver.msg("msg.auth.registerSuccess"));
 		} catch (Exception ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());

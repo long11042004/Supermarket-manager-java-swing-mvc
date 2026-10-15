@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.productmanager.email.event.AccountSecurityEmailEvent;
 import com.example.productmanager.email.event.UserRegisteredEmailEvent;
 import com.example.productmanager.entity.Role;
 import com.example.productmanager.entity.RoleName;
@@ -40,12 +41,22 @@ public class UserService {
 
 	@Transactional
 	public User registerUser(String username, String password, String email, String fullName) {
-		return registerUser(username, password, email, fullName, RoleName.STAFF);
+		return registerUser(username, password, email, fullName, RoleName.STAFF, false);
 	}
 
 	@Transactional
 	public User registerCustomer(String username, String password, String email, String fullName) {
-		return registerUser(username, password, email, fullName, RoleName.CUSTOMER);
+		return registerCustomer(username, password, email, fullName, false);
+	}
+
+	@Transactional
+	public User registerCustomer(
+			String username,
+			String password,
+			String email,
+			String fullName,
+			boolean promotionEmailsEnabled) {
+		return registerUser(username, password, email, fullName, RoleName.CUSTOMER, promotionEmailsEnabled);
 	}
 
 	@Transactional
@@ -54,14 +65,15 @@ public class UserService {
 			String email,
 			String fullName,
 			RoleName defaultRoleName) {
-		return registerUser(username, password, email, fullName, defaultRoleName);
+		return registerUser(username, password, email, fullName, defaultRoleName, false);
 	}
 
 	private User registerUser(String username,
 			String password,
 			String email,
 			String fullName,
-			RoleName defaultRoleName) {
+			RoleName defaultRoleName,
+			boolean promotionEmailsEnabled) {
 		String normalizedUsername = normalizeRequiredText(username, messageResolver.msg("err.user.usernameRequired"));
 		String normalizedEmail = normalizeRequiredText(email, messageResolver.msg("err.user.emailRequired"));
 		String normalizedPassword = normalizeRequiredText(password, messageResolver.msg("err.user.passwordRequired"));
@@ -86,6 +98,7 @@ public class UserService {
 				.password(passwordEncoder.encode(normalizedPassword))
 				.email(normalizedEmail)
 				.fullName(fullName == null ? null : fullName.trim())
+				.promotionEmailsEnabled(defaultRoleName == RoleName.CUSTOMER && promotionEmailsEnabled)
 				.enabled(true)
 				.roles(new HashSet<>(Set.of(defaultRole)))
 				.build();
@@ -170,6 +183,34 @@ public class UserService {
 			String phoneNumber,
 			String address) {
 		User user = getUserById(userId);
+		return updateProfile(user, fullName, email, phoneNumber, address, user.isPromotionEmailsEnabled());
+	}
+
+	@Transactional
+	public User updateProfile(Long userId,
+			String fullName,
+			String email,
+			String phoneNumber,
+			String address,
+			boolean promotionEmailsEnabled) {
+		return updateProfile(
+				getUserById(userId),
+				fullName,
+				email,
+				phoneNumber,
+				address,
+				promotionEmailsEnabled);
+	}
+
+	private User updateProfile(
+			User user,
+			String fullName,
+			String email,
+			String phoneNumber,
+			String address,
+			boolean promotionEmailsEnabled) {
+		Long userId = user.getId();
+		String previousEmail = user.getEmail();
 		String normalizedEmail = email == null ? "" : email.trim();
 		if (normalizedEmail.isEmpty()) {
 			throw new IllegalArgumentException(messageResolver.msg("err.user.emailRequired"));
@@ -185,9 +226,20 @@ public class UserService {
 		user.setEmail(normalizedEmail);
 		user.setPhoneNumber(phoneNumber == null ? null : phoneNumber.trim());
 		user.setAddress(address == null ? null : address.trim());
+		user.setPromotionEmailsEnabled(promotionEmailsEnabled);
 
 		User savedUser = userRepository.save(user);
 		logActivity(savedUser, messageResolver.msg("activity.profile.updated"), messageResolver.msg("activity.profile.updatedDetail"));
+		if (previousEmail != null
+				&& !previousEmail.isBlank()
+				&& !previousEmail.equalsIgnoreCase(normalizedEmail)) {
+			applicationEventPublisher.publishEvent(new AccountSecurityEmailEvent(
+					previousEmail,
+					recipientName(savedUser),
+					AccountSecurityEmailEvent.Change.EMAIL_CHANGED,
+					previousEmail,
+					normalizedEmail));
+		}
 		return savedUser;
 	}
 
@@ -211,7 +263,21 @@ public class UserService {
 		user.setPassword(passwordEncoder.encode(newPassword));
 		User savedUser = userRepository.save(user);
 		logActivity(savedUser, messageResolver.msg("activity.password.changed"), messageResolver.msg("activity.password.changedDetail"));
+		if (savedUser.getEmail() != null && !savedUser.getEmail().isBlank()) {
+			applicationEventPublisher.publishEvent(new AccountSecurityEmailEvent(
+					savedUser.getEmail(),
+					recipientName(savedUser),
+					AccountSecurityEmailEvent.Change.PASSWORD_CHANGED,
+					null,
+					null));
+		}
 		return savedUser;
+	}
+
+	private String recipientName(User user) {
+		return user.getFullName() == null || user.getFullName().isBlank()
+				? user.getUsername()
+				: user.getFullName();
 	}
 
 	@Transactional
