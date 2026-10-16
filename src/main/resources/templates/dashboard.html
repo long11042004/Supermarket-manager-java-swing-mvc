@@ -106,6 +106,7 @@
             <table class="table table-hover align-middle mb-0">
               <thead>
                 <tr>
+                  <th><span class="visually-hidden" th:text="#{dashboard.productImage}">Ảnh sản phẩm</span></th>
                   <th th:text="#{app.name}">Tên sản phẩm</th>
                   <th th:text="#{app.category}">Danh mục</th>
                   <th th:text="#{common.quantity}">Số lượng</th>
@@ -113,6 +114,19 @@
               </thead>
               <tbody>
                 <tr th:each="item : ${lowStockProducts}">
+                  <td>
+                    <div class="dashboard-product-thumbnail">
+                      <img th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
+                           th:src="${item.imageUrl}"
+                           th:alt="${@productDisplayService.displayName(item)}"
+                           onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';" />
+                      <div class="dashboard-product-thumbnail-placeholder"
+                           th:style="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)} ? 'display:none' : null"
+                           aria-hidden="true">
+                        <span th:replace="~{fragments/common :: productsIcon}"></span>
+                      </div>
+                    </div>
+                  </td>
                   <td th:text="${@productDisplayService.displayName(item)}">Tên</td>
                   <td th:text="${item.category}">Danh mục</td>
                   <td><span class="badge bg-warning text-dark" th:text="${item.quantity}">0</span></td>
@@ -131,6 +145,7 @@
             <table class="table table-hover align-middle mb-0">
               <thead>
                 <tr>
+                  <th><span class="visually-hidden" th:text="#{dashboard.productImage}">Ảnh sản phẩm</span></th>
                   <th th:text="#{app.name}">Tên sản phẩm</th>
                   <th th:text="#{app.category}">Danh mục</th>
                   <th th:text="#{app.expiryDate}">Hạn sử dụng</th>
@@ -138,6 +153,19 @@
               </thead>
               <tbody>
                 <tr th:each="item : ${expiringSoonProducts}">
+                  <td>
+                    <div class="dashboard-product-thumbnail">
+                      <img th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
+                           th:src="${item.imageUrl}"
+                           th:alt="${@productDisplayService.displayName(item)}"
+                           onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';" />
+                      <div class="dashboard-product-thumbnail-placeholder"
+                           th:style="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)} ? 'display:none' : null"
+                           aria-hidden="true">
+                        <span th:replace="~{fragments/common :: productsIcon}"></span>
+                      </div>
+                    </div>
+                  </td>
                   <td th:text="${@productDisplayService.displayName(item)}">Tên</td>
                   <td th:text="${item.category}">Danh mục</td>
                   <td>

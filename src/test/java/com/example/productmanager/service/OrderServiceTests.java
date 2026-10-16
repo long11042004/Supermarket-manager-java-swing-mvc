@@ -1,6 +1,7 @@
 package com.example.productmanager.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -25,12 +26,14 @@ import com.example.productmanager.email.event.OrderStatusUpdatedEmailEvent;
 import com.example.productmanager.entity.CustomerOrder;
 import com.example.productmanager.entity.CustomerOrderItem;
 import com.example.productmanager.entity.OrderStatus;
+import com.example.productmanager.entity.OrderStatusHistory;
 import com.example.productmanager.entity.Product;
 import com.example.productmanager.entity.User;
 import com.example.productmanager.exception.ConflictException;
 import com.example.productmanager.exception.NotFoundException;
 import com.example.productmanager.multilanguage.MessageResolver;
 import com.example.productmanager.repository.CustomerOrderRepository;
+import com.example.productmanager.repository.OrderStatusHistoryRepository;
 import com.example.productmanager.repository.ProductRepository;
 import com.example.productmanager.repository.UserRepository;
 import com.example.productmanager.view.CartView;
@@ -38,6 +41,7 @@ import com.example.productmanager.view.CartView;
 class OrderServiceTests {
 
 	private final CustomerOrderRepository customerOrderRepository = org.mockito.Mockito.mock(CustomerOrderRepository.class);
+	private final OrderStatusHistoryRepository orderStatusHistoryRepository = org.mockito.Mockito.mock(OrderStatusHistoryRepository.class);
 	private final ProductRepository productRepository = org.mockito.Mockito.mock(ProductRepository.class);
 	private final UserRepository userRepository = org.mockito.Mockito.mock(UserRepository.class);
 	private final UserService userService = org.mockito.Mockito.mock(UserService.class);
@@ -48,6 +52,7 @@ class OrderServiceTests {
 	private final MessageResolver messageResolver = new MessageResolver(createMessageSource());
 	private final OrderService orderService = new OrderService(
 			customerOrderRepository,
+			orderStatusHistoryRepository,
 			productRepository,
 			userRepository,
 			userService,
@@ -209,6 +214,10 @@ class OrderServiceTests {
 
 	@Test
 	void updateOrderStatusShouldAdvanceThroughFulfillmentStages() {
+		User staff = User.builder()
+				.id(99L)
+				.username("staff")
+				.build();
 		User customer = User.builder()
 				.email("customer@example.com")
 				.fullName("Test customer")
@@ -220,16 +229,18 @@ class OrderServiceTests {
 				.build();
 		when(customerOrderRepository.findById(100L)).thenReturn(Optional.of(order));
 		when(customerOrderRepository.save(any(CustomerOrder.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		when(userRepository.findById(99L)).thenReturn(Optional.of(staff));
 
-		orderService.updateOrderStatus(100L, OrderStatus.CONFIRMED);
+		orderService.updateOrderStatus(100L, OrderStatus.CONFIRMED, 99L);
 		assertEquals(OrderStatus.CONFIRMED, order.getStatus());
 
-		orderService.updateOrderStatus(100L, OrderStatus.DELIVERING);
+		orderService.updateOrderStatus(100L, OrderStatus.DELIVERING, 99L);
 		assertEquals(OrderStatus.DELIVERING, order.getStatus());
 
-		orderService.updateOrderStatus(100L, OrderStatus.COMPLETED);
+		orderService.updateOrderStatus(100L, OrderStatus.COMPLETED, 99L);
 		assertEquals(OrderStatus.COMPLETED, order.getStatus());
 		verify(customerOrderRepository, times(3)).save(order);
+		verify(orderStatusHistoryRepository, times(3)).save(any(OrderStatusHistory.class));
 		verify(applicationEventPublisher, times(3)).publishEvent(any(OrderStatusUpdatedEmailEvent.class));
 	}
 
@@ -242,10 +253,26 @@ class OrderServiceTests {
 		when(customerOrderRepository.findById(101L)).thenReturn(Optional.of(order));
 
 		ConflictException ex = assertThrows(ConflictException.class,
-				() -> orderService.updateOrderStatus(101L, OrderStatus.DELIVERING));
+				() -> orderService.updateOrderStatus(101L, OrderStatus.DELIVERING, 99L));
 
 		assertEquals("Không thể chuyển đơn hàng sang trạng thái đã chọn.", ex.getMessage());
 		verify(customerOrderRepository, never()).save(any(CustomerOrder.class));
+		verify(orderStatusHistoryRepository, never()).save(any(OrderStatusHistory.class));
+	}
+
+	@Test
+	void getOrdersForManagementShouldPassStatusKeywordAndInclusiveDateRange() {
+		LocalDate fromDate = LocalDate.of(2026, 10, 1);
+		LocalDate toDate = LocalDate.of(2026, 10, 17);
+
+		orderService.getOrdersForManagement(OrderStatus.PENDING, "  123  ", 123L, fromDate, toDate);
+
+		verify(customerOrderRepository).findForManagement(
+				OrderStatus.PENDING,
+				fromDate.atStartOfDay(),
+				toDate.plusDays(1).atStartOfDay(),
+				"123",
+				123L);
 	}
 
 	@Test

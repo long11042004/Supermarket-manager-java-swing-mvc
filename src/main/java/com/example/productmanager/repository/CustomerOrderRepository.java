@@ -39,8 +39,30 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
 	@Query("SELECT DISTINCT o FROM CustomerOrder o LEFT JOIN FETCH o.items i LEFT JOIN FETCH i.product WHERE o.user.id = :userId ORDER BY o.createdAt DESC")
 	List<CustomerOrder> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
 
-	@Query("SELECT DISTINCT o FROM CustomerOrder o LEFT JOIN FETCH o.user LEFT JOIN FETCH o.items i LEFT JOIN FETCH i.product ORDER BY o.createdAt DESC")
-	List<CustomerOrder> findAllForManagement();
+	@Query("""
+			SELECT DISTINCT o
+			FROM CustomerOrder o
+			LEFT JOIN FETCH o.user
+			LEFT JOIN FETCH o.items i
+			LEFT JOIN FETCH i.product
+			WHERE (:status IS NULL OR o.status = :status)
+			  AND (:startDate IS NULL OR o.createdAt >= :startDate)
+			  AND (:endDateExclusive IS NULL OR o.createdAt < :endDateExclusive)
+			  AND (:keyword IS NULL
+			       OR LOWER(COALESCE(o.user.fullName, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+			       OR LOWER(COALESCE(o.user.username, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+			       OR LOWER(COALESCE(o.user.email, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+			       OR LOWER(COALESCE(o.guestName, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+			       OR LOWER(COALESCE(o.guestEmail, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+			       OR LOWER(COALESCE(o.contactPhone, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+			       OR (:orderId IS NOT NULL AND o.id = :orderId))
+			ORDER BY o.createdAt DESC
+			""")
+	List<CustomerOrder> findForManagement(@Param("status") OrderStatus status,
+			@Param("startDate") LocalDateTime startDate,
+			@Param("endDateExclusive") LocalDateTime endDateExclusive,
+			@Param("keyword") String keyword,
+			@Param("orderId") Long orderId);
 
 	@Query("SELECT o FROM CustomerOrder o LEFT JOIN FETCH o.items i LEFT JOIN FETCH i.product WHERE o.id = :orderId AND o.user.id = :userId")
 	Optional<CustomerOrder> findDetailByIdAndUserId(@Param("orderId") Long orderId, @Param("userId") Long userId);

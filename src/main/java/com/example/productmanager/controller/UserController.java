@@ -62,9 +62,11 @@ public class UserController extends SessionController {
 
 	private List<RoleName> editableRoles(HttpSession session) {
 		if (isAdmin(session)) {
-			return Arrays.asList(RoleName.values());
+			return Arrays.stream(RoleName.values())
+					.filter(role -> role != RoleName.CUSTOMER)
+					.toList();
 		}
-		return List.of(RoleName.STAFF, RoleName.CUSTOMER);
+		return List.of(RoleName.STAFF);
 	}
 
 	private List<RoleName> registerableRoles(HttpSession session) {
@@ -228,9 +230,11 @@ public class UserController extends SessionController {
 			return "redirect:/users";
 		}
 
-		Set<RoleName> allowedRoles = isAdmin(session)
-				? EnumSet.allOf(RoleName.class)
-				: EnumSet.of(RoleName.STAFF, RoleName.CUSTOMER);
+		Set<RoleName> allowedRoles = EnumSet.allOf(RoleName.class);
+		allowedRoles.remove(RoleName.CUSTOMER);
+		if (!isAdmin(session)) {
+			allowedRoles.retainAll(EnumSet.of(RoleName.STAFF));
+		}
 		if (!allowedRoles.containsAll(selectedRoles)) {
 			redirectAttributes.addFlashAttribute("errorMessage", messageResolver.msg("msg.user.roleAssignmentNotAllowed"));
 			return "redirect:/users";

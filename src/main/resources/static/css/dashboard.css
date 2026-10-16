@@ -68,6 +68,39 @@ body {
   font-weight: 700;
 }
 
+.dashboard-product-thumbnail {
+  position: relative;
+  width: 3.5rem;
+  height: 3.5rem;
+  overflow: hidden;
+  border-radius: 0.65rem;
+  background: #eff6ff;
+}
+
+.dashboard-product-thumbnail img,
+.dashboard-product-thumbnail-placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.dashboard-product-thumbnail img {
+  object-fit: cover;
+}
+
+.dashboard-product-thumbnail-placeholder {
+  display: grid;
+  place-items: center;
+  color: #64748b;
+  background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 55%, #fef3c7 100%);
+}
+
+.dashboard-product-thumbnail-placeholder svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
 .dashboard-roles {
   display: flex;
   flex-wrap: wrap;

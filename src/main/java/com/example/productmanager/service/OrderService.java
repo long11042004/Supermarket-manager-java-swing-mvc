@@ -1,8 +1,12 @@
 package com.example.productmanager.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -15,6 +19,7 @@ import com.example.productmanager.entity.CartItem;
 import com.example.productmanager.entity.CustomerOrder;
 import com.example.productmanager.entity.CustomerOrderItem;
 import com.example.productmanager.entity.OrderStatus;
+import com.example.productmanager.entity.OrderStatusHistory;
 import com.example.productmanager.entity.Product;
 import com.example.productmanager.entity.User;
 import com.example.productmanager.exception.ConflictException;
@@ -22,6 +27,7 @@ import com.example.productmanager.exception.ForbiddenException;
 import com.example.productmanager.exception.NotFoundException;
 import com.example.productmanager.multilanguage.MessageResolver;
 import com.example.productmanager.repository.CustomerOrderRepository;
+import com.example.productmanager.repository.OrderStatusHistoryRepository;
 import com.example.productmanager.repository.ProductRepository;
 import com.example.productmanager.repository.UserRepository;
 import com.example.productmanager.view.CartView;
@@ -33,6 +39,7 @@ import lombok.AllArgsConstructor;
 public class OrderService {
 
 	private final CustomerOrderRepository customerOrderRepository;
+	private final OrderStatusHistoryRepository orderStatusHistoryRepository;
 	private final ProductRepository productRepository;
 	private final UserRepository userRepository;
 	private final UserService userService;
@@ -189,12 +196,32 @@ public class OrderService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<CustomerOrder> getOrdersForManagement() {
-		return customerOrderRepository.findAllForManagement();
+	public List<CustomerOrder> getOrdersForManagement(OrderStatus status,
+			String keyword,
+			Long orderId,
+			LocalDate fromDate,
+			LocalDate toDate) {
+		String normalizedKeyword = keyword == null || keyword.isBlank() ? null : keyword.trim();
+		LocalDateTime startDate = fromDate == null ? null : fromDate.atStartOfDay();
+		LocalDateTime endDateExclusive = toDate == null ? null : toDate.plusDays(1).atStartOfDay();
+		return customerOrderRepository.findForManagement(
+				status, startDate, endDateExclusive, normalizedKeyword, orderId);
+	}
+
+	@Transactional(readOnly = true)
+	public Map<Long, List<OrderStatusHistory>> getStatusHistoryForOrders(List<Long> orderIds) {
+		if (orderIds.isEmpty()) {
+			return Map.of();
+		}
+		return orderStatusHistoryRepository.findForOrders(orderIds).stream()
+				.collect(Collectors.groupingBy(history -> history.getOrder().getId()));
 	}
 
 	@Transactional
-	public void updateOrderStatus(Long orderId, OrderStatus targetStatus) {
+	public void updateOrderStatus(Long orderId, OrderStatus targetStatus, Long actorId) {
+		if (actorId == null) {
+			throw new ForbiddenException(messageResolver.msg("err.order.userInfoNotFound"));
+		}
 		CustomerOrder order = customerOrderRepository.findById(orderId)
 				.orElseThrow(() -> new NotFoundException(messageResolver.msg("err.order.notFoundForStatusUpdate")));
 		OrderStatus currentStatus = order.getStatus();
@@ -205,8 +232,19 @@ public class OrderService {
 			throw new ConflictException(messageResolver.msg("err.order.invalidStatusTransition"));
 		}
 
+		User actor = userRepository.findById(actorId)
+				.orElseThrow(() -> new NotFoundException(messageResolver.msg("err.order.staffNotFound")));
 		order.setStatus(targetStatus);
 		customerOrderRepository.save(order);
+		String actorName = actor.getFullName() == null || actor.getFullName().isBlank()
+				? actor.getUsername()
+				: actor.getFullName();
+		orderStatusHistoryRepository.save(OrderStatusHistory.builder()
+				.order(order)
+				.previousStatus(currentStatus)
+				.newStatus(targetStatus)
+				.changedBy(actorName)
+				.build());
 		User customer = order.getUser();
 		String recipientEmail = customer == null ? order.getGuestEmail() : customer.getEmail();
 		if (recipientEmail != null && !recipientEmail.isBlank()) {

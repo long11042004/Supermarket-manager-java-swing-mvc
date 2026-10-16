@@ -17,6 +17,13 @@
         <h1 class="mb-0" th:text="#{promotion.title}">Mã giảm giá và khuyến mãi</h1>
       </div>
       <nav class="d-flex gap-2">
+        <form method="get" th:action="@{/promotions}" class="d-inline-flex align-items-center">
+          <label class="visually-hidden" for="promotions-language-select" th:text="#{app.language}">Language</label>
+          <select id="promotions-language-select" class="form-select form-select-sm" name="lang" onchange="this.form.submit()">
+            <option value="vi" th:selected="${#locale.language == 'vi'}" th:text="#{common.language.vi}">🇻🇳 Tiếng Việt</option>
+            <option value="en" th:selected="${#locale.language == 'en'}" th:text="#{common.language.en}">🇺🇸 English</option>
+          </select>
+        </form>
         <a th:href="@{/dashboard}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
           <span th:replace="~{fragments/common :: dashboardIcon}"></span>
           <span th:text="#{common.dashboard}">Trang chủ</span>

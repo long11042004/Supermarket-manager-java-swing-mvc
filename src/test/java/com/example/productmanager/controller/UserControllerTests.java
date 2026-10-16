@@ -84,6 +84,20 @@ class UserControllerTests {
 		verify(userService).updateUserRoles(eq(2L), eq(Set.of(RoleName.MANAGER)));
 	}
 
+	@Test
+	void adminCannotAssignCustomerRoleFromStaffManagement() {
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute("loggedInUser", buildUser(99L, "admin", Set.of(RoleName.ADMIN)));
+		when(userService.getUserById(2L)).thenReturn(buildUser(2L, "staff", Set.of(RoleName.STAFF)));
+
+		RedirectAttributesModelMap redirectAttributes = new RedirectAttributesModelMap();
+		String view = userController.updateUserRoles(2L, new String[] { "CUSTOMER" }, session, redirectAttributes);
+
+		assertEquals("redirect:/users", view);
+		assertEquals("Bạn chỉ được phép gán vai trò phù hợp với quyền hiện tại.", redirectAttributes.getFlashAttributes().get("errorMessage"));
+		verify(userService, never()).updateUserRoles(eq(2L), anySet());
+	}
+
 	private User buildUser(Long id, String username, Set<RoleName> roleNames) {
 		Set<Role> roles = roleNames.stream()
 				.map(roleName -> Role.builder().name(roleName).build())

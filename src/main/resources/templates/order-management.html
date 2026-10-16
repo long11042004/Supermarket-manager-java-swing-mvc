@@ -5,33 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title th:text="#{orders.manage}">Quản lý đơn hàng</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <style>
-    body {
-      background: linear-gradient(180deg, #f8fafc 0%, #ecfeff 100%);
-      font-family: "Segoe UI", sans-serif;
-    }
-    .shell {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 2rem 1rem;
-    }
-    .order-card {
-      background: #fff;
-      border: 1px solid #e2e8f0;
-      border-radius: 18px;
-      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.07);
-      padding: 1.25rem;
-      margin-top: 1rem;
-    }
-    .status-pill {
-      display: inline-block;
-      border-radius: 999px;
-      padding: 0.35rem 0.75rem;
-      background: #ccfbf1;
-      color: #115e59;
-      font-weight: 700;
-    }
-  </style>
+  <link href="/css/order-management.css" rel="stylesheet" />
 </head>
 <body>
   <main class="shell">
@@ -54,8 +28,38 @@
 
     <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
     <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
-    <div th:if="${#lists.isEmpty(orders)}" class="order-card text-muted" th:text="#{orders.manageEmpty}">
-      Chưa có đơn hàng nào.
+
+    <form th:action="@{/order-management}" method="get" class="order-card row g-3 align-items-end">
+      <div class="col-lg-4 col-md-6">
+        <label for="keyword" class="form-label" th:text="#{orders.filter.keyword}">Mã đơn, khách hàng hoặc liên hệ</label>
+        <input id="keyword" name="keyword" type="search" class="form-control"
+               th:value="${keyword}" th:placeholder="#{orders.filter.keywordPlaceholder}" />
+      </div>
+      <div class="col-lg-2 col-md-6">
+        <label for="statusFilter" class="form-label" th:text="#{orders.filter.status}">Trạng thái</label>
+        <select id="statusFilter" name="statusFilter" class="form-select">
+          <option value="" th:selected="${statusFilter == null}" th:text="#{orders.filter.allStatuses}">Tất cả trạng thái</option>
+          <option th:each="status : ${orderStatuses}" th:value="${status.name()}"
+                  th:selected="${statusFilter == status}"
+                  th:text="#{orderStatus.__${status.name()}__}">Trạng thái</option>
+        </select>
+      </div>
+      <div class="col-lg-2 col-md-6">
+        <label for="fromDate" class="form-label" th:text="#{orders.filter.fromDate}">Từ ngày</label>
+        <input id="fromDate" name="fromDate" type="date" class="form-control" th:value="${fromDate}" />
+      </div>
+      <div class="col-lg-2 col-md-6">
+        <label for="toDate" class="form-label" th:text="#{orders.filter.toDate}">Đến ngày</label>
+        <input id="toDate" name="toDate" type="date" class="form-control" th:value="${toDate}" />
+      </div>
+      <div class="col-lg-2 d-flex gap-2">
+        <button type="submit" class="btn btn-success flex-grow-1" th:text="#{orders.filter.apply}">Lọc</button>
+        <a th:href="@{/order-management}" class="btn btn-outline-secondary" th:text="#{orders.filter.clear}">Xóa</a>
+      </div>
+    </form>
+
+    <div th:if="${#lists.isEmpty(orders)}" class="order-card text-muted" th:text="#{orders.manageNoResults}">
+      Không tìm thấy đơn hàng phù hợp.
     </div>
 
     <section th:each="order : ${orders}" class="order-card">
@@ -90,6 +94,7 @@
         <table class="table table-sm align-middle mb-0">
           <thead>
             <tr>
+              <th><span class="visually-hidden" th:text="#{dashboard.productImage}">Ảnh sản phẩm</span></th>
               <th th:text="#{orders.product}">Sản phẩm</th>
               <th th:text="#{common.quantity}">Số lượng</th>
               <th th:text="#{orders.lineTotal}">Thành tiền</th>
@@ -97,6 +102,19 @@
           </thead>
           <tbody>
             <tr th:each="item : ${order.items}">
+              <td>
+                <div class="order-product-thumbnail">
+                  <img th:if="${item.product.imageUrl != null and !#strings.isEmpty(item.product.imageUrl)}"
+                       th:src="${item.product.imageUrl}"
+                       th:alt="${@productDisplayService.displayName(item.product)}"
+                       onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';" />
+                  <div class="order-product-thumbnail-placeholder"
+                       th:style="${item.product.imageUrl != null and !#strings.isEmpty(item.product.imageUrl)} ? 'display:none' : null"
+                       aria-hidden="true">
+                    <span th:replace="~{fragments/common :: productsIcon}"></span>
+                  </div>
+                </div>
+              </td>
               <td th:text="${@productDisplayService.displayName(item.product)}">Tên sản phẩm</td>
               <td th:text="${item.quantity}">1</td>
               <td th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(item.lineTotal)}">0 ₫</td>
@@ -109,18 +127,45 @@
         <form th:if="${order.status.name() == 'PENDING'}"
               th:action="@{/order-management/{orderId}/status(orderId=${order.id})}" method="post">
           <input type="hidden" name="status" value="CONFIRMED" />
+          <input type="hidden" name="statusFilter" th:value="${statusFilter}" />
+          <input type="hidden" name="keyword" th:value="${keyword}" />
+          <input type="hidden" name="fromDate" th:value="${fromDate}" />
+          <input type="hidden" name="toDate" th:value="${toDate}" />
           <button type="submit" class="btn btn-success" th:text="#{orders.action.confirm}">Xác nhận đơn</button>
         </form>
         <form th:if="${order.status.name() == 'CONFIRMED'}"
               th:action="@{/order-management/{orderId}/status(orderId=${order.id})}" method="post">
           <input type="hidden" name="status" value="DELIVERING" />
+          <input type="hidden" name="statusFilter" th:value="${statusFilter}" />
+          <input type="hidden" name="keyword" th:value="${keyword}" />
+          <input type="hidden" name="fromDate" th:value="${fromDate}" />
+          <input type="hidden" name="toDate" th:value="${toDate}" />
           <button type="submit" class="btn btn-primary" th:text="#{orders.action.deliver}">Bắt đầu giao</button>
         </form>
         <form th:if="${order.status.name() == 'DELIVERING'}"
               th:action="@{/order-management/{orderId}/status(orderId=${order.id})}" method="post">
           <input type="hidden" name="status" value="COMPLETED" />
+          <input type="hidden" name="statusFilter" th:value="${statusFilter}" />
+          <input type="hidden" name="keyword" th:value="${keyword}" />
+          <input type="hidden" name="fromDate" th:value="${fromDate}" />
+          <input type="hidden" name="toDate" th:value="${toDate}" />
           <button type="submit" class="btn btn-dark" th:text="#{orders.action.complete}">Đánh dấu đã giao</button>
         </form>
+      </div>
+
+      <div th:if="${statusHistory[order.id] != null and !#lists.isEmpty(statusHistory[order.id])}" class="mt-4">
+        <h3 class="h6" th:text="#{orders.statusHistory}">Lịch sử trạng thái</h3>
+        <ul class="list-group list-group-flush">
+          <li th:each="history : ${statusHistory[order.id]}" class="list-group-item px-0">
+            <span th:text="#{orderStatus.__${history.previousStatus.name()}__}">Trạng thái trước</span>
+            <span aria-hidden="true">→</span>
+            <span th:text="#{orderStatus.__${history.newStatus.name()}__}">Trạng thái mới</span>
+            <span class="text-muted small">
+              · <span th:text="${history.changedBy}">Nhân viên</span>
+              · <span th:text="${#temporals.format(history.changedAt, 'dd/MM/yyyy HH:mm')}">01/01/2026 10:00</span>
+            </span>
+          </li>
+        </ul>
       </div>
     </section>
   </main>
