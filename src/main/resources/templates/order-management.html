@@ -15,6 +15,8 @@
         <h1 class="mb-0" th:text="#{orders.manage}">Quản lý đơn hàng</h1>
       </div>
       <div class="d-flex gap-2">
+        <a th:if="${canCreateCounterSale}" th:href="@{/order-management/new}" class="btn btn-success"
+           th:text="#{orders.counter.title}">Lập đơn tại quầy</a>
         <a th:href="@{/dashboard}" class="btn btn-outline-dark d-inline-flex align-items-center gap-2">
           <span th:replace="~{fragments/common :: dashboardIcon}"></span>
           <span th:text="#{common.dashboard}">Bảng điều khiển</span>
@@ -72,6 +74,10 @@
           <span class="status-pill" th:text="#{orderStatus.__${order.status.name()}__}">Chờ xác nhận</span>
           <div class="fw-bold mt-2"
                th:text="${T(com.example.productmanager.util.CurrencyFormatter).formatMoney(order.totalAmount)}">0 ₫</div>
+          <div th:if="${order.paymentMethod != null}" class="small text-muted mt-1">
+            <span th:text="#{orders.counter.paymentMethod}">Thanh toán</span>:
+            <span th:text="#{paymentMethod.__${order.paymentMethod.name()}__}">Tiền mặt</span>
+          </div>
         </div>
       </div>
 
@@ -82,9 +88,11 @@
         </div>
         <div class="col-md-6">
           <div class="small text-muted" th:text="#{orders.contact}">Liên hệ</div>
-          <div th:text="${order.user != null ? order.user.email : order.guestEmail}">email@example.com</div>
+          <div th:text="${order.user != null ? order.user.email :
+                       (order.guestEmail != null and !#strings.isEmpty(order.guestEmail) ? order.guestEmail :
+                       (order.contactPhone != null ? order.contactPhone : #messages.msg('common.none')))}">email@example.com</div>
         </div>
-        <div class="col-12">
+        <div class="col-12" th:if="${order.paymentMethod == null}">
           <div class="small text-muted" th:text="#{orders.shipTo}">Giao đến</div>
           <div th:text="${order.deliveryAddress}">Địa chỉ</div>
         </div>
@@ -157,8 +165,10 @@
         <h3 class="h6" th:text="#{orders.statusHistory}">Lịch sử trạng thái</h3>
         <ul class="list-group list-group-flush">
           <li th:each="history : ${statusHistory[order.id]}" class="list-group-item px-0">
-            <span th:text="#{orderStatus.__${history.previousStatus.name()}__}">Trạng thái trước</span>
-            <span aria-hidden="true">→</span>
+            <span th:if="${history.previousStatus != null}"
+                  th:text="#{orderStatus.__${history.previousStatus.name()}__}">Trạng thái trước</span>
+            <span th:if="${history.previousStatus != null}" aria-hidden="true">→</span>
+            <span th:if="${history.previousStatus == null}" th:text="#{orders.counter.createdHistory}">Tạo tại quầy</span>
             <span th:text="#{orderStatus.__${history.newStatus.name()}__}">Trạng thái mới</span>
             <span class="text-muted small">
               · <span th:text="${history.changedBy}">Nhân viên</span>

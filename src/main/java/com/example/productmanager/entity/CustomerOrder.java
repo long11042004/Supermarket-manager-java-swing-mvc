@@ -82,6 +82,10 @@ public class CustomerOrder {
 	@Column(nullable = false, length = 20)
 	private OrderStatus status;
 
+	@Enumerated(EnumType.STRING)
+	@Column(length = 20)
+	private PaymentMethod paymentMethod;
+
 	@Column(nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 

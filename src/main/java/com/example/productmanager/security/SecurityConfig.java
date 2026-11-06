@@ -13,6 +13,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import lombok.AllArgsConstructor;
@@ -42,6 +43,8 @@ public class SecurityConfig {
 								"/webjars/**",
 								"/uploads/avatars/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+						.requestMatchers(HttpMethod.GET, "/guest-dashboard").permitAll()
+						.requestMatchers(HttpMethod.HEAD, "/guest-dashboard").permitAll()
 						.requestMatchers(HttpMethod.GET, "/products", "/products/", "/products/*").permitAll()
 						.requestMatchers(HttpMethod.HEAD, "/products", "/products/", "/products/*").permitAll()
 						.requestMatchers(HttpMethod.POST,
@@ -63,6 +66,13 @@ public class SecurityConfig {
 						.hasAnyRole("MANAGER", "ADMIN")
 						.requestMatchers("/promotions", "/promotions/**")
 						.hasAnyRole("MANAGER", "ADMIN")
+						.requestMatchers(
+								"/order-management/new",
+								"/order-management/new/**",
+								"/order-management/counter-sale",
+								"/order-management/counter-sale/**")
+						.access(new WebExpressionAuthorizationManager(
+								"hasRole('STAFF') and !hasAnyRole('MANAGER', 'ADMIN')"))
 						.requestMatchers("/order-management", "/order-management/**")
 						.hasAnyRole("STAFF", "MANAGER", "ADMIN")
 						.requestMatchers(HttpMethod.POST, "/api/products", "/api/products/**")

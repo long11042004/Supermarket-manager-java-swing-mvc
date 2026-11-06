@@ -41,7 +41,7 @@ public class OrderStatusHistory {
 	private CustomerOrder order;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "previous_status", nullable = false, length = 20)
+	@Column(name = "previous_status", length = 20)
 	private OrderStatus previousStatus;
 
 	@Enumerated(EnumType.STRING)

@@ -48,6 +48,8 @@
             <div th:replace="~{fragments/common :: accountLink(${currentUser})}"></div>
           </div>
           <span th:if="${isGuest}" class="badge bg-light text-dark border" th:text="#{app.guestBadge}">Guest</span>
+          <a th:if="${isGuest}" th:href="@{/guest-dashboard}" class="btn btn-outline-primary btn-sm"
+             th:text="#{guestDashboard.link}">Guest dashboard</a>
           <a th:if="${!isGuest}" th:href="@{/dashboard}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1">
             <span th:replace="~{fragments/common :: dashboardIcon}"></span>
             <span th:text="#{common.dashboard}">Dashboard</span>

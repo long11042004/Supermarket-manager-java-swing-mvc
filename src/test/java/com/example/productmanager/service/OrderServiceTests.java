@@ -22,14 +22,19 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ResourceBundleMessageSource;
 
 import com.example.productmanager.email.event.OrderCancelledEmailEvent;
+import com.example.productmanager.email.event.OrderConfirmedEmailEvent;
 import com.example.productmanager.email.event.OrderStatusUpdatedEmailEvent;
 import com.example.productmanager.entity.CustomerOrder;
 import com.example.productmanager.entity.CustomerOrderItem;
 import com.example.productmanager.entity.OrderStatus;
 import com.example.productmanager.entity.OrderStatusHistory;
+import com.example.productmanager.entity.PaymentMethod;
 import com.example.productmanager.entity.Product;
+import com.example.productmanager.entity.Role;
+import com.example.productmanager.entity.RoleName;
 import com.example.productmanager.entity.User;
 import com.example.productmanager.exception.ConflictException;
+import com.example.productmanager.exception.ForbiddenException;
 import com.example.productmanager.exception.NotFoundException;
 import com.example.productmanager.multilanguage.MessageResolver;
 import com.example.productmanager.repository.CustomerOrderRepository;
@@ -209,6 +214,117 @@ class OrderServiceTests {
 				() -> orderService.checkoutAsGuest("Khach", "guest@demo.com", cart, "12 Duong Moi", "0909000000", null));
 
 		assertEquals("Sản phẩm Sua hop chưa có giá bán hợp lệ.", ex.getMessage());
+		verify(customerOrderRepository, never()).save(any(CustomerOrder.class));
+	}
+
+	@Test
+	void createCounterSaleShouldCompleteOrderRecordPaymentAndDeductStock() {
+		User staff = User.builder()
+				.id(7L)
+				.username("cashier")
+				.fullName("Nhân viên quầy")
+				.roles(java.util.Set.of(Role.builder().name(RoleName.STAFF).build()))
+				.build();
+		Product product = Product.builder()
+				.id(70L)
+				.nameVi("Sữa tươi")
+				.price(new BigDecimal("25000"))
+				.quantity(8)
+				.build();
+		when(userRepository.findById(7L)).thenReturn(Optional.of(staff));
+		when(productRepository.findById(70L)).thenReturn(Optional.of(product));
+		when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		when(customerOrderRepository.save(any(CustomerOrder.class))).thenAnswer(invocation -> {
+			CustomerOrder order = invocation.getArgument(0);
+			order.setId(700L);
+			return order;
+		});
+
+		CustomerOrder order = orderService.createCounterSale(
+				7L, List.of(70L), List.of(2), "Khách tại quầy", "0909000000",
+				"Thanh toán đủ", PaymentMethod.CASH);
+
+		assertEquals(OrderStatus.COMPLETED, order.getStatus());
+		assertEquals(PaymentMethod.CASH, order.getPaymentMethod());
+		assertEquals("Khách tại quầy", order.getGuestName());
+		assertEquals("0909000000", order.getContactPhone());
+		assertEquals(BigDecimal.ZERO, order.getShippingFee());
+		assertEquals(new BigDecimal("50000"), order.getTotalAmount());
+		assertEquals(6, product.getQuantity());
+		assertEquals(1, order.getItems().size());
+		verify(orderStatusHistoryRepository).save(org.mockito.ArgumentMatchers.argThat(history ->
+				history.getOrder() == order
+						&& history.getPreviousStatus() == null
+						&& history.getNewStatus() == OrderStatus.COMPLETED
+						&& "Nhân viên quầy".equals(history.getChangedBy())));
+		verify(applicationEventPublisher, never()).publishEvent(any(OrderConfirmedEmailEvent.class));
+	}
+
+	@Test
+	void createCounterSaleShouldRejectInsufficientStockWithoutSavingOrder() {
+		User staff = User.builder()
+				.id(8L)
+				.username("cashier")
+				.roles(java.util.Set.of(Role.builder().name(RoleName.STAFF).build()))
+				.build();
+		Product product = Product.builder()
+				.id(71L)
+				.nameVi("Nước suối")
+				.price(new BigDecimal("10000"))
+				.quantity(1)
+				.build();
+		when(userRepository.findById(8L)).thenReturn(Optional.of(staff));
+		when(productRepository.findById(71L)).thenReturn(Optional.of(product));
+
+		assertThrows(IllegalArgumentException.class, () -> orderService.createCounterSale(
+				8L, List.of(71L), List.of(2), null, null, null, PaymentMethod.CARD));
+
+		assertEquals(1, product.getQuantity());
+		verify(customerOrderRepository, never()).save(any(CustomerOrder.class));
+		verify(orderStatusHistoryRepository, never()).save(any(OrderStatusHistory.class));
+	}
+
+	@Test
+	void createCounterSaleShouldRejectManagerWithoutStaffRole() {
+		User manager = User.builder()
+				.id(9L)
+				.username("manager")
+				.roles(java.util.Set.of(Role.builder().name(RoleName.MANAGER).build()))
+				.build();
+		when(userRepository.findById(9L)).thenReturn(Optional.of(manager));
+
+		assertThrows(ForbiddenException.class, () -> orderService.createCounterSale(
+				9L, List.of(72L), List.of(1), null, null, null, PaymentMethod.CASH));
+
+		verify(productRepository, never()).findById(72L);
+		verify(customerOrderRepository, never()).save(any(CustomerOrder.class));
+	}
+
+	@Test
+	void createCounterSaleShouldRejectManagerOrAdminWithStaffRole() {
+		User manager = User.builder()
+				.id(10L)
+				.username("manager-cashier")
+				.roles(java.util.Set.of(
+						Role.builder().name(RoleName.STAFF).build(),
+						Role.builder().name(RoleName.MANAGER).build()))
+				.build();
+		User admin = User.builder()
+				.id(11L)
+				.username("admin-cashier")
+				.roles(java.util.Set.of(
+						Role.builder().name(RoleName.STAFF).build(),
+						Role.builder().name(RoleName.ADMIN).build()))
+				.build();
+		when(userRepository.findById(10L)).thenReturn(Optional.of(manager));
+		when(userRepository.findById(11L)).thenReturn(Optional.of(admin));
+
+		assertThrows(ForbiddenException.class, () -> orderService.createCounterSale(
+				10L, List.of(73L), List.of(1), null, null, null, PaymentMethod.CASH));
+		assertThrows(ForbiddenException.class, () -> orderService.createCounterSale(
+				11L, List.of(73L), List.of(1), null, null, null, PaymentMethod.CASH));
+
+		verify(productRepository, never()).findById(73L);
 		verify(customerOrderRepository, never()).save(any(CustomerOrder.class));
 	}
 

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -20,7 +21,10 @@ import com.example.productmanager.entity.CustomerOrder;
 import com.example.productmanager.entity.CustomerOrderItem;
 import com.example.productmanager.entity.OrderStatus;
 import com.example.productmanager.entity.OrderStatusHistory;
+import com.example.productmanager.entity.PaymentMethod;
 import com.example.productmanager.entity.Product;
+import com.example.productmanager.entity.Role;
+import com.example.productmanager.entity.RoleName;
 import com.example.productmanager.entity.User;
 import com.example.productmanager.exception.ConflictException;
 import com.example.productmanager.exception.ForbiddenException;
@@ -54,7 +58,7 @@ public class OrderService {
 		String deliveryAddress, 
 		String contactPhone, 
 		String note) {
-		return checkout(userId, null, null, cart, deliveryAddress, contactPhone, note);
+		return checkout(userId, null, null, cart, deliveryAddress, contactPhone, note, null, false, null);
 	}
 
 	@Transactional
@@ -64,7 +68,72 @@ public class OrderService {
 			String deliveryAddress,
 			String contactPhone,
 			String note) {
-		return checkout(null, guestName, guestEmail, cart, deliveryAddress, contactPhone, note);
+		return checkout(null, guestName, guestEmail, cart, deliveryAddress, contactPhone, note, null, false, null);
+	}
+
+	@Transactional
+	public CustomerOrder createCounterSale(Long staffId,
+			List<Long> productIds,
+			List<Integer> quantities,
+			String customerName,
+			String contactPhone,
+			String note,
+			PaymentMethod paymentMethod) {
+		if (staffId == null) {
+			throw new ForbiddenException(messageResolver.msg("err.order.userInfoNotFound"));
+		}
+		User staff = userRepository.findById(staffId)
+				.orElseThrow(() -> new NotFoundException(messageResolver.msg("err.order.staffNotFound")));
+		boolean authorizedStaff = staff.getRoles() != null && staff.getRoles().stream()
+				.map(Role::getName)
+				.anyMatch(roleName -> roleName == RoleName.STAFF)
+				&& staff.getRoles().stream()
+						.map(Role::getName)
+						.noneMatch(roleName -> roleName == RoleName.MANAGER || roleName == RoleName.ADMIN);
+		if (!authorizedStaff) {
+			throw new ForbiddenException(messageResolver.msg("err.order.counterSaleStaffOnly"));
+		}
+		if (productIds == null || quantities == null || productIds.isEmpty()
+				|| productIds.size() != quantities.size() || productIds.size() > 100) {
+			throw new IllegalArgumentException(messageResolver.msg("err.order.invalidCounterSaleItems"));
+		}
+		if (paymentMethod == null) {
+			throw new IllegalArgumentException(messageResolver.msg("err.order.paymentMethodRequired"));
+		}
+		if (customerName != null && customerName.trim().length() > 120) {
+			throw new IllegalArgumentException(messageResolver.msg("err.order.counterCustomerNameTooLong"));
+		}
+		if (contactPhone != null && contactPhone.trim().length() > 20) {
+			throw new IllegalArgumentException(messageResolver.msg("err.order.counterPhoneTooLong"));
+		}
+		if (note != null && note.trim().length() > 255) {
+			throw new IllegalArgumentException(messageResolver.msg("err.order.counterNoteTooLong"));
+		}
+
+		Map<Long, Integer> quantitiesByProduct = new LinkedHashMap<>();
+		for (int index = 0; index < productIds.size(); index++) {
+			Long productId = productIds.get(index);
+			Integer quantity = quantities.get(index);
+			if (productId == null || quantity == null || quantity <= 0) {
+				throw new IllegalArgumentException(messageResolver.msg("err.order.invalidCounterSaleItems"));
+			}
+			try {
+				quantitiesByProduct.merge(productId, quantity, Math::addExact);
+			} catch (ArithmeticException ex) {
+				throw new IllegalArgumentException(messageResolver.msg("err.order.invalidCartQuantity"), ex);
+			}
+		}
+
+		CartView cart = new CartView();
+		cart.setItems(quantitiesByProduct.entrySet().stream()
+				.map(entry -> new CartItem(entry.getKey(), "", BigDecimal.ZERO, "", entry.getValue()))
+				.toList());
+		String normalizedCustomerName = customerName == null || customerName.isBlank()
+				? messageResolver.msg("orders.counter.walkInCustomer")
+				: customerName.trim();
+		return checkout(null, normalizedCustomerName, null, cart,
+				messageResolver.msg("orders.counter.pickupAddress"),
+				contactPhone, note, paymentMethod, true, staff);
 	}
 
 	private CustomerOrder checkout(Long userId,
@@ -73,17 +142,20 @@ public class OrderService {
 			CartView cart,
 			String deliveryAddress,
 			String contactPhone,
-			String note) {
+			String note,
+			PaymentMethod paymentMethod,
+			boolean counterSale,
+			User cashier) {
 		if (cart == null || cart.getItems().isEmpty()) {
 			throw new IllegalArgumentException(messageResolver.msg("err.order.cartEmpty"));
 		}
-		if (deliveryAddress == null || deliveryAddress.trim().isEmpty()) {
+		if (!counterSale && (deliveryAddress == null || deliveryAddress.trim().isEmpty())) {
 			throw new IllegalArgumentException(messageResolver.msg("err.order.deliveryAddressRequired"));
 		}
 		if (userId == null && (guestName == null || guestName.trim().isEmpty())) {
 			throw new IllegalArgumentException(messageResolver.msg("err.order.guestNameRequired"));
 		}
-		if (userId == null && (guestEmail == null || guestEmail.trim().isEmpty())) {
+		if (!counterSale && userId == null && (guestEmail == null || guestEmail.trim().isEmpty())) {
 			throw new IllegalArgumentException(messageResolver.msg("err.order.guestEmailRequired"));
 		}
 
@@ -99,11 +171,12 @@ public class OrderService {
 		CustomerOrder order = CustomerOrder.builder()
 				.user(user)
 				.guestName(user == null ? guestName.trim() : null)
-				.guestEmail(user == null ? guestEmail.trim() : null)
+				.guestEmail(user == null && guestEmail != null ? guestEmail.trim() : null)
 				.deliveryAddress(deliveryAddress.trim())
 				.contactPhone(contactPhone == null ? null : contactPhone.trim())
 				.note(note == null ? null : note.trim())
-				.status(OrderStatus.PENDING)
+				.status(counterSale ? OrderStatus.COMPLETED : OrderStatus.PENDING)
+				.paymentMethod(paymentMethod)
 				.totalAmount(BigDecimal.ZERO)
 				.build();
 
@@ -145,13 +218,23 @@ public class OrderService {
 		PromotionService.PromotionQuote promotionQuote = promotionService.quote(totalAmount, cart.getCouponCode());
 		order.setSubtotalAmount(totalAmount);
 		order.setDiscountAmount(promotionQuote.totalDiscount());
-		BigDecimal shippingFee = shippingService.calculateFee(promotionQuote.totalAmount());
+		BigDecimal shippingFee = counterSale ? BigDecimal.ZERO : shippingService.calculateFee(promotionQuote.totalAmount());
 		order.setShippingFee(shippingFee);
 		order.setCouponCode(promotionQuote.couponCode());
 		order.setAutomaticPromotionName(promotionQuote.automaticPromotionName());
 		order.setTotalAmount(promotionQuote.totalAmount().add(shippingFee));
 		promotionService.recordRedemptions(promotionQuote);
 		CustomerOrder savedOrder = customerOrderRepository.save(order);
+		if (counterSale) {
+			orderStatusHistoryRepository.save(OrderStatusHistory.builder()
+					.order(savedOrder)
+					.previousStatus(null)
+					.newStatus(OrderStatus.COMPLETED)
+					.changedBy(cashier.getFullName() == null || cashier.getFullName().isBlank()
+							? cashier.getUsername()
+							: cashier.getFullName())
+					.build());
+		}
 		if (userId != null && user != null) {
 			String details = messageResolver.msg("activity.order.createdPrefix")
 					+ savedOrder.getId()

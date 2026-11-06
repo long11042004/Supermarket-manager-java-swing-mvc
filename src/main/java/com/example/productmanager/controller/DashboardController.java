@@ -55,6 +55,9 @@ public class DashboardController extends SessionController {
 		model.addAttribute("isAdmin", roles.contains(RoleName.ADMIN));
 		model.addAttribute("isManager", roles.contains(RoleName.MANAGER));
 		model.addAttribute("isStaff", roles.contains(RoleName.STAFF));
+		model.addAttribute("isStaffOnly", roles.contains(RoleName.STAFF)
+				&& !roles.contains(RoleName.MANAGER)
+				&& !roles.contains(RoleName.ADMIN));
 		model.addAttribute("isCustomer", roles.contains(RoleName.CUSTOMER));
 		model.addAttribute("canManageProducts", roles.contains(RoleName.ADMIN) || roles.contains(RoleName.MANAGER));
 		model.addAttribute("canManageUsers", roles.contains(RoleName.ADMIN) || roles.contains(RoleName.MANAGER));
@@ -75,5 +78,18 @@ public class DashboardController extends SessionController {
 			return "customer-dashboard";
 		}
 		return "dashboard";
+	}
+
+	@GetMapping("/guest-dashboard")
+	public String guestDashboard(Model model, HttpSession session) {
+		if (getCurrentUser(session) != null) {
+			return "redirect:/dashboard";
+		}
+
+		session.setAttribute("guestCheckout", true);
+		model.addAttribute("totalProducts", productService.getFilteredProducts(null, null, 0, 12).getTotalElements());
+		model.addAttribute("featuredProducts", productService.getFeaturedProducts(6));
+		model.addAttribute("featuredPromotions", promotionService.getFeaturedPromotions());
+		return "guest-dashboard";
 	}
 }
